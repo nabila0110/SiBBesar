@@ -20,7 +20,7 @@ class DashboardTest extends TestCase
         $this->user = User::factory()->create();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_dashboard()
     {
         $response = $this->actingAs($this->user)->get(route('dashboard'));
@@ -30,7 +30,7 @@ class DashboardTest extends TestCase
         $response->assertViewHas(['saldoKas', 'piutangUsaha', 'hutangUsaha', 'recentJournals']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_dashboard_shows_financial_summary()
     {
         $response = $this->actingAs($this->user)->get(route('dashboard'));
@@ -41,7 +41,7 @@ class DashboardTest extends TestCase
         $response->assertSee('Piutang Usaha');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_dashboard_shows_recent_journals()
     {
         Journal::factory()->count(5)->create(['created_by' => $this->user->id]);
@@ -52,7 +52,7 @@ class DashboardTest extends TestCase
         $response->assertViewHas('recentJournals');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_guest_cannot_access_dashboard()
     {
         $response = $this->get(route('dashboard'));

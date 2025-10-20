@@ -43,7 +43,7 @@ class ReportTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_trial_balance()
     {
         $response = $this->actingAs($this->user)
@@ -54,7 +54,7 @@ class ReportTest extends TestCase
         $response->assertViewHas('data');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_income_statement()
     {
         $response = $this->actingAs($this->user)
@@ -65,7 +65,7 @@ class ReportTest extends TestCase
         $response->assertViewHas(['revenueData', 'expenseData', 'netIncome']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_balance_sheet()
     {
         $response = $this->actingAs($this->user)
@@ -76,7 +76,7 @@ class ReportTest extends TestCase
         $response->assertViewHas(['assetData', 'liabilityData', 'equityData']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_general_ledger()
     {
         $response = $this->actingAs($this->user)
@@ -87,7 +87,7 @@ class ReportTest extends TestCase
         $response->assertViewHas('accounts');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_general_ledger_shows_account_transactions()
     {
         // Create a journal entry
@@ -109,7 +109,7 @@ class ReportTest extends TestCase
         $response->assertViewHas('ledgerData');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_income_statement_calculates_net_income()
     {
         // Create revenue and expense journals
@@ -143,7 +143,7 @@ class ReportTest extends TestCase
         // Net income should be 2,000,000 (5M revenue - 3M expense)
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_reports_filter_by_date_range()
     {
         $response = $this->actingAs($this->user)->get(route('reports.trial-balance', [

@@ -21,7 +21,7 @@ class JournalControllerTest extends TestCase
         $this->actingAs($this->user);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_creates_balanced_journal_successfully()
     {
         $a1 = Account::factory()->create();
@@ -40,7 +40,7 @@ class JournalControllerTest extends TestCase
         $this->assertDatabaseHas('journals', ['description' => 'Balanced entry']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_rejects_unbalanced_journal()
     {
         $a1 = Account::factory()->create();

@@ -30,7 +30,7 @@ class AccountTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_accounts_index()
     {
         // Arrange: Create some accounts
@@ -45,7 +45,7 @@ class AccountTest extends TestCase
         $response->assertViewHas('accounts');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_create_account_form()
     {
         $response = $this->actingAs($this->user)->get(route('accounts.create'));
@@ -55,7 +55,7 @@ class AccountTest extends TestCase
         $response->assertViewHas('categories');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_create_account()
     {
         $category = AccountCategory::first();
@@ -82,7 +82,7 @@ class AccountTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_cannot_create_account_with_duplicate_code()
     {
         $category = AccountCategory::first();
@@ -108,7 +108,7 @@ class AccountTest extends TestCase
         $response->assertSessionHasErrors('code');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_update_account()
     {
         $account = Account::factory()->create(['name' => 'Old Name']);
@@ -128,7 +128,7 @@ class AccountTest extends TestCase
         $this->assertDatabaseHas('accounts', ['name' => 'New Name']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_delete_account()
     {
         $account = Account::factory()->create();
@@ -140,7 +140,7 @@ class AccountTest extends TestCase
         $this->assertDatabaseMissing('accounts', ['id' => $account->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_account_balance_calculation()
     {
         $account = Account::factory()->create([
@@ -154,7 +154,7 @@ class AccountTest extends TestCase
         $this->assertEquals(0, $balance);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_validation_requires_all_fields()
     {
         $response = $this->actingAs($this->user)->post(route('accounts.store'), []);

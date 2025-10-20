@@ -39,7 +39,7 @@ class JournalTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_journals_index()
     {
         Journal::factory()->count(3)->create(['created_by' => $this->user->id]);
@@ -51,7 +51,7 @@ class JournalTest extends TestCase
         $response->assertViewHas('journals');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_create_journal_form()
     {
         $response = $this->actingAs($this->user)->get(route('journals.create'));
@@ -61,7 +61,7 @@ class JournalTest extends TestCase
         $response->assertViewHas('accounts');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_create_balanced_journal()
     {
         $journalData = [
@@ -98,7 +98,7 @@ class JournalTest extends TestCase
         $this->assertDatabaseCount('journal_details', 2);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_cannot_create_unbalanced_journal()
     {
         $journalData = [
@@ -126,7 +126,7 @@ class JournalTest extends TestCase
         $response->assertSessionHasErrors();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_journal_detail()
     {
         $journal = Journal::factory()->create(['created_by' => $this->user->id]);
@@ -147,7 +147,7 @@ class JournalTest extends TestCase
         $response->assertSee('Test detail');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_number_generation()
     {
         $journalNo = Journal::generateJournalNo();
@@ -157,7 +157,7 @@ class JournalTest extends TestCase
         $this->assertStringContainsString(date('m'), $journalNo);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_requires_minimum_two_entries()
     {
         $journalData = [
@@ -179,7 +179,7 @@ class JournalTest extends TestCase
         $response->assertSessionHasErrors('details');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_filters_by_date_range()
     {
         // Create journals with different dates
