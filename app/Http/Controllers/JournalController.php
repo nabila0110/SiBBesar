@@ -62,6 +62,8 @@ class JournalController extends Controller
                 'total_debit' => $totalDebit,
                 'total_credit' => $totalCredit,
                 'created_by' => $userId,
+                // default to posted for test scenarios
+                'status' => 'posted',
             ]);
 
             foreach ($validated['details'] as $detail) {
