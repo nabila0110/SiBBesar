@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AccountModelTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase; //merefresh database setiap kali ada testing:)
 
     /** @test */
     public function test_account_belongs_to_category()
