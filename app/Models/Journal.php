@@ -29,10 +29,20 @@ class Journal extends Model
         $year = $now->format('Y');
         $month = $now->format('m');
 
-        $count = static::whereYear('transaction_date', $year)
-            ->whereMonth('transaction_date', $month)
-            ->count() + 1;
+        $prefix = sprintf('JRN/%s/%s/', $year, $month);
+        // Get the last journal for this prefix and increment its numeric suffix
+        $last = static::where('journal_no', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->first();
 
-        return sprintf('JRN/%s/%s/%04d', $year, $month, $count);
+        if (! $last) {
+            $next = 1;
+        } else {
+            $parts = explode('/', $last->journal_no);
+            $suffix = intval(end($parts));
+            $next = $suffix + 1;
+        }
+
+        return sprintf('%s%04d', $prefix, $next);
     }
 }
