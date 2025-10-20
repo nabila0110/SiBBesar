@@ -4,29 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Journal;
-use App\Models\JournalDetail;
-use App\Models\Receivable;
-use App\Models\Payable;
-use App\Models\Asset;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $cashAccount = Account::where('type','asset')->where('code','like','1%')->first();
-        $cashBalance = $cashAccount ? ($cashAccount->balance_debit - $cashAccount->balance_credit) : 0;
+        // Calculate financial summary
+        $cashAccount = Account::where('code', 'like', '1-1%')->get();
+        $saldoKas = $cashAccount->sum(function($acc) {
+            return $acc->getBalance();
+        });
 
-        $hutang = Payable::sum('remaining_amount');
-        $piutang = Receivable::sum('remaining_amount');
+        $receivableAccount = Account::where('code', 'like', '1-2%')->get();
+        $piutangUsaha = $receivableAccount->sum(function($acc) {
+            return $acc->getBalance();
+        });
 
-        $journalCount = Journal::count();
+        $payableAccount = Account::where('code', 'like', '2-1%')->get();
+        $hutangUsaha = $payableAccount->sum(function($acc) {
+            return $acc->getBalance();
+        });
 
-        return view('dashboard', [
-            'cashBalance' => $cashBalance,
-            'hutang' => $hutang,
-            'piutang' => $piutang,
-            'journalCount' => $journalCount,
-        ]);
+        $recentJournals = Journal::with('details.account')
+            ->orderBy('transaction_date', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('dashboard', compact(
+            'saldoKas', 'piutangUsaha', 'hutangUsaha', 'recentJournals'
+        ));
     }
 }
