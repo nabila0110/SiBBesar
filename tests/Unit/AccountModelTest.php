@@ -9,9 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AccountModelTest extends TestCase
 {
-    use RefreshDatabase; //merefresh database setiap kali ada testing:)
+    use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_account_belongs_to_category()
     {
         $category = AccountCategory::factory()->create();
@@ -21,7 +21,7 @@ class AccountModelTest extends TestCase
         $this->assertEquals($category->id, $account->category->id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_account_has_journal_details_relationship()
     {
         $account = Account::factory()->create();
@@ -32,7 +32,7 @@ class AccountModelTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_account_balance_starts_at_zero()
     {
         $account = Account::factory()->create();

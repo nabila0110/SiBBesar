@@ -12,7 +12,7 @@ class JournalModelTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_has_details_relationship()
     {
         $journal = Journal::factory()->create();
@@ -23,7 +23,7 @@ class JournalModelTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_belongs_to_user()
     {
         $user = User::factory()->create();
@@ -33,7 +33,7 @@ class JournalModelTest extends TestCase
         $this->assertEquals($user->id, $journal->creator->id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_number_format_is_correct()
     {
         $journalNo = Journal::generateJournalNo();
@@ -44,7 +44,7 @@ class JournalModelTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_journal_number_increments()
     {
         $firstNo = Journal::generateJournalNo();

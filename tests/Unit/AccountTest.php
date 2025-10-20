@@ -10,7 +10,7 @@ class AccountTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_returns_cached_balance_when_no_date_range()
     {
         $account = Account::factory()->create([
@@ -21,7 +21,7 @@ class AccountTest extends TestCase
         $this->assertEquals(300, $account->getBalance());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function it_computes_balance_from_journal_details_when_date_range_provided()
     {
         $account = Account::factory()->create();
