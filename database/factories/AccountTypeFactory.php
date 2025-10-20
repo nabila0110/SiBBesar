@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\AccountType;
+use App\Models\AccountCategory;
 
 class AccountTypeFactory extends Factory
 {
@@ -14,6 +15,8 @@ class AccountTypeFactory extends Factory
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence,
+            'code' => $this->faker->unique()->bothify('T?#'),
+            'category_id' => AccountCategory::factory(),
         ];
     }
 }
