@@ -27,6 +27,24 @@ Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+// Handle login POST from the login form
+Route::post('/login', function (Request $request) {
+    $credentials = $request->validate([
+        'email' => 'required|string',
+        'password' => 'required|string',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->intended(route('dashboard'));
+    }
+
+    return back()->withErrors(['email' => 'The provided credentials do not match our records.'])->withInput();
+});
+
 Route::resource('accounts', AccountController::class);
 Route::resource('journals', JournalController::class);
 // Journal details handled via nested routes for creation/update/destroy
