@@ -42,10 +42,13 @@ class ReportController extends Controller
         $expenses = Account::where('type', 'expense')->get();
 
         $revenueData = $revenues->map(function($acc) use ($startDate, $endDate) {
+            // Revenue accounts typically have credit normal balance; getBalance returns debit-credit,
+            // which will be negative when credits > debits. Use absolute value to present revenue as positive.
+            $bal = $acc->getBalance($startDate, $endDate);
             return [
                 'code' => $acc->code,
                 'name' => $acc->name,
-                'amount' => $acc->getBalance($startDate, $endDate),
+                'amount' => $bal < 0 ? abs($bal) : $bal,
             ];
         });
 

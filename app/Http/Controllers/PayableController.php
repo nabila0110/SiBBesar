@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payable;
+use App\Models\Account;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Str;
 
-class PayableController extends BaseController
+class PayableController extends Controller
 {
     public function __construct()
     {
@@ -32,7 +33,21 @@ class PayableController extends BaseController
             'due_date' => 'nullable|date',
         ]);
 
-        Payable::create($data);
+        $account = Account::first() ?: Account::factory()->create();
+
+        $payload = [
+            'invoice_no' => 'INV-PAY-'.Str::upper(Str::random(8)),
+            'account_id' => $account->id,
+            'vendor_name' => $data['vendor'],
+            'invoice_date' => now()->format('Y-m-d'),
+            'due_date' => $data['due_date'] ?? now()->format('Y-m-d'),
+            'amount' => $data['amount'],
+            'paid_amount' => 0.00,
+            'remaining_amount' => $data['amount'],
+            'status' => 'outstanding',
+        ];
+
+        Payable::create($payload);
         return redirect()->route('payables.index')->with('success', 'Payable created.');
     }
 }

@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Routing\Controller as BaseController;
-
-class AuditLogController extends BaseController
+class AuditLogController extends Controller
 {
     public function __construct()
     {
