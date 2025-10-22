@@ -55,10 +55,45 @@ class ReportTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function test_trial_balance_contains_accounts_with_balances()
+    {
+        // create a journal and a detail that affects the asset account balance
+        $journal = Journal::factory()->create([
+            'created_by' => $this->user->id,
+            'transaction_date' => now()->format('Y-m-d'),
+        ]);
+
+        \App\Models\JournalDetail::create([
+            'journal_id' => $journal->id,
+            'account_id' => $this->assetAccount->id,
+            'description' => 'Asset purchase',
+            'debit' => 100000,
+            'credit' => 0,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('reports.trial-balance', [
+                'start_date' => now()->subDay()->format('Y-m-d'),
+                'end_date' => now()->addDay()->format('Y-m-d'),
+            ]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('data');
+        $data = $response->viewData('data');
+        $this->assertIsIterable($data);
+        $found = collect($data)->firstWhere('code', $this->assetAccount->code);
+        $this->assertNotNull($found);
+        $this->assertGreaterThan(0, $found['debit']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_can_view_income_statement()
     {
         $response = $this->actingAs($this->user)
-            ->get(route('reports.income-statement'));
+            ->get(route('reports.income-statement', [
+                'start_date' => '2024-01-01',
+                'end_date' => '2024-12-31',
+            ]));
 
         $response->assertStatus(200);
         $response->assertViewIs('reports.income-statement');
@@ -74,6 +109,27 @@ class ReportTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('reports.balance-sheet');
         $response->assertViewHas(['assetData', 'liabilityData', 'equityData']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function test_balance_sheet_totals()
+    {
+        // Add a transaction to asset account so totals are non-zero
+        $journal = Journal::factory()->create(['created_by' => $this->user->id]);
+        \App\Models\JournalDetail::create([
+            'journal_id' => $journal->id,
+            'account_id' => $this->assetAccount->id,
+            'description' => 'Purchase',
+            'debit' => 50000,
+            'credit' => 0,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('reports.balance-sheet'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('totalAssets');
+        $this->assertGreaterThan(0, $response->viewData('totalAssets'));
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -110,6 +166,32 @@ class ReportTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function test_general_ledger_filters_by_date_range()
+    {
+        $journal = Journal::factory()->create([
+            'created_by' => $this->user->id,
+            'transaction_date' => '2024-05-01',
+        ]);
+
+        \App\Models\JournalDetail::create([
+            'journal_id' => $journal->id,
+            'account_id' => $this->assetAccount->id,
+            'description' => 'Dated entry',
+            'debit' => 1000,
+            'credit' => 0,
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('reports.general-ledger', [
+            'account_id' => $this->assetAccount->id,
+            'start_date' => '2024-01-01',
+            'end_date' => '2024-12-31',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertNotEmpty($response->viewData('ledgerData'));
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function test_income_statement_calculates_net_income()
     {
         // Create revenue and expense journals
@@ -137,10 +219,16 @@ class ReportTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->get(route('reports.income-statement'));
+            ->get(route('reports.income-statement', [
+                'start_date' => '2024-01-01',
+                'end_date' => '2024-12-31',
+            ]));
 
         $response->assertStatus(200);
         // Net income should be 2,000,000 (5M revenue - 3M expense)
+        $response->assertViewHas('netIncome');
+        $viewNetIncome = $response->viewData('netIncome');
+        $this->assertEquals(2000000, $viewNetIncome);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
