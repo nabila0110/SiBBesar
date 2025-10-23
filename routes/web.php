@@ -66,3 +66,8 @@ Route::resource('companies', CompanyController::class)->only(['index','edit']);
 Route::resource('account-categories', AccountCategoryController::class)->only(['index']);
 Route::resource('account-types', AccountTypeController::class)->only(['index']);
 Route::resource('audit-logs', AuditLogController::class)->only(['index']);
+
+use App\Http\Controllers\PPh21Controller;
+
+Route::get('/pph21', [PPh21Controller::class, 'index'])->name('pph21.index');
+Route::post('/pph21/calculate', [PPh21Controller::class, 'calculate'])->name('pph21.calculate');
