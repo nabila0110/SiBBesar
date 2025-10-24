@@ -105,8 +105,8 @@
             <div class="nav-links">
                 <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">🏠 Dashboard</a>
                 <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Persediaan</div>
-                <a href="{{ route('jenis-barang.index') }}" class="{{ request()->is('jenis-barang*') ? 'active' : '' }}">🧩 Jenis Barang</a>
-                <a href="{{ route('merk-barang.index') }}" class="{{ request()->is('merk-barang*') ? 'active' : '' }}">🏷️ Merek Barang</a>
+                <a href="{{ route('jenis_barang.index') }}" class="{{ request()->is('jenis_barang*') ? 'active' : '' }}">🧩 Jenis Barang</a>
+                <a href="{{ route('merk_barang.index') }}" class="{{ request()->is('merk_barang*') ? 'active' : '' }}">🏷️ Merek Barang</a>
                 <a href="{{ route('supplier.index') }}" class="{{ request()->is('supplier*') ? 'active' : '' }}">🚚 Supplier Barang</a>
             </div>
         </div>
