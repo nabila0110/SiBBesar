@@ -4,7 +4,7 @@
 <h1>🧩 Tambah Jenis Barang</h1>
 
 <div class="card">
-    <form action="{{ route('jenis-barang.store') }}" method="POST">
+    <form action="{{ route('jenis_barang.store') }}" method="POST">
         @csrf
 
         <div style="margin-bottom:15px;">
@@ -22,7 +22,7 @@
                 Simpan
             </button>
 
-            <a href="{{ route('jenis-barang.index') }}"
+            <a href="{{ route('jenis_barang.index') }}"
                 style="flex:1;text-align:center;padding:10px 20px;border:none;
                 border-radius:6px;background:#dc3545;color:white;text-decoration:none;
                 font-weight:bold;display:inline-block;cursor:pointer;transition:0.3s;">
