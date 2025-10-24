@@ -1,107 +1,17 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard - SiBBesar')
+
+@section('content')
 @php
-    // Controller should pass: $cashBalance, $hutang, $piutang, $journalCount
-    $cashBalance = $cashBalance ?? 0;
-    $hutangUsaha = $hutang ?? 0;
-    $piutangUsaha = $piutang ?? 0;
+    // Controller should pass: $saldoKas, $hutangUsaha, $piutangUsaha, $journalCount
+    $cashBalance = $saldoKas ?? 0;
+    $hutangUsaha = $hutangUsaha ?? 0;
+    $piutangUsaha = $piutangUsaha ?? 0;
     $jurnal = $journalCount ?? 0;
 @endphp
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SiBBesar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg1: #8e66c7;
-            --bg2: #b06ab3;
-            --panel: rgba(255,255,255,0.12);
-            --panel2: rgba(255,255,255,0.06);
-            --accent: #7b76a6;
-            --white: #ffffff;
-        }
-
-        .sidebar {
-            width: 240px;
-            background: var(--panel);
-            padding: 25px 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-right: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .sidebar h3 {
-            color: var(--white);
-            text-align: center;
-            font-weight: 700;
-            margin-bottom: 30px;
-        }
-
-        .nav-links a {
-            display: block;
-            color: var(--white);
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background 0.3s;
-            font-weight: 500;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            background: var(--accent);
-            color: #111;
-        }
-    </style>
-</head>
-<body>
-    <div style="display:flex;min-height:100vh;font-family: 'Inter', sans-serif;background: linear-gradient(135deg, #8e66c7, #b06ab3);color:#ffffff;">
-        <div class="sidebar">
-            <div>
-                <h3>📦 SiBBesar</h3>
-                <div class="nav-links">
-                    <a href="{{ route('dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">🏠 Dashboard</a>
-                    <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Data</div>
-                    <a href="#" class="">📋 Daftar Perusahaan</a>
-                    <a href="#" class="">💰 Daftar Hutang</a>
-                    <a href="#" class="">💵 Daftar Piutang</a>
-                    <a href="#" class="">📦 Daftar Aset</a>
-                    <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Persediaan</div>
-                    <a href="{{ route('jenis_barang.index') }}" class="{{ request()->is('jenis_barang*') ? 'active' : '' }}">🧩 Jenis Barang</a>
-                    <a href="{{ route('merk-barang.index') }}" class="{{ request()->is('merk-barang*') ? 'active' : '' }}">🏷️ Merek Barang</a>
-                    <a href="{{ route('supplier.index') }}" class="{{ request()->is('supplier*') ? 'active' : '' }}">🚚 Supplier Barang</a>
-                    <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Akuntansi</div>
-                    <a href="{{ route('accounts.index') }}" class="{{ request()->is('accounts*') ? 'active' : '' }}">👤 Daftar Akun</a>
-                    <a href="{{ route('journals.index') }}" class="{{ request()->is('journals*') ? 'active' : '' }}">📝 Jurnal Umum</a>
-                    <a href="{{ route('reports.general-ledger') }}" class="{{ request()->is('reports/general-ledger*') ? 'active' : '' }}">📖 Buku Besar</a>
-                    <a href="{{ route('reports.trial-balance') }}" class="{{ request()->is('reports/trial-balance*') ? 'active' : '' }}">📊 Neraca Saldo Awal</a>
-                    <a href="{{ route('reports.balance-sheet') }}" class="{{ request()->is('reports/balance-sheet*') ? 'active' : '' }}">📉 Neraca Saldo Akhir</a>
-                    <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Perusahaan</div>
-                    <a href="{{ route('companies.index') }}" class="{{ request()->is('companies*') ? 'active' : '' }}">🏢 Daftar Perusahaan</a>
-                    <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Laporan</div>
-                    <a href="{{ route('reports.balance-sheet') }}" class="{{ request()->is('reports/balance-sheet*') ? 'active' : '' }}">💼 Laporan Posisi Keuangan</a>
-                    <a href="{{ route('reports.income-statement') }}" class="{{ request()->is('reports/income-statement*') ? 'active' : '' }}">💰 Laporan Laba Rugi</a>
-                    <div style="margin: 20px 0 10px 0; font-size: 18px; font-weight: bold; color: var(--white); text-align: left;">Penghasilan</div>
-                    <a href="#" class="">📊 Pajak Penghasilan</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <main style="flex:1;padding:30px;">
-            <div class="header">
-                <h1>Dashboard</h1>
-                <div class="user-info">
-                    <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
-                    <div>
-                        <div style="font-weight: 600; font-size: 14px;">Moni Roy</div>
-                        <div style="font-size: 12px; color: #718096;">Admin</div>
-                    </div>
-                </div>
-            </div>
+<h1>Dashboard</h1>
 
             <!-- Stats Grid -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px;">
@@ -214,7 +124,4 @@
                     </tbody>
                 </table>
             </div>
-        </main>
-    </div>
-</body>
-</html>
+@endsection
