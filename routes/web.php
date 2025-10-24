@@ -1,7 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
+/*
+|--------------------------------------------------------------------------
+| AUTH & DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+// Halaman login (root diarahkan ke login)
 Route::get('/', function () {
     return view('auth.login');
 });
@@ -19,18 +28,20 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\AccountCategoryController;
 use App\Http\Controllers\AccountTypeController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\MerkBarangController;
+use App\Http\Controllers\JenisBarangController;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+// Dashboard (hanya bisa diakses jika sudah login)
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard')
+    ->middleware('auth');
 
-// Minimal login route so tests that expect route('login') resolve. Adjust to your auth scaffold later.
+// Login routes
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-
-// Handle login POST from the login form
 Route::post('/login', function (Request $request) {
     $credentials = $request->validate([
         'email' => 'required|string',
@@ -42,32 +53,56 @@ Route::post('/login', function (Request $request) {
         return redirect()->intended(route('dashboard'));
     }
 
-    return back()->withErrors(['email' => 'The provided credentials do not match our records.'])->withInput();
+    return redirect('/login')->withErrors([
+        'email' => 'Email atau password tidak sesuai.',
+    ])->withInput();
 });
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT ROUTE
+|--------------------------------------------------------------------------
+*/
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| ORIGINAL SYSTEM ROUTES
+|--------------------------------------------------------------------------
+*/
 
 Route::resource('accounts', AccountController::class);
 Route::resource('journals', JournalController::class);
-// Journal details handled via nested routes for creation/update/destroy
+
+// Journal Detail (nested)
 Route::post('journals/{journal}/details', [JournalDetailController::class, 'store'])->name('journals.details.store');
 Route::put('journal-details/{journalDetail}', [JournalDetailController::class, 'update'])->name('journal-details.update');
 Route::delete('journal-details/{journalDetail}', [JournalDetailController::class, 'destroy'])->name('journal-details.destroy');
 
+// Hutang, Piutang, Aset, User
 Route::resource('receivables', ReceivableController::class)->only(['index','create','store']);
 Route::resource('payables', PayableController::class)->only(['index','create','store']);
 Route::resource('assets', AssetController::class)->only(['index','create','store']);
 Route::resource('users', UserController::class)->only(['index','edit','update']);
 
+// Laporan
 Route::get('reports/trial-balance', [ReportController::class, 'trialBalance'])->name('reports.trial-balance');
 Route::get('reports/income-statement', [ReportController::class, 'incomeStatement'])->name('reports.income-statement');
 Route::get('reports/balance-sheet', [ReportController::class, 'balanceSheet'])->name('reports.balance-sheet');
 Route::get('reports/general-ledger', [ReportController::class, 'generalLedger'])->name('reports.general-ledger');
 
+// Perusahaan, Kategori, Jenis, Audit Log
 Route::resource('companies', CompanyController::class)->only(['index','edit']);
 Route::resource('account-categories', AccountCategoryController::class)->only(['index']);
 Route::resource('account-types', AccountTypeController::class)->only(['index']);
 Route::resource('audit-logs', AuditLogController::class)->only(['index']);
 
-use App\Http\Controllers\PPh21Controller;
-
-Route::get('/pph21', [PPh21Controller::class, 'index'])->name('pph21.index');
-Route::post('/pph21/calculate', [PPh21Controller::class, 'calculate'])->name('pph21.calculate');
+// Persediaan
+Route::resource('supplier', SupplierController::class);
+Route::resource('merk-barang', MerkBarangController::class);
+Route::resource('jenis_barang', JenisBarangController::class);

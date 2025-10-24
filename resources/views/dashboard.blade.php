@@ -1,3 +1,11 @@
+@php
+    // Controller should pass: $cashBalance, $hutang, $piutang, $journalCount
+    $cashBalance = $cashBalance ?? 0;
+    $hutangUsaha = $hutang ?? 0;
+    $piutangUsaha = $piutang ?? 0;
+    $jurnal = $journalCount ?? 0;
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,113 +13,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - SiBBesar</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f5f7fa;
-            color: #2d3748;
-        }
-
-        .menu-section {
-            margin: 20px 0;
-            padding: 0 10px;
-        }
-
-        .menu-label {
-            padding: 8px 20px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #a0aec0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 20px;
-            color: #4a5568;
-            text-decoration: none;
-            border-radius: 8px;
-            margin: 2px 10px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .menu-item:hover {
-            background-color: #f7fafc;
-            color: #4c6fff;
-        }
-
-        .menu-item.active {
-            background-color: #4c6fff;
-            color: white;
-        }
-
-        .menu-item span {
-            margin-right: 10px;
-            font-size: 16px;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            color: #2d3748;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-    </style>
+    <!-- Inline styles removed from style block; styles applied inline on elements -->
 </head>
 <body>
-    <div style="display:flex;min-height:100vh;">
+    <div style="display:flex;min-height:100vh;font-family: 'Inter', sans-serif;background-color:#f5f7fa;color:#2d3748;">
         <!-- Sidebar -->
-        <aside style="width:250px;background:white;padding:20px 0;box-shadow:2px 0 5px rgba(0,0,0,0.05);overflow-y:auto;">
+        <aside style="width:250px;background:white;padding:20px 0;box-shadow:2px 0 5px rgba(0,0,0,0.05);">
             <div style="padding:0 20px 20px;font-size:20px;font-weight:700;color:#4c6fff;">SiBBesar</div>
             
-            <!-- Main Menu -->
             <div style="margin:20px 0;padding:0 10px;">
-                <a href="#" class="menu-item active">
-                    <span>📊</span> Dashboard
-                </a>
-                <a href="#" class="menu-item">
-                    <span>🏢</span> Daftar Perusahaan
-                </a>
-                <a href="#" class="menu-item">
-                    <span>💰</span> Daftar Hutang
-                </a>
-                <a href="#" class="menu-item">
-                    <span>💵</span> Daftar Piutang
-                </a>
-                <a href="#" class="menu-item">
-                    <span>📦</span> Daftar Aset
-                </a>
+                <a href="#" style="display:block;padding:12px 20px;color:#fff;background:#4c6fff;border-radius:8px;margin:0 10px;text-decoration:none;">📊 Dashboard</a>
+                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">📋 Daftar Perusahaan</a>
+                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">💰 Daftar Hutang</a>
+                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">💵 Daftar Piutang</a>
+                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">📦 Daftar Aset</a>
             </div>
 
-            <!-- Akuntansi Section -->
             <div class="menu-section">
                 <div class="menu-label">Akuntansi</div>
                 <a href="#" class="menu-item">
@@ -131,7 +48,6 @@
                 </a>
             </div>
 
-            <!-- Perusahaan Section -->
             <div class="menu-section">
                 <div class="menu-label">Perusahaan</div>
                 <a href="#" class="menu-item">
@@ -139,7 +55,6 @@
                 </a>
             </div>
 
-            <!-- Laporan Section -->
             <div class="menu-section">
                 <div class="menu-label">Laporan</div>
                 <a href="#" class="menu-item">
@@ -150,10 +65,9 @@
                 </a>
             </div>
 
-            <!-- Penghasilan Section -->
             <div class="menu-section">
                 <div class="menu-label">Penghasilan</div>
-                <a href="{{ route('pph21.index') }}" class="menu-item">
+                <a href="#" class="menu-item">
                     <span>📊</span> Pajak Penghasilan
                 </a>
             </div>
@@ -177,25 +91,25 @@
                 <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Saldo Kas</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">150,000,000</div>
+                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($cashBalance, 0, ',', '.') }}</div>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Lihat disini</a>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#e0e7ff;color:#4c6fff;">💵</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#e0e7ff;color:#4c6fff;">👥</div>
                 </div>
 
                 <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Hutang Usaha</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">45,000,000</div>
+                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($hutangUsaha, 0, ',', '.') }}</div>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fef3c7;color:#f59e0b;">💰</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fef3c7;color:#f59e0b;">📦</div>
                 </div>
 
                 <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Piutang Usaha</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">30,000,000</div>
+                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($piutangUsaha, 0, ',', '.') }}</div>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
                     </div>
                     <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#d1fae5;color:#10b981;">📈</div>
@@ -206,7 +120,7 @@
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Data Akun</h3>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Lihat disini</a>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fed7d7;color:#f56565;">👤</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fed7d7;color:#f56565;">🕐</div>
                 </div>
             </div>
 
@@ -216,7 +130,7 @@
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Ubah Perusahaan</h3>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#e0e7ff;color:#4c6fff;">🏢</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#e0e7ff;color:#4c6fff;">👥</div>
                 </div>
 
                 <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
@@ -224,7 +138,7 @@
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Neraca</h3>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fef3c7;color:#f59e0b;">⚖️</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fef3c7;color:#f59e0b;">📦</div>
                 </div>
 
                 <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
@@ -232,15 +146,15 @@
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Laba Rugi</h3>
                         <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#d1fae5;color:#10b981;">💹</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#d1fae5;color:#10b981;">📈</div>
                 </div>
 
                 <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
                         <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Jurnal</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">125</div>
+                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($jurnal,0,',','.') }}</div>
                     </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fed7d7;color:#f56565;">📝</div>
+                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fed7d7;color:#f56565;">🕐</div>
                 </div>
             </div>
 
@@ -262,22 +176,22 @@
                     <tbody>
                         <tr>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Jumlah Jurnal</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">125</td>
+                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($jurnal,0,',','.') }}</td>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">-</td>
                         </tr>
                         <tr>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Saldo Kas</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">150,000,000</td>
+                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($cashBalance,0,',','.') }}</td>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Cached from accounts</td>
                         </tr>
                         <tr>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Hutang Usaha (sisa)</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">45,000,000</td>
+                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($hutangUsaha,0,',','.') }}</td>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Sum of payables.remaining_amount</td>
                         </tr>
                         <tr>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Piutang Usaha (sisa)</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">30,000,000</td>
+                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($piutangUsaha,0,',','.') }}</td>
                             <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Sum of receivables.remaining_amount</td>
                         </tr>
                     </tbody>
