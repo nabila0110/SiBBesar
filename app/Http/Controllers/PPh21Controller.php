@@ -6,22 +6,11 @@ use Illuminate\Http\Request;
 
 class PPh21Controller extends Controller
 {
-    /**
-     * Menampilkan halaman kalkulator PPh 21
-     *
-     * @return \Illuminate\View\View
-     */
     public function index()
     {
         return view('pph21.index');
     }
 
-    /**
-     * Menghitung PPh 21 berdasarkan data yang dikirim
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function calculate(Request $request)
     {
         // Validasi input
@@ -40,56 +29,52 @@ class PPh21Controller extends Controller
         $npwp = $validated['npwp'] ?? false;
         $statusTanggungan = $validated['status_tanggungan'];
 
-        // 1. Hitung Penghasilan Bruto
+        // 1. Penghasilan Bruto
         $gajiTahunan = $gajiPokok * 12;
         $bruto = $gajiTahunan + $thr;
 
-        // 2. Hitung Biaya Jabatan (5% dari bruto, maksimal 6 juta per tahun)
+        // 2. Biaya Jabatan (5% dari bruto, max 6 juta)
         $biayaJabatan = min($bruto * 0.05, 6000000);
 
-        // 3. Hitung Penghasilan Netto
+        // 3. Penghasilan Netto
         $netto = $bruto - $biayaJabatan;
 
-        // 4. Hitung PTKP (Penghasilan Tidak Kena Pajak)
+        // 4. PTKP
         $ptkp = $this->hitungPTKP($statusTanggungan);
 
-        // 5. Hitung PKP (Penghasilan Kena Pajak)
+        // 5. PKP
         $pkp = max($netto - $ptkp, 0);
-        $pkpBulat = floor($pkp / 1000) * 1000; // Pembulatan ke bawah per 1000
+        $pkpBulat = floor($pkp / 1000) * 1000;
 
-        // 6. Hitung PPh Progresif
-        $pphProgresif = $this->hitungPPhProgresif($pkpBulat);
+        // 6. PPh Progresif (sesuai NPWP atau tidak)
+        $pphProgresif = $this->hitungPPhProgresif($pkpBulat, $npwp);
 
-        // 7. Jika tidak punya NPWP, tarif naik 20%
-        $pphFinal = $npwp ? $pphProgresif['total'] : $pphProgresif['total'] * 1.2;
+        // 7. PPh Final
+        $pphFinal = $pphProgresif['total'];
 
-        // 8. Hitung Gaji Setelah Pajak
+        // 8. Gaji Setelah Pajak
         $gajiSetelahPPhTahun = $bruto - $pphFinal;
         $gajiSetelahPPhBulan = $gajiSetelahPPhTahun / 12;
 
-        // 9. Hitung Ratio Pajak terhadap Gaji
+        // 9. Rasio Pajak
         $ratio = $gajiPokok > 0 ? ($pphFinal / $gajiTahunan * 100) : 0;
 
-        // 10. Susun hasil perhitungan
+        // 10. Hasil akhir
         $hasil = [
-            // Kesimpulan
             'pajakTahun' => round($pphFinal),
             'gajiSetelahPPhTahun' => round($gajiSetelahPPhTahun),
             'gajiSetelahPPhBulan' => round($gajiSetelahPPhBulan),
             'ratio' => round($ratio, 2),
 
-            // Rincian
             'gaji' => $gajiPokok,
             'gajiTahun' => $gajiTahunan,
             'thr' => $thr,
             'tanggungan' => $tanggungan,
 
-            // Perhitungan
             'bruto' => round($bruto),
             'biayaJabatan' => round($biayaJabatan),
             'netto' => round($netto),
 
-            // PPh Terhutang (5 layer progresif)
             'pph5' => round($pphProgresif['layer1']),
             'pph15' => round($pphProgresif['layer2']),
             'pph25' => round($pphProgresif['layer3']),
@@ -97,10 +82,9 @@ class PPh21Controller extends Controller
             'pph35' => round($pphProgresif['layer5']),
             'totalPPh' => round($pphFinal),
 
-            // Data tambahan
             'ptkp' => $ptkp,
             'pkp' => round($pkpBulat),
-            'multiplier_npwp' => $npwp ? 1 : 1.2
+            'npwp' => $npwp,
         ];
 
         return response()->json([
@@ -110,111 +94,88 @@ class PPh21Controller extends Controller
         ]);
     }
 
-    /**
-     * Menghitung PTKP berdasarkan status tanggungan
-     *
-     * @param  string  $statusTanggungan
-     * @return float
-     */
     private function hitungPTKP($statusTanggungan)
     {
-        // PTKP 2024 (sesuaikan dengan tahun berlaku)
-        $ptkpDasar = 54000000; // TK/0 (Tidak Kawin, 0 tanggungan)
-        $ptkpKawin = 4500000;  // Tambahan untuk menikah
-        $ptkpPerTanggungan = 4500000; // Per tanggungan (max 3)
+        $ptkpDasar = 54000000;
+        $ptkpKawin = 4500000;
+        $ptkpPerTanggungan = 4500000;
 
-        // Default: TK (Tidak Kawin)
         $totalPTKP = $ptkpDasar;
 
-        // Jika status kawin
         if ($statusTanggungan === 'K') {
-            // K/0 (Kawin, 0 tanggungan)
             $totalPTKP = $ptkpDasar + $ptkpKawin;
         } elseif (strpos($statusTanggungan, 'K/') === 0) {
-            // K/1, K/2, K/3, dst
             $parts = explode('/', $statusTanggungan);
             $jumlahTanggungan = isset($parts[1]) ? intval($parts[1]) : 0;
-            
-            // Batasi maksimal 3 tanggungan
             $jumlahTanggungan = min($jumlahTanggungan, 3);
-            
             $totalPTKP = $ptkpDasar + $ptkpKawin + ($jumlahTanggungan * $ptkpPerTanggungan);
         }
 
         return $totalPTKP;
     }
 
-    /**
-     * Menghitung PPh progresif berdasarkan PKP
-     *
-     * @param  float  $pkp
-     * @return array
-     */
-    private function hitungPPhProgresif($pkp)
+    private function hitungPPhProgresif($pkp, $npwp = true)
     {
-        // Tarif PPh Progresif Pasal 17 (Per UU HPP)
-        $layers = [
-            ['batas' => 60000000, 'tarif' => 0.05],      // Layer 1: 0 - 60 juta (5%)
-            ['batas' => 250000000, 'tarif' => 0.15],     // Layer 2: 60 juta - 250 juta (15%)
-            ['batas' => 500000000, 'tarif' => 0.25],     // Layer 3: 250 juta - 500 juta (25%)
-            ['batas' => 5000000000, 'tarif' => 0.30],    // Layer 4: 500 juta - 5 miliar (30%)
-            ['batas' => PHP_FLOAT_MAX, 'tarif' => 0.35]  // Layer 5: > 5 miliar (35%)
+        // Tarif per lapisan berdasarkan NPWP (per 2023, tarif sudah benar)
+        if ($npwp) {
+            $tarif = [0.05, 0.15, 0.25, 0.30, 0.35];
+        } else {
+            // Non NPWP (kenaikan 20%)
+            $tarif = [0.06, 0.18, 0.30, 0.36, 0.42];
+        }
+
+        // Batas kumulatif setiap layer (batas atas)
+        $batasLayer = [
+            60000000,      // Layer 1: 0 - 60 juta
+            250000000,     // Layer 2: 60 juta - 250 juta
+            500000000,     // Layer 3: 250 juta - 500 juta
+            5000000000,    // Layer 4: 500 juta - 5 miliar
+            PHP_FLOAT_MAX  // Layer 5: > 5 miliar
         ];
 
         $pphPerLayer = [0, 0, 0, 0, 0];
         $sisaPkp = $pkp;
-        $batasKumulatif = 0;
-
-        foreach ($layers as $index => $layer) {
+        
+        // Hitung pajak secara bertingkat dari layer paling bawah
+        for ($i = 0; $i < 5; $i++) {
             if ($sisaPkp <= 0) break;
-
-            $batasLayer = $layer['batas'] - $batasKumulatif;
-            $penghasilanDiLayer = min($sisaPkp, $batasLayer);
             
-            $pphPerLayer[$index] = $penghasilanDiLayer * $layer['tarif'];
+            // Tentukan batas bawah layer ini
+            $batasBawah = ($i == 0) ? 0 : $batasLayer[$i - 1];
             
-            $sisaPkp -= $penghasilanDiLayer;
-            $batasKumulatif += $batasLayer;
+            // Hitung range layer ini
+            $rangeLayer = $batasLayer[$i] - $batasBawah;
+            
+            // PKP yang kena pajak di layer ini adalah minimum antara sisa PKP dengan range layer
+            $kenaPajak = min($sisaPkp, $rangeLayer);
+            
+            // Hitung pajak layer ini
+            $pphPerLayer[$i] = $kenaPajak * $tarif[$i];
+            
+            // Kurangi sisa PKP
+            $sisaPkp -= $kenaPajak;
         }
 
         return [
-            'layer1' => $pphPerLayer[0],  // 5%
-            'layer2' => $pphPerLayer[1],  // 15%
-            'layer3' => $pphPerLayer[2],  // 25%
-            'layer4' => $pphPerLayer[3],  // 30%
-            'layer5' => $pphPerLayer[4],  // 35%
+            'layer1' => $pphPerLayer[0],
+            'layer2' => $pphPerLayer[1],
+            'layer3' => $pphPerLayer[2],
+            'layer4' => $pphPerLayer[3],
+            'layer5' => $pphPerLayer[4],
             'total' => array_sum($pphPerLayer)
         ];
     }
 
-    /**
-     * Export hasil perhitungan ke PDF (opsional)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function exportPDF(Request $request)
     {
-        // TODO: Implementasi export ke PDF menggunakan library seperti DomPDF atau TCPDF
-        // Contoh: return PDF::loadView('pph21.pdf', $data)->download('pph21.pdf');
-        
         return response()->json([
             'success' => false,
             'message' => 'Fitur export PDF belum diimplementasikan'
         ], 501);
     }
 
-    /**
-     * Simpan history perhitungan (opsional)
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function saveHistory(Request $request)
     {
-        // TODO: Implementasi save ke database
-        // Contoh: PPh21History::create($request->all());
-        
         return response()->json([
             'success' => false,
             'message' => 'Fitur save history belum diimplementasikan'
