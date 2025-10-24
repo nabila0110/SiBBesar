@@ -28,6 +28,9 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\AccountCategoryController;
 use App\Http\Controllers\AccountTypeController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\MerkBarangController;
+use App\Http\Controllers\JenisBarangController;
 
 // Dashboard (hanya bisa diakses jika sudah login)
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -99,21 +102,7 @@ Route::resource('account-categories', AccountCategoryController::class)->only(['
 Route::resource('account-types', AccountTypeController::class)->only(['index']);
 Route::resource('audit-logs', AuditLogController::class)->only(['index']);
 
-/*
-|--------------------------------------------------------------------------
-| BARANG MANAGEMENT (Supplier / Merk / Jenis)
-|--------------------------------------------------------------------------
-*/
-
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\MerkBarangController;
-use App\Http\Controllers\JenisBarangController;
-
-// Supplier Barang
+// Persediaan
 Route::resource('supplier', SupplierController::class);
-
-// Merek Barang
 Route::resource('merk-barang', MerkBarangController::class);
-
-// Jenis Barang
-Route::resource('jenis-barang', JenisBarangController::class);
+Route::resource('jenis_barang', JenisBarangController::class);
