@@ -1,0 +1,336 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow-x: hidden; /* prevent horizontal scrolling */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 280px;
+    background-color: #ffffff;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 16px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+.sidebar-nav {
+    padding: 16px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #6b7280;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-item i {
+    width: 20px;
+    margin-right: 12px;
+    font-size: 16px;
+}
+
+.nav-item:hover {
+    background-color: #f3f4f6;
+    color: #4f46e5;
+}
+
+.nav-item.active {
+    background-color: #eef2ff;
+    color: #4f46e5;
+    border-right: 3px solid #4f46e5;
+}
+
+.nav-group {
+    margin: 16px 0;
+}
+
+.nav-group-title {
+    padding: 8px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #ffffff;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* base horizontal padding (right and left base) */
+    padding: 0 32px;
+    /* add left offset equal to sidebar width so navbar content doesn't overlap sidebar
+       when sidebar is visible; this will be overridden when sidebar is collapsed/hidden */
+    padding-left: calc(32px + 280px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: fixed; /* make navbar fixed so it doesn't shift between views */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1200; /* above sidebar */
+    transition: padding-left 0.22s ease;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background-color: #f3f4f6;
+    color: #4f46e5;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.user-profile:hover {
+    background-color: #f3f4f6;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.user-role {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.user-profile i {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    padding: 32px;
+    padding-top: calc(32px + 70px); /* add top padding equal to navbar height so content isn't hidden */
+    min-height: calc(100vh - 70px);
+}
+
+/* Collapsed sidebar state for desktop */
+.app-container.sidebar-collapsed .sidebar {
+    width: 80px;
+}
+
+.app-container.sidebar-collapsed .main-content {
+    margin-left: 80px;
+}
+
+.app-container.sidebar-collapsed .navbar {
+    /* when sidebar is collapsed, reduce the navbar left padding to match collapsed width */
+    padding-left: calc(32px + 80px);
+}
+
+.app-container.sidebar-collapsed .nav-item span {
+    display: none; /* hide text when collapsed to keep sidebar neat */
+}
+
+.app-container.sidebar-collapsed .nav-item i {
+    margin-right: 0;
+}
+
+.app-container.sidebar-collapsed .sidebar-nav .nav-item {
+    justify-content: center;
+    padding-left: 0;
+}
+
+.app-container.sidebar-collapsed .sidebar-header .logo {
+    font-size: 16px;
+}
+
+/* Hidden sidebar state: fully hide the sidebar (desktop hide) */
+.app-container.sidebar-hidden .sidebar {
+    transform: translateX(-100%);
+}
+
+.app-container.sidebar-hidden .main-content {
+    margin-left: 0;
+}
+
+.app-container.sidebar-hidden .navbar {
+    /* when sidebar is fully hidden, remove the extra left padding so navbar spans full width */
+    padding-left: 32px;
+}
+
+/* Fixed small hamburger when sidebar is hidden or on mobile */
+.sidebar-fixed-toggle {
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    z-index: 1201;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    border-radius: 8px;
+    display: none; /* shown only in states below */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.sidebar-fixed-toggle i {
+    color: #4f46e5;
+}
+
+/* Show fixed toggle when sidebar is hidden */
+.app-container.sidebar-hidden .sidebar-fixed-toggle {
+    display: block;
+}
+
+/* Always show the fixed toggle on smaller screens */
+@media (max-width: 1024px) {
+    .sidebar-fixed-toggle { display: block; }
+}
+
+/* Scrollbar Styles */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-280px);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 20px;
+    }
+
+    .navbar {
+        padding: 0 16px;
+    }
+
+    .user-info {
+        display: none;
+    }
+}
+
+/* Backdrop used on mobile when sidebar slides in */
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1150; /* between sidebar (1000) and navbar (1200) */
+    display: none;
+}
+
+.sidebar-backdrop.active {
+    display: block;
+}
+
+/* Hide header hamburger on small screens (use fixed toggle instead) */
+@media (max-width: 1024px) {
+    .sidebar-header-right .sidebar-toggle {
+        display: none;
+    }
+}
