@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class AssetController extends Controller
+class JenisBarangController extends Controller
 {
     /**
      * Display a listing of the resource.

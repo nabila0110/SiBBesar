@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as BaseController;
 
-class UserController extends BaseController
+class UserController extends Controller
 {
     public function __construct()
     {
