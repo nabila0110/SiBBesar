@@ -2,63 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JenisBarang;
 use Illuminate\Http\Request;
 
 class JenisBarangController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index(Request $request) {
+        $search = $request->get('search');
+        $jenisBarangs = JenisBarang::when($search, function ($query) use ($search) {
+            return $query->where('nama_jenis', 'like', '%' . $search . '%');
+        })->paginate(10);
+        return view('persediaan.jenis_barang.index', compact('jenisBarangs', 'search'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    public function create() {
+        return view('persediaan.jenis_barang.form');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function store(Request $request) {
+        $request->validate([
+            'nama_jenis' => 'required|unique:jenis_barangs,nama_jenis',
+        ]);
+
+        JenisBarang::create($request->all());
+        return redirect()->route('jenis_barang.index')->with('success', 'Jenis Barang berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+    public function edit($id) {
+        $jenisBarang = JenisBarang::findOrFail($id);
+        return view('persediaan.jenis_barang.edit', compact('jenisBarang'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+    public function update(Request $request, $id) {
+        $request->validate([
+            'nama_jenis' => 'required|unique:jenis_barangs,nama_jenis,' . $id,
+        ]);
+
+        $jenisBarang = JenisBarang::findOrFail($id);
+        $jenisBarang->update($request->all());
+        return redirect()->route('jenis_barang.index')->with('success', 'Jenis Barang berhasil diperbarui.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+    public function destroy($id) {
+        JenisBarang::findOrFail($id)->delete();
+        return back()->with('success', 'Jenis Barang berhasil dihapus.');
     }
 }

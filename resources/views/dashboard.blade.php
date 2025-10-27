@@ -1,90 +1,17 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard - SiBBesar')
+
+@section('content')
 @php
-    // Controller should pass: $cashBalance, $hutang, $piutang, $journalCount
-    $cashBalance = $cashBalance ?? 0;
-    $hutangUsaha = $hutang ?? 0;
-    $piutangUsaha = $piutang ?? 0;
+    // Controller should pass: $saldoKas, $hutangUsaha, $piutangUsaha, $journalCount
+    $cashBalance = $saldoKas ?? 0;
+    $hutangUsaha = $hutangUsaha ?? 0;
+    $piutangUsaha = $piutangUsaha ?? 0;
     $jurnal = $journalCount ?? 0;
 @endphp
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - SiBBesar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Inline styles removed from style block; styles applied inline on elements -->
-</head>
-<body>
-    <div style="display:flex;min-height:100vh;font-family: 'Inter', sans-serif;background-color:#f5f7fa;color:#2d3748;">
-        <!-- Sidebar -->
-        <aside style="width:250px;background:white;padding:20px 0;box-shadow:2px 0 5px rgba(0,0,0,0.05);">
-            <div style="padding:0 20px 20px;font-size:20px;font-weight:700;color:#4c6fff;">SiBBesar</div>
-            
-            <div style="margin:20px 0;padding:0 10px;">
-                <a href="#" style="display:block;padding:12px 20px;color:#fff;background:#4c6fff;border-radius:8px;margin:0 10px;text-decoration:none;">📊 Dashboard</a>
-                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">📋 Daftar Perusahaan</a>
-                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">💰 Daftar Hutang</a>
-                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">💵 Daftar Piutang</a>
-                <a href="#" style="display:block;padding:12px 20px;color:#4a5568;text-decoration:none;">📦 Daftar Aset</a>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-label">Akuntansi</div>
-                <a href="#" class="menu-item">
-                    <span>👤</span> Daftar Akun
-                </a>
-                <a href="#" class="menu-item">
-                    <span>📝</span> Jurnal Umum
-                </a>
-                <a href="#" class="menu-item">
-                    <span>📖</span> Buku Besar
-                </a>
-                <a href="#" class="menu-item">
-                    <span>📊</span> Neraca Saldo Awal
-                </a>
-                <a href="#" class="menu-item">
-                    <span>📉</span> Neraca Saldo Akhir
-                </a>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-label">Perusahaan</div>
-                <a href="#" class="menu-item">
-                    <span>📦</span> Data Barang
-                </a>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-label">Laporan</div>
-                <a href="#" class="menu-item">
-                    <span>💼</span> Laporan Posisi Keuangan
-                </a>
-                <a href="#" class="menu-item">
-                    <span>💰</span> Laporan Laba Rugi
-                </a>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-label">Penghasilan</div>
-                <a href="#" class="menu-item">
-                    <span>📊</span> Pajak Penghasilan
-                </a>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main style="flex:1;padding:30px;">
-            <div class="header">
-                <h1>Dashboard</h1>
-                <div class="user-info">
-                    <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
-                    <div>
-                        <div style="font-weight: 600; font-size: 14px;">Moni Roy</div>
-                        <div style="font-size: 12px; color: #718096;">Admin</div>
-                    </div>
-                </div>
-            </div>
+<h1>Dashboard</h1>
 
             <!-- Stats Grid -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px;">
@@ -197,7 +124,4 @@
                     </tbody>
                 </table>
             </div>
-        </main>
-    </div>
-</body>
-</html>
+@endsection

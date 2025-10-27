@@ -2,63 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    public function index(Request $request) {
+        $search = $request->get('search');
+        $suppliers = Supplier::when($search, function ($query) use ($search) {
+            return $query->where('nama_supplier', 'like', '%' . $search . '%')
+                         ->orWhere('kode_supplier', 'like', '%' . $search . '%');
+        })->paginate(10);
+        return view('persediaan.supplier.index', compact('suppliers', 'search'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    public function create() {
+        return view('persediaan.supplier.form');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function store(Request $request) {
+        $request->validate([
+            'kode_supplier' => 'required|unique:suppliers,kode_supplier',
+            'nama_supplier' => 'required',
+        ]);
+
+        Supplier::create($request->all());
+        return redirect()->route('supplier.index')->with('success', 'Supplier berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+    public function edit($id) {
+        $supplier = Supplier::findOrFail($id);
+        return view('persediaan.supplier.edit', compact('supplier'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+    public function update(Request $request, $id) {
+        $request->validate([
+            'kode_supplier' => 'required|unique:suppliers,kode_supplier,' . $id,
+            'nama_supplier' => 'required',
+        ]);
+
+        $supplier = Supplier::findOrFail($id);
+        $supplier->update($request->all());
+        return redirect()->route('supplier.index')->with('success', 'Supplier berhasil diperbarui.');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+    public function destroy($id) {
+        Supplier::findOrFail($id)->delete();
+        return back()->with('success', 'Supplier berhasil dihapus.');
     }
 }

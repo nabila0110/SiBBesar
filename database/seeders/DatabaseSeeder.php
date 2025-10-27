@@ -12,12 +12,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Create default user
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@accounting.com',
-            'password' => bcrypt('password'),
-        ]);
+        // Seed users
+        $this->call(UserSeeder::class);
 
         // Create company
         Company::create([

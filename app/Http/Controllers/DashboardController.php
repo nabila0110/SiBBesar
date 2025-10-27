@@ -41,7 +41,7 @@ class DashboardController extends Controller
         $saldoKas = $cashBalance;
 
         return view('dashboard', compact(
-            'saldoKas', 'piutangUsaha', 'hutangUsaha', 'recentJournals'
+            'saldoKas', 'piutangUsaha', 'hutangUsaha', 'recentJournals', 'journalCount'
         ));
     }
 }
