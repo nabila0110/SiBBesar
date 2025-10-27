@@ -1,0 +1,17 @@
+    body {
+      background-color: #f6f9fc;
+    }
+    .navbar {
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card {
+      border-radius: 10px;
+    }
+    .btn-primary {
+      background-color: #dc3545;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #c82333;
+    }

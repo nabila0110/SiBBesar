@@ -1,0 +1,44 @@
+    body {
+      background-color: #eef3f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background-color: #fff;
+    }
+
+    h3, h5 {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .btn-custom {
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-size: 14px;
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    .text-muted {
+      font-size: 14px;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background-color: #fff;
+      }
+      .card {
+        box-shadow: none;
+        border: none;
+      }
+    }

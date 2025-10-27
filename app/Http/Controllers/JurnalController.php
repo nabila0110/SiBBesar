@@ -2,84 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Journal;
-use App\Models\Account;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
-class JournalController extends Controller
+class JurnalController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        $query = Journal::with('details.account', 'creator');
-
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('transaction_date', [
-                $request->start_date, 
-                $request->end_date
-            ]);
-        }
-
-        $journals = $query->orderBy('transaction_date', 'desc')->paginate(20);
-        return view('journals.index', compact('journals'));
+        //
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        $accounts = Account::where('is_active', true)->get();
-        $journalNo = Journal::generateJournalNo();
-        return view('journals.create', compact('accounts', 'journalNo'));
+        //
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'transaction_date' => 'required|date',
-            'description' => 'required',
-            'details' => 'required|array|min:2',
-            'details.*.account_id' => 'required|exists:accounts,id',
-            'details.*.description' => 'nullable',
-            'details.*.debit' => 'required|numeric|min:0',
-            'details.*.credit' => 'required|numeric|min:0',
-        ]);
-
-        // Validate balanced journal
-        $totalDebit = collect($validated['details'])->sum('debit');
-        $totalCredit = collect($validated['details'])->sum('credit');
-
-        if ($totalDebit != $totalCredit) {
-            return back()->withErrors(['error' => 'Journal not balanced! Debit and Credit must be equal.']);
-        }
-
-    $userId = Auth::id();
-
-    DB::transaction(function () use ($validated, $totalDebit, $totalCredit, $userId) {
-            $journal = Journal::create([
-                'journal_no' => Journal::generateJournalNo(),
-                'transaction_date' => $validated['transaction_date'],
-                'description' => $validated['description'],
-                'total_debit' => $totalDebit,
-                'total_credit' => $totalCredit,
-                'created_by' => $userId,
-                // default to posted for test scenarios
-                'status' => 'posted',
-            ]);
-
-            foreach ($validated['details'] as $detail) {
-                if ($detail['debit'] > 0 || $detail['credit'] > 0) {
-                    $journal->details()->create($detail);
-                }
-            }
-        });
-
-        return redirect()->route('journals.index')
-            ->with('success', 'Journal entry created successfully');
+        //
     }
 
-    public function show(Journal $journal)
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
     {
-        $journal->load('details.account', 'creator');
-        return view('journals.show', compact('journal'));
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
     }
 }

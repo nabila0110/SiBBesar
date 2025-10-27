@@ -1,0 +1,21 @@
+   body {
+      background-color: #eef3f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    h3, h5 {
+      font-weight: 600;
+    }
+    .btn-custom {
+      padding: 8px 20px;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+    }
