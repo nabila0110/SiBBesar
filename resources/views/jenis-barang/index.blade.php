@@ -1,38 +1,67 @@
 @extends('layouts.app')
-@section('title', 'Jenis Barang')
+
+@section('title', 'Jenis Barang - SiBBesar')
+
 @section('content')
-<h1>🧩 Jenis Barang</h1>
-<div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <a href="{{ route('jenis_barang.create') }}" class="btn">+ Tambah Jenis Barang</a>
-        <form method="GET" action="{{ route('jenis_barang.index') }}" style="display:flex;gap:10px;">
-            <input type="text" name="search" value="{{ $search }}" placeholder="Cari jenis barang..." style="padding:8px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;background:var(--panel);color:var(--white);">
-            <button type="submit" class="btn">Cari</button>
-        </form>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">📦 Jenis Barang</h3>
+        <a href="{{ route('jenis-barang.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Tambah Jenis Barang
+        </a>
     </div>
-    <table>
-        <thead><tr><th>No</th><th>Nama Jenis</th><th>Aksi</th></tr></thead>
-        <tbody>
-            @forelse ($jenisBarangs as $jenis)
-            <tr>
-                <td>{{ $loop->iteration + ($jenisBarangs->currentPage() - 1) * $jenisBarangs->perPage() }}</td>
-                <td>{{ $jenis->nama_jenis }}</td>
-                <td>
-                    <a href="{{ route('jenis_barang.edit', $jenis->id) }}" class="btn" style="padding:5px 10px;font-size:13px;">✏️ Update</a>
-                    <form action="{{ route('jenis_barang.destroy', $jenis->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn" style="background:#f66;color:white;padding:5px 10px;font-size:13px;" onclick="return confirm('Apakah Anda yakin ingin menghapus?')">🗑️ Hapus</button>
-                    </form>
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="3" class="text-center">Belum ada data</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div style="margin-top:20px;text-align:center;">
-        {{ $jenisBarangs->appends(request()->query())->links() }}
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px;">No</th>
+                            <th>Jenis Barang</th>
+                            <th style="width: 150px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($jenisBarangs as $index => $item)
+                            <tr>
+                                <td class="fw-bold text-muted">{{ $jenisBarangs->firstItem() + $index }}</td>
+                                <td>{{ $item->nama_jenis }}</td>
+                                <td>
+                                    <a href="{{ route('jenis-barang.edit', $item->id) }}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form action="{{ route('jenis-barang.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">Belum ada data jenis barang</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($jenisBarangs->hasPages())
+                <nav aria-label="Page navigation" class="mt-4">
+                    {{ $jenisBarangs->links('pagination::bootstrap-5') }}
+                </nav>
+            @endif
+        </div>
     </div>
 </div>
 @endsection

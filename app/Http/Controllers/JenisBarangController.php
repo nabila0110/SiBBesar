@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\JenisBarang;
 
 class JenisBarangController extends Controller
 {
@@ -11,7 +12,14 @@ class JenisBarangController extends Controller
      */
     public function index()
     {
-        //
+        $search = request()->get('search');
+        $perPage = request()->get('perPage', 10);
+
+        $jenisBarangs = JenisBarang::when($search, function ($q) use ($search) {
+            $q->where('nama_jenis', 'like', "%{$search}%");
+        })->orderBy('id', 'desc')->paginate($perPage);
+
+        return view('jenis-barang.index', compact('jenisBarangs', 'search'));
     }
 
     /**
@@ -19,7 +27,7 @@ class JenisBarangController extends Controller
      */
     public function create()
     {
-        //
+        return view('jenis-barang.create');
     }
 
     /**
@@ -27,23 +35,30 @@ class JenisBarangController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nama_jenis' => 'required|unique:jenis_barangs,nama_jenis',
+        ]);
+
+        JenisBarang::create($request->only('nama_jenis'));
+        return redirect()->route('jenis-barang.index')->with('success', 'Jenis barang berhasil ditambahkan.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+    // public function show(string $id)
+    // {
+    //     $jenisBarang = JenisBarang::findOrFail($id);
+    //     return view('jenis-barang.show', compact('jenisBarang'));
+    // }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        //
+        $jenisBarang = JenisBarang::findOrFail($id);
+        return view('jenis-barang.edit', compact('jenisBarang'));
     }
 
     /**
@@ -51,7 +66,13 @@ class JenisBarangController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'nama_jenis' => 'required|unique:jenis_barangs,nama_jenis,' . $id,
+        ]);
+
+        $jenisBarang = JenisBarang::findOrFail($id);
+        $jenisBarang->update($request->only('nama_jenis'));
+        return redirect()->route('jenis-barang.index')->with('success', 'Jenis barang berhasil diperbarui.');
     }
 
     /**
@@ -59,6 +80,7 @@ class JenisBarangController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        JenisBarang::findOrFail($id)->delete();
+        return back()->with('success', 'Jenis barang berhasil dihapus.');
     }
 }

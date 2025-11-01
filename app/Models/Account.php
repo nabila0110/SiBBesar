@@ -11,7 +11,7 @@ class Account extends Model
     protected $fillable = [
         'code','name','type','normal_balance','is_active',
         'balance_debit','balance_credit','description',
-        'account_category_id','account_type_id'
+        'account_category_id','account_type_id','group','expense_type'
     ];
 
     public function category()

@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SiBBesar')</title>
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
@@ -118,11 +119,6 @@
                         <i class="fas fa-tags"></i>
                         <span>Jenis Barang</span>
                     </a>
-                    <a href="{{ route('merk-barang.index') }}"
-                        class="nav-item {{ Request::routeIs('merk-barang.*') ? 'active' : '' }}">
-                        <i class="fas fa-certificate"></i>
-                        <span>Merk Barang</span>
-                    </a>
                     <a href="{{ route('supplier.index') }}"
                         class="nav-item {{ Request::routeIs('supplier.*') ? 'active' : '' }}">
                         <i class="fas fa-truck"></i>
@@ -141,14 +137,14 @@
                 </div>
 
                 <!-- System Group -->
-                <div class="nav-group">
+                {{-- <div class="nav-group">
                     <div class="nav-group-title">System</div>
                     <a href="{{ route('backup-database') }}"
                         class="nav-item {{ Request::routeIs('backup-database') ? 'active' : '' }}">
                         <i class="fas fa-database"></i>
                         <span>Backup Database</span>
                     </a>
-                </div>
+                </div> --}}
             </nav>
         </aside>
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -161,15 +157,43 @@
                     {{-- reserved for potential page controls --}}
                 </div>
                 <div class="navbar-right">
-                    <div class="user-profile">
-                        <img src="{{ asset('images/logo_pt.jpg') }}" alt="User Avatar" class="user-avatar">
-                        <div class="user-info">
-                            <span class="user-name">{{ Auth::user()->name ?? 'Nabila' }}</span>
-                            <span class="user-role">Admin</span>
+                    <div class="user-profile-container">
+                        <button class="user-profile" id="userProfileBtn" onclick="toggleUserMenu(event)">
+                            <img src="{{ asset('images/logo_pt.jpg') }}" alt="User Avatar" class="user-avatar">
+                            <div class="user-info">
+                                <span class="user-name">{{ Auth::user()->name ?? 'Nabila' }}</span>
+                                <span class="user-role">Admin</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <div class="dropdown-header">
+                                <img src="{{ asset('images/logo_pt.jpg') }}" alt="User Avatar" class="dropdown-avatar">
+                                <div>
+                                    <div class="dropdown-user-name">{{ Auth::user()->name ?? 'Nabila' }}</div>
+                                    <div class="dropdown-user-email">{{ Auth::user()->email ?? 'admin@sibbesar.com' }}</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ route('profile') }}" class="dropdown-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span>Profil Saya</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ route('logout') }}" class="dropdown-item logout-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Keluar</span>
+                            </a>
                         </div>
-                        <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
+
+                <!-- Logout Form -->
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
             </nav>
 
             <!-- Page Content -->
@@ -181,6 +205,9 @@
 
     <!-- Bootstrap JS (bundle includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Alpine.js - PENTING untuk x-data, x-model, x-show, x-text -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script src="{{ asset('js/layout.js') }}"></script>
     @stack('scripts')

@@ -1,7 +1,13 @@
-<link rel="stylesheet" href="{{ asset('css/pph21.css') }}">
 @extends('layouts.app')
 
-@section('title', 'Dashboard - SiBBesar')
+@section('title', 'Perhitungan PPh 21 - SiBBesar')
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/pph21.css') }}">
+     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+@endpush
 
 @section('content')
     <main style="flex:1;padding:30px;">
@@ -54,15 +60,15 @@
                                 <div class="mb-4">
                                     <label class="block text-gray-700 font-medium mb-2">THR</label>
                                     <input type="number" x-model="formData.thr"
-                                        class="w-full px-4py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         placeholder="Rp. 0" step="1000">
                                 </div>
 
                                 <div class="mb-4">
                                     <label class="block text-gray-700 font-medium mb-2">Tanggungan</label>
-                                    <input type="number" x-model="formData.tanggungan"
+                                    <input type="number" x-model="formData.jumlah_tanggungan"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        placeholder="Rp. 0" step="1000">
+                                        placeholder="0" min="0" max="3">
                                 </div>
 
                                 <button type="submit"
@@ -123,9 +129,9 @@
                                 <span class="font-semibold text-gray-800" x-text="formatRupiah(hasil?.thr || 0)"></span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Tanggungan:</span>
+                                <span class="text-gray-600">Jumlah Tanggungan:</span>
                                 <span class="font-semibold text-gray-800"
-                                    x-text="formatRupiah(hasil?.tanggungan || 0)"></span>
+                                    x-text="hasil?.jumlah_tanggungan || 0"></span>
                             </div>
                         </div>
                     </div>
@@ -187,6 +193,59 @@
                 </div>
             </div>
         </div>
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <script src="{{ asset('js/pph.js') }}"></script>
+    </main>
 @endsection
+
+@push('scripts')
+    <script>
+        function pph21Calculator() {
+            return {
+                formData: {
+                    npwp: false,
+                    status_tanggungan: 'TK',
+                    gaji_pokok: 0,
+                    thr: 0,
+                    jumlah_tanggungan: 0
+                },
+                hasil: null,
+
+                async calculate() {
+                    try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                        if (!csrfToken) {
+                            alert('CSRF token tidak ditemukan');
+                            return;
+                        }
+
+                        const response = await fetch('{{ route("pph21.calculate") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken.content
+                            },
+                            body: JSON.stringify(this.formData)
+                        });
+
+                        const result = await response.json();
+                        console.log('Response:', result);
+                        
+                        if (result.success) {
+                            this.hasil = result.data;
+                            console.log('Hasil set to:', this.hasil);
+                        } else {
+                            console.error('Validation errors:', result.errors);
+                            alert('Error: ' + (result.message || 'Terjadi kesalahan saat menghitung PPh 21'));
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan saat menghitung PPh 21: ' + error.message);
+                    }
+                },
+
+                formatRupiah(angka) {
+                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+                }
+            }
+        }
+    </script>
+@endpush

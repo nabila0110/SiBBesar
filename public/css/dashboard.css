@@ -94,6 +94,11 @@
     color: #f97316;
 }
 
+.stat-icon.blue {
+    background-color: #dbeafe;
+    color: #3b82f6;
+}
+
 /* Project Details Section */
 .project-section {
     background: #ffffff;

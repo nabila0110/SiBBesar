@@ -2,6 +2,24 @@
 
 @section('title', 'Dashboard - SiBBesar')
 
+@push('styles')
+<style>
+    .stat-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .stat-card a {
+        text-decoration: none;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="dashboard-header">
     <h1 class="dashboard-title">Dashboard</h1>
@@ -9,150 +27,187 @@
 
 <!-- Stats Grid -->
 <div class="stats-grid">
-    <div class="stat-card">
+    <!-- Buku Besar -->
+    <a href="{{ route('buku-besar.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
-            <div class="stat-label">Saldo Kas</div>
-            <div class="stat-value">40,689</div>
+            <div class="stat-label">Buku Besar</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Perhitungan Pajak</div>
         </div>
         <div class="stat-icon purple">
-            <i class="fas fa-users"></i>
+            <i class="fas fa-book-open"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <!-- Hutang Usaha -->
+    <a href="{{ route('hutang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
             <div class="stat-label">Hutang Usaha</div>
-            <div class="stat-value">10293</div>
+            <div class="stat-value">Rp {{ number_format($totalPayables, 0, ',', '.') }}</div>
         </div>
         <div class="stat-icon yellow">
-            <i class="fas fa-box"></i>
+            <i class="fas fa-money-bill-wave"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <!-- Piutang Usaha -->
+    <a href="{{ route('piutang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
             <div class="stat-label">Piutang Usaha</div>
-            <div class="stat-value">$89,000</div>
+            <div class="stat-value">Rp {{ number_format($totalRecievables, 0, ',', '.') }}</div>
         </div>
         <div class="stat-icon green">
-            <i class="fas fa-chart-line"></i>
+            <i class="fas fa-hand-holding-usd"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <!-- Data Akun -->
+    <a href="{{ route('akun.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
             <div class="stat-label">Data Akun</div>
-            <a href="#" class="stat-link">Lihat disini</a>
+            <div class="stat-value">{{ $accountCount }}</div>
         </div>
         <div class="stat-icon orange">
-            <i class="fas fa-clock"></i>
+            <i class="fas fa-list-alt"></i>
         </div>
-    </div>
+    </a>
 </div>
 
 <!-- Second Row Stats -->
 <div class="stats-grid">
-    <div class="stat-card">
+    <!-- Jurnal Umum -->
+    <a href="{{ route('jurnal.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
-            <div class="stat-label">Ubah Perusahaan</div>
-            <a href="#" class="stat-link">Klik disini</a>
+            <div class="stat-label">Jurnal Umum</div>
+            <div class="stat-value">{{ $journalCount }}</div>
         </div>
         <div class="stat-icon purple">
-            <i class="fas fa-users"></i>
+            <i class="fas fa-book"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <!-- Laporan Posisi Keuangan -->
+    <a href="{{ route('laporan-posisi-keuangan') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
             <div class="stat-label">Neraca</div>
-            <a href="#" class="stat-link">Klik disini</a>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Posisi Keuangan</div>
         </div>
-        <div class="stat-icon yellow">
-            <i class="fas fa-box"></i>
+        <div class="stat-icon blue">
+            <i class="fas fa-balance-scale"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <!-- Laporan Laba Rugi -->
+    <a href="{{ route('laporan-laba-rugi') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
-            <div class="stat-label">laba Rugi</div>
-            <a href="#" class="stat-link">Klik disini</a>
+            <div class="stat-label">Laba Rugi</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Laporan P&L</div>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+    </a>
+
+    <!-- Pajak Penghasilan -->
+    <a href="{{ route('pph21.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">PPh 21</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Perhitungan Pajak</div>
+        </div>
+        <div class="stat-icon orange">
+            <i class="fas fa-calculator"></i>
+        </div>
+    </a>
+
+    <!-- Neraca Saldo Awal -->
+    <a href="{{ route('neraca-saldo-awal') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Neraca Saldo</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Awal Periode</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-file-alt"></i>
+        </div>
+    </a>
+
+    <!-- Neraca Saldo Akhir -->
+    <a href="{{ route('neraca-saldo-akhir') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Neraca Saldo</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Akhir Periode</div>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-file-alt"></i>
+        </div>
+    </a>
+</div>
+
+<!-- Additional Links Row -->
+<div class="stats-grid" style="margin-top: 18px;">
+    <!-- Daftar Aset -->
+    <a href="{{ route('asset.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Daftar Aset</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Manajemen Aset</div>
+        </div>
+        <div class="stat-icon blue">
+            <i class="fas fa-warehouse"></i>
+        </div>
+    </a>
+
+    <!-- Laporan Posisi Keuangan -->
+    <a href="{{ route('laporan-posisi-keuangan') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Laporan Posisi Keuangan</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Neraca</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-balance-scale"></i>
+        </div>
+    </a>
+
+    <!-- Laporan Laba Rugi -->
+    <a href="{{ route('laporan-laba-rugi') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Laporan Laba Rugi</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Laporan P&L</div>
         </div>
         <div class="stat-icon green">
             <i class="fas fa-chart-line"></i>
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <!-- Data Barang -->
+    <a href="{{ route('barang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
-            <div class="stat-label">Jurnal</div>
-            <div class="stat-value">2040</div>
+            <div class="stat-label">Data Barang</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Master Barang</div>
         </div>
         <div class="stat-icon orange">
-            <i class="fas fa-clock"></i>
+            <i class="fas fa-box"></i>
         </div>
-    </div>
+    </a>
+
+    <!-- Jenis Barang -->
+    <a href="{{ route('jenis-barang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Jenis Barang</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Kategori Barang</div>
+        </div>
+        <div class="stat-icon yellow">
+            <i class="fas fa-tags"></i>
+        </div>
+    </a>
+
+    <!-- Supplier Barang -->
+    <a href="{{ route('supplier.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Supplier Barang</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Data Suplier</div>
+        </div>
+        <div class="stat-icon blue">
+            <i class="fas fa-truck"></i>
+        </div>
+    </a>
 </div>
 
-<!-- Project Details Section -->
-<div class="project-section">
-    <div class="section-header">
-        <h2 class="section-title">Project Details</h2>
-        <div class="section-filter">
-            <span>October</span>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-    </div>
-
-    <table class="project-table">
-        <thead>
-            <tr>
-                <th>Nama Projek</th>
-                <th>Lokasi</th>
-                <th>Tenggat</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    <div class="project-info">
-                        <img src="{{ asset('images/project1.jpg') }}" alt="Project" class="project-avatar">
-                        <span class="project-name">Gedung Integrated Class</span>
-                    </div>
-                </td>
-                <td class="project-location">Jl. Bina Krida, Panam</td>
-                <td class="project-date">12.09.2019 - 12:53 PM</td>
-                <td>
-                    <span class="status-badge terkirim">Terkirim</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="project-info">
-                        <img src="{{ asset('images/project2.jpg') }}" alt="Project" class="project-avatar">
-                        <span class="project-name">Perpustakaan UNRI</span>
-                    </div>
-                </td>
-                <td class="project-location">Jl. Bina Krida, Panam</td>
-                <td class="project-date">12.09.2019 - 12:53 PM</td>
-                <td>
-                    <span class="status-badge pending">Pending</span>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div class="project-info">
-                        <img src="{{ asset('images/project3.jpg') }}" alt="Project" class="project-avatar">
-                        <span class="project-name">Jembatan Leton</span>
-                    </div>
-                </td>
-                <td class="project-location">Jl. Perjuangan, Rumbai</td>
-                <td class="project-date">12.09.2019 - 12:53 PM</td>
-                <td>
-                    <span class="status-badge ditolak">Ditolak</span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 @endsection

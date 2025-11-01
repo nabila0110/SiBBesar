@@ -46,7 +46,7 @@ class PiutangController extends Controller
         $paid = isset($data['paid_amount']) ? (float)$data['paid_amount'] : 0.0;
         $amount = (float)$data['amount'];
         $remaining = $amount - $paid;
-        $status = $remaining > 0 ? 'open' : 'paid';
+        $status = $remaining > 0 ? 'outstanding' : 'paid';
 
         $data['paid_amount'] = $paid;
         $data['remaining_amount'] = $remaining;
@@ -97,7 +97,7 @@ class PiutangController extends Controller
         $paid = isset($data['paid_amount']) ? (float)$data['paid_amount'] : 0.0;
         $amount = (float)$data['amount'];
         $remaining = $amount - $paid;
-        $status = $remaining > 0 ? 'open' : 'paid';
+        $status = $remaining > 0 ? 'outstanding' : 'paid';
 
         $data['paid_amount'] = $paid;
         $data['remaining_amount'] = $remaining;

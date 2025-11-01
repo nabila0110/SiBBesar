@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Route::get('/app', function () {
@@ -19,7 +19,7 @@ use App\Http\Controllers\JurnalController;
 use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\NeracaSaldoController;
 use App\Http\Controllers\LaporanKeuanganController;
-use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\MerkBarangController;
 use App\Http\Controllers\SupplierController;
@@ -61,10 +61,11 @@ Route::resource('asset', AssetController::class);
 Route::resource('akun', AkunController::class);
 Route::resource('jurnal', JurnalController::class);
 Route::resource('buku-besar', BukuBesarController::class);
-Route::resource('barang', BarangController::class);
+Route::resource('barang', DataBarangController::class);
 Route::resource('jenis-barang', JenisBarangController::class);
-
-Route::resource('merk-barang', MerkBarangController::class);
+Route::resource('barang', DataBarangController::class)->only([
+    'index', 'store', 'edit', 'update', 'destroy'
+]);
 Route::resource('supplier', SupplierController::class);
 
 // Single Page Routes (Reports & Special Pages)
@@ -75,6 +76,8 @@ Route::get('/laporan-laba-rugi', [LaporanKeuanganController::class, 'labaRugi'])
 Route::get('/pajak-penghasilan', [PPh21Controller::class, 'index'])->name('pph21.index');
 Route::get('/backup-database', [BackupController::class, 'index'])->name('backup-database');
 Route::post('/backup-database/create', [BackupController::class, 'create'])->name('backup-database.create');
+Route::get('/pph21', [PPh21Controller::class, 'index'])->name('pph21.index');
+Route::post('/pph21/calculate', [PPh21Controller::class, 'calculate'])->name('pph21.calculate');
 
 // Simple profile & preferences routes used by the navbar dropdown and sidebar header.
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile')->middleware('auth');
