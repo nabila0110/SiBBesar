@@ -23,15 +23,15 @@ class AssetControllerTest extends TestCase
     {
         Asset::factory()->count(2)->create();
 
-        $res = $this->actingAs($this->user)->get(route('assets.index'));
+        $res = $this->actingAs($this->user)->get(route('asset.index'));
         $res->assertStatus(200);
 
-        $res2 = $this->actingAs($this->user)->get(route('assets.create'));
+        $res2 = $this->actingAs($this->user)->get(route('asset.create'));
         $res2->assertStatus(200);
 
         $payload = ['name' => 'Laptop', 'value' => 1500, 'acquired_at' => now()->format('Y-m-d')];
         $r = $this->actingAs($this->user)->post(route('assets.store'), $payload);
-        $r->assertRedirect(route('assets.index'));
-        $this->assertDatabaseHas('assets', ['asset_name' => 'Laptop']);
+        $r->assertRedirect(route('asset.index'));
+        $this->assertDatabaseHas('asset', ['asset_name' => 'Laptop']);
     }
 }

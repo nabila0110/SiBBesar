@@ -2,126 +2,212 @@
 
 @section('title', 'Dashboard - SiBBesar')
 
+@push('styles')
+<style>
+    .stat-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .stat-card a {
+        text-decoration: none;
+    }
+</style>
+@endpush
+
 @section('content')
-@php
-    // Controller should pass: $saldoKas, $hutangUsaha, $piutangUsaha, $journalCount
-    $cashBalance = $saldoKas ?? 0;
-    $hutangUsaha = $hutangUsaha ?? 0;
-    $piutangUsaha = $piutangUsaha ?? 0;
-    $jurnal = $journalCount ?? 0;
-@endphp
+<div class="dashboard-header">
+    <h1 class="dashboard-title">Dashboard</h1>
+</div>
 
-<h1>Dashboard</h1>
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <!-- Buku Besar -->
+    <a href="{{ route('buku-besar.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Buku Besar</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Perhitungan Pajak</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-book-open"></i>
+        </div>
+    </a>
 
-            <!-- Stats Grid -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px;">
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Saldo Kas</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($cashBalance, 0, ',', '.') }}</div>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Lihat disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#e0e7ff;color:#4c6fff;">👥</div>
-                </div>
+    <!-- Hutang Usaha -->
+    <a href="{{ route('hutang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Hutang Usaha</div>
+            <div class="stat-value">Rp {{ number_format($totalPayables, 0, ',', '.') }}</div>
+        </div>
+        <div class="stat-icon yellow">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+    </a>
 
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Hutang Usaha</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($hutangUsaha, 0, ',', '.') }}</div>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fef3c7;color:#f59e0b;">📦</div>
-                </div>
+    <!-- Piutang Usaha -->
+    <a href="{{ route('piutang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Piutang Usaha</div>
+            <div class="stat-value">Rp {{ number_format($totalRecievables, 0, ',', '.') }}</div>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-hand-holding-usd"></i>
+        </div>
+    </a>
 
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Piutang Usaha</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($piutangUsaha, 0, ',', '.') }}</div>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#d1fae5;color:#10b981;">📈</div>
-                </div>
+    <!-- Data Akun -->
+    <a href="{{ route('akun.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Data Akun</div>
+            <div class="stat-value">{{ $accountCount }}</div>
+        </div>
+        <div class="stat-icon orange">
+            <i class="fas fa-list-alt"></i>
+        </div>
+    </a>
+</div>
 
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Data Akun</h3>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Lihat disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fed7d7;color:#f56565;">🕐</div>
-                </div>
-            </div>
+<!-- Second Row Stats -->
+<div class="stats-grid">
+    <!-- Jurnal Umum -->
+    <a href="{{ route('jurnal.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Jurnal Umum</div>
+            <div class="stat-value">{{ $journalCount }}</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-book"></i>
+        </div>
+    </a>
 
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:30px;">
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Ubah Perusahaan</h3>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#e0e7ff;color:#4c6fff;">👥</div>
-                </div>
+    <!-- Laporan Posisi Keuangan -->
+    <a href="{{ route('laporan-posisi-keuangan') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Neraca</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Posisi Keuangan</div>
+        </div>
+        <div class="stat-icon blue">
+            <i class="fas fa-balance-scale"></i>
+        </div>
+    </a>
 
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Neraca</h3>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fef3c7;color:#f59e0b;">📦</div>
-                </div>
+    <!-- Laporan Laba Rugi -->
+    <a href="{{ route('laporan-laba-rugi') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Laba Rugi</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Laporan P&L</div>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+    </a>
 
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Laba Rugi</h3>
-                        <a href="#" style="color:#4c6fff;font-size:13px;text-decoration:none;margin-top:8px;display:inline-block;">Klik disini</a>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#d1fae5;color:#10b981;">📈</div>
-                </div>
+    <!-- Pajak Penghasilan -->
+    <a href="{{ route('pph21.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">PPh 21</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Perhitungan Pajak</div>
+        </div>
+        <div class="stat-icon orange">
+            <i class="fas fa-calculator"></i>
+        </div>
+    </a>
 
-                <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:flex-start;">
-                    <div>
-                        <h3 style="font-size:13px;color:#718096;font-weight:500;margin-bottom:8px;">Jurnal</h3>
-                        <div style="font-size:24px;font-weight:700;color:#2d3748;">{{ number_format($jurnal,0,',','.') }}</div>
-                    </div>
-                    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:#fed7d7;color:#f56565;">🕐</div>
-                </div>
-            </div>
+    <!-- Neraca Saldo Awal -->
+    <a href="{{ route('neraca-saldo-awal') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Neraca Saldo</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Awal Periode</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-file-alt"></i>
+        </div>
+    </a>
 
-            <!-- Summary Table -->
-            <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <h2 style="font-size:18px;font-weight:600;margin:0;">Activity & Summary</h2>
-                    <button style="padding:8px 16px;border:1px solid #e2e8f0;background:white;border-radius:6px;cursor:pointer;font-size:13px;">This month</button>
-                </div>
+    <!-- Neraca Saldo Akhir -->
+    <a href="{{ route('neraca-saldo-akhir') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Neraca Saldo</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Akhir Periode</div>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-file-alt"></i>
+        </div>
+    </a>
+</div>
 
-                <table style="width:100%;border-collapse:collapse;">
-                    <thead>
-                        <tr>
-                            <th style="text-align:left;padding:12px;font-size:13px;color:#718096;font-weight:600;border-bottom:2px solid #e2e8f0;">Item</th>
-                            <th style="text-align:left;padding:12px;font-size:13px;color:#718096;font-weight:600;border-bottom:2px solid #e2e8f0;">Value</th>
-                            <th style="text-align:left;padding:12px;font-size:13px;color:#718096;font-weight:600;border-bottom:2px solid #e2e8f0;">Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Jumlah Jurnal</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($jurnal,0,',','.') }}</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">-</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Saldo Kas</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($cashBalance,0,',','.') }}</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Cached from accounts</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Hutang Usaha (sisa)</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($hutangUsaha,0,',','.') }}</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Sum of payables.remaining_amount</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Piutang Usaha (sisa)</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">{{ number_format($piutangUsaha,0,',','.') }}</td>
-                            <td style="padding:16px 12px;border-bottom:1px solid #f7fafc;">Sum of receivables.remaining_amount</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+<!-- Additional Links Row -->
+<div class="stats-grid" style="margin-top: 18px;">
+    <!-- Daftar Aset -->
+    <a href="{{ route('asset.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Daftar Aset</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Manajemen Aset</div>
+        </div>
+        <div class="stat-icon blue">
+            <i class="fas fa-warehouse"></i>
+        </div>
+    </a>
+
+    <!-- Laporan Posisi Keuangan -->
+    <a href="{{ route('laporan-posisi-keuangan') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Laporan Posisi Keuangan</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Neraca</div>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-balance-scale"></i>
+        </div>
+    </a>
+
+    <!-- Laporan Laba Rugi -->
+    <a href="{{ route('laporan-laba-rugi') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Laporan Laba Rugi</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Laporan P&L</div>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-chart-line"></i>
+        </div>
+    </a>
+
+    <!-- Data Barang -->
+    <a href="{{ route('barang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Data Barang</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Master Barang</div>
+        </div>
+        <div class="stat-icon orange">
+            <i class="fas fa-box"></i>
+        </div>
+    </a>
+
+    <!-- Jenis Barang -->
+    <a href="{{ route('jenis-barang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Jenis Barang</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Kategori Barang</div>
+        </div>
+        <div class="stat-icon yellow">
+            <i class="fas fa-tags"></i>
+        </div>
+    </a>
+
+    <!-- Supplier Barang -->
+    <a href="{{ route('supplier.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <div class="stat-content">
+            <div class="stat-label">Supplier Barang</div>
+            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Data Suplier</div>
+        </div>
+        <div class="stat-icon blue">
+            <i class="fas fa-truck"></i>
+        </div>
+    </a>
+</div>
+
 @endsection

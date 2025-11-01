@@ -1,0 +1,19 @@
+/* Piutang (Receivables) page styles - small adjustments, reuse hutang styles if needed */
+
+.piutang-card .card-body {
+    padding: 1rem 1.25rem;
+}
+
+.piutang-table .table th {
+    background-color: #f8f9fa;
+}
+
+.piutang-actions .btn {
+    margin-right: 6px;
+}
+
+@media (max-width: 768px) {
+    .piutang-table .table td, .piutang-table .table th {
+        padding: 0.5rem;
+    }
+}

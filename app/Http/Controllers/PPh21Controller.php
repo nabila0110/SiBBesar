@@ -16,18 +16,30 @@ class PPh21Controller extends Controller
         // Validasi input
         $validated = $request->validate([
             'npwp' => 'boolean',
-            'status_tanggungan' => 'required|string|in:TK,K,K/1,K/2,K/3',
+            'status_tanggungan' => 'required|string',
             'gaji_pokok' => 'required|numeric|min:0',
             'thr' => 'required|numeric|min:0',
-            'tanggungan' => 'required|numeric|min:0'
+            'jumlah_tanggungan' => 'required|integer|min:0|max:3'
         ]);
 
         // Ambil data dari request
         $gajiPokok = floatval($validated['gaji_pokok']);
         $thr = floatval($validated['thr']);
-        $tanggungan = floatval($validated['tanggungan']);
+        $jumlahTanggunganInput = intval($validated['jumlah_tanggungan']);
         $npwp = $validated['npwp'] ?? false;
         $statusTanggungan = $validated['status_tanggungan'];
+
+        // Parse jumlah tanggungan dari status (K/1, K/2, K/3)
+        $jumlahTanggunganDariStatus = 0;
+        if (preg_match('/[KT]K?\/(\d)/', $statusTanggungan, $matches)) {
+            $jumlahTanggunganDariStatus = intval($matches[1]);
+        }
+
+        // Gabungkan tanggungan dari status dan input, max 3
+        $jumlahTanggunganTotal = min($jumlahTanggunganInput + $jumlahTanggunganDariStatus, 3);
+
+        // Hitung biaya tanggungan (jika ada)
+        $biayaTanggungan = $jumlahTanggunganTotal * 4500000; // 4.5 juta per tanggungan
 
         // 1. Penghasilan Bruto
         $gajiTahunan = $gajiPokok * 12;
@@ -39,10 +51,10 @@ class PPh21Controller extends Controller
         // 3. Penghasilan Netto
         $netto = $bruto - $biayaJabatan;
 
-        // 4. PTKP
-        $ptkp = $this->hitungPTKP($statusTanggungan);
+        // 4. PTKP - gunakan jumlah_tanggungan yang sudah digabung
+        $ptkp = $this->hitungPTKP($statusTanggungan, $jumlahTanggunganTotal);
 
-        // 5. PKP
+        // 5. PKP (dibulatkan ke bawah per ribuan)
         $pkp = max($netto - $ptkp, 0);
         $pkpBulat = floor($pkp / 1000) * 1000;
 
@@ -69,7 +81,8 @@ class PPh21Controller extends Controller
             'gaji' => $gajiPokok,
             'gajiTahun' => $gajiTahunan,
             'thr' => $thr,
-            'tanggungan' => $tanggungan,
+            'jumlah_tanggungan' => $jumlahTanggunganTotal,
+            'biaya_tanggungan' => $biayaTanggungan,
 
             'bruto' => round($bruto),
             'biayaJabatan' => round($biayaJabatan),
@@ -85,6 +98,7 @@ class PPh21Controller extends Controller
             'ptkp' => $ptkp,
             'pkp' => round($pkpBulat),
             'npwp' => $npwp,
+            'status_tanggungan' => $statusTanggungan,
         ];
 
         return response()->json([
@@ -94,7 +108,7 @@ class PPh21Controller extends Controller
         ]);
     }
 
-    private function hitungPTKP($statusTanggungan)
+    private function hitungPTKP($statusTanggungan, $jumlahTanggunganTotal)
     {
         $ptkpDasar = 54000000;
         $ptkpKawin = 4500000;
@@ -102,13 +116,15 @@ class PPh21Controller extends Controller
 
         $totalPTKP = $ptkpDasar;
 
-        if ($statusTanggungan === 'K') {
-            $totalPTKP = $ptkpDasar + $ptkpKawin;
-        } elseif (strpos($statusTanggungan, 'K/') === 0) {
-            $parts = explode('/', $statusTanggungan);
-            $jumlahTanggungan = isset($parts[1]) ? intval($parts[1]) : 0;
-            $jumlahTanggungan = min($jumlahTanggungan, 3);
-            $totalPTKP = $ptkpDasar + $ptkpKawin + ($jumlahTanggungan * $ptkpPerTanggungan);
+        // Jika TK (Tidak Kawin)
+        if (strpos($statusTanggungan, 'TK') === 0) {
+            // PTKP dasar + tanggungan (jika ada)
+            $totalPTKP = $ptkpDasar + ($jumlahTanggunganTotal * $ptkpPerTanggungan);
+        } 
+        // Jika status dimulai dengan 'K', berarti menikah
+        elseif (strpos($statusTanggungan, 'K') === 0) {
+            // PTKP dasar + PTKP kawin + tanggungan
+            $totalPTKP = $ptkpDasar + $ptkpKawin + ($jumlahTanggunganTotal * $ptkpPerTanggungan);
         }
 
         return $totalPTKP;

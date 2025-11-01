@@ -3,83 +3,185 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journal;
+use App\Models\JournalDetail;
 use App\Models\Account;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
-class JournalController extends Controller
+class JurnalController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Display a listing of the journals.
+     */
+    public function index()
     {
-        $query = Journal::with('details.account', 'creator');
-
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('transaction_date', [
-                $request->start_date, 
-                $request->end_date
-            ]);
-        }
-
-        $journals = $query->orderBy('transaction_date', 'desc')->paginate(20);
-        return view('journals.index', compact('journals'));
+        // show recent journals with pagination
+        $journals = Journal::with('details.account')->orderBy('transaction_date', 'desc')->paginate(25);
+        return view('jurnal.index', compact('journals'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        $accounts = Account::where('is_active', true)->get();
-        $journalNo = Journal::generateJournalNo();
-        return view('journals.create', compact('accounts', 'journalNo'));
+        return view('jurnal.create');
     }
 
+    /**
+     * Store a newly created journal.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'transaction_date' => 'required|date',
-            'description' => 'required',
-            'details' => 'required|array|min:2',
-            'details.*.account_id' => 'required|exists:accounts,id',
-            'details.*.description' => 'nullable',
-            'details.*.debit' => 'required|numeric|min:0',
-            'details.*.credit' => 'required|numeric|min:0',
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'tanggal' => 'required|date',
+            'bukti' => 'nullable|string|max:255',
+            'keterangan' => 'nullable|string',
+            'akun' => 'nullable|string',
+            'kode' => 'nullable|string',
+            'debit' => 'nullable|numeric',
+            'kredit' => 'nullable|numeric',
         ]);
 
-        // Validate balanced journal
-        $totalDebit = collect($validated['details'])->sum('debit');
-        $totalCredit = collect($validated['details'])->sum('credit');
-
-        if ($totalDebit != $totalCredit) {
-            return back()->withErrors(['error' => 'Journal not balanced! Debit and Credit must be equal.']);
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-    $userId = Auth::id();
+        try {
+            $journalNo = $request->input('bukti') ?: Journal::generateJournalNo();
+            $transactionDate = $request->input('tanggal');
+            $description = $request->input('keterangan');
 
-    DB::transaction(function () use ($validated, $totalDebit, $totalCredit, $userId) {
+            $debit = (float) ($request->input('debit') ?: 0);
+            $credit = (float) ($request->input('kredit') ?: 0);
+
             $journal = Journal::create([
-                'journal_no' => Journal::generateJournalNo(),
-                'transaction_date' => $validated['transaction_date'],
-                'description' => $validated['description'],
-                'total_debit' => $totalDebit,
-                'total_credit' => $totalCredit,
-                'created_by' => $userId,
-                // default to posted for test scenarios
-                'status' => 'posted',
+                'journal_no' => $journalNo,
+                'transaction_date' => $transactionDate,
+                'description' => $description,
+                'reference' => null,
+                'total_debit' => $debit,
+                'total_credit' => $credit,
+                'status' => 'draft',
+                'created_by' => Auth::id() ?? null,
             ]);
 
-            foreach ($validated['details'] as $detail) {
-                if ($detail['debit'] > 0 || $detail['credit'] > 0) {
-                    $journal->details()->create($detail);
-                }
+            // Find or create account
+            $account = null;
+            $akunInput = $request->input('akun');
+            $kode = $request->input('kode');
+            if ($kode) {
+                $account = Account::where('code', $kode)->first();
+            } elseif ($akunInput) {
+                $account = Account::where('name', $akunInput)->first();
             }
-        });
 
-        return redirect()->route('journals.index')
-            ->with('success', 'Journal entry created successfully');
+            if (! $account && $akunInput) {
+                // create placeholder account of type expense
+                $code = 'AC' . strtoupper(substr(preg_replace('/[^A-Z0-9]/', '', $akunInput), 0, 6)) . rand(10,99);
+                $account = Account::create([
+                    'code' => $code,
+                    'name' => substr($akunInput,0,255),
+                    'type' => 'expense',
+                    'normal_balance' => 'debit',
+                    'is_active' => true,
+                    'balance_debit' => 0,
+                    'balance_credit' => 0,
+                ]);
+            }
+
+            $accountId = $account->id ?? null;
+
+
+            // Create a journal detail (single line)
+            $detail = JournalDetail::create([
+                'journal_id' => $journal->id,
+                'account_id' => $accountId,
+                'description' => $description,
+                'debit' => $debit,
+                'credit' => $credit,
+                'line_number' => 1,
+            ]);
+
+            // reload journal with details for response
+            $journal->load('details.account');
+
+            if ($request->wantsJson()) {
+                return response()->json(['status' => 'success', 'message' => 'Jurnal berhasil disimpan', 'data' => $journal], 201);
+            }
+
+            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil disimpan');
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->withErrors('Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
-    public function show(Journal $journal)
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
     {
-        $journal->load('details.account', 'creator');
-        return view('journals.show', compact('journal'));
+        $journal = Journal::with('details.account')->findOrFail($id);
+        return view('jurnal.show', compact('journal'));
+    }
+
+    /**
+     * Show the form for editing the specified journal.
+     */
+    public function edit($id)
+    {
+        $journal = Journal::with('details.account')->findOrFail($id);
+        return view('jurnal.edit', compact('journal'));
+    }
+
+    /**
+     * Update the specified journal.
+     */
+    public function update(Request $request, $id)
+    {
+        $journal = Journal::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'tanggal' => 'required|date',
+            'bukti' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return response()->json(['status' => 'error', 'errors' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $journal->transaction_date = $request->input('tanggal');
+        $journal->journal_no = $request->input('bukti') ?: $journal->journal_no;
+        $journal->description = $request->input('keterangan');
+        $journal->save();
+
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => 'Jurnal berhasil diperbarui', 'data' => $journal]);
+        }
+
+        return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil diperbarui');
+    }
+
+    /**
+     * Remove the specified journal from storage.
+     */
+    public function destroy($id)
+    {
+        $journal = Journal::findOrFail($id);
+        $journal->delete();
+        return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil dihapus');
     }
 }

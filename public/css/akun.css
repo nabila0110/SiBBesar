@@ -1,0 +1,53 @@
+/* Button Styles */
+.btn-bukasaldo {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+}
+
+.btn-bukasaldo:hover {
+    background-color: #388e3c;
+    color: white;
+}
+
+.btn-edit {
+    background-color: #2196f3;
+    color: white;
+    border: none;
+}
+
+.btn-edit:hover {
+    background-color: #1976d2;
+    color: white;
+}
+
+.btn-hapus {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.btn-hapus:hover {
+    background-color: #d32f2f;
+    color: white;
+}
+
+/* Table Styles */
+#akunTable thead th {
+    font-weight: 600;
+    background-color: #f3f4f6;
+}
+
+#akunTable tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control::placeholder {
+    color: #a0aec0;
+}
