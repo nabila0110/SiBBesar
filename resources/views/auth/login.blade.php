@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SiBBesar — Login</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_wb.png') }}">
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -89,8 +90,9 @@
 </head>
 <body>
 <div class="card">
-    <img src="/logo.png" alt="logo" class="brand" onerror="this.style.display='none'" />
-    <h1 class="title">SiBBesar — Login</h1>
+    <img src="images.logo_pt.jpeg" alt="logo" class="brand" onerror="this.style.display='none'" />
+    <h1 class="title">SiBBesar</h1>
+
 
     <form method="POST" action="{{ route('login') }}" style="width:100%;max-width:320px;margin:0 auto;">
         @csrf
@@ -100,7 +102,7 @@
                 <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" stroke="#666" stroke-width="1.2"/>
                 <path d="M2 22c0-3.866 3.582-7 10-7s10 3.134 10 7" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="text" name="email" placeholder="Nama Anda" value="{{ old('email') }}" required>
+            <input type="text" name="email" placeholder="Email" value="{{ old('email') }}" required>
         </div>
 
         <div class="input">

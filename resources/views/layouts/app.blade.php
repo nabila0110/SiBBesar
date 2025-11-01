@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SiBBesar')</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_wb.png') }}">
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @if(Request::routeIs('pph21.*'))
@@ -159,7 +160,7 @@
                 <div class="navbar-right">
                     <div class="user-profile-container">
                         <button class="user-profile" id="userProfileBtn" onclick="toggleUserMenu(event)">
-                            <img src="{{ asset('images/logo_pt.jpg') }}" alt="User Avatar" class="user-avatar">
+                            <img src="{{ asset('images/logo_wb.png') }}" alt="User Avatar" class="user-avatar">
                             <div class="user-info">
                                 <span class="user-name">{{ Auth::user()->name ?? 'Nabila' }}</span>
                                 <span class="user-role">Admin</span>
