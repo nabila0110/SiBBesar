@@ -17,33 +17,23 @@ class PPh21Controller extends Controller
         $validated = $request->validate([
             'npwp' => 'boolean',
             'status_tanggungan' => 'required|string',
-            'gaji_pokok' => 'required|numeric|min:0',
-            'thr' => 'required|numeric|min:0',
-            'jumlah_tanggungan' => 'required|integer|min:0|max:3'
+            'gaji_pokok' => 'required|numeric|min:0'
         ]);
 
         // Ambil data dari request
         $gajiPokok = floatval($validated['gaji_pokok']);
-        $thr = floatval($validated['thr']);
-        $jumlahTanggunganInput = intval($validated['jumlah_tanggungan']);
         $npwp = $validated['npwp'] ?? false;
         $statusTanggungan = $validated['status_tanggungan'];
 
-        // Parse jumlah tanggungan dari status (K/1, K/2, K/3)
-        $jumlahTanggunganDariStatus = 0;
-        if (preg_match('/[KT]K?\/(\d)/', $statusTanggungan, $matches)) {
-            $jumlahTanggunganDariStatus = intval($matches[1]);
+        // Parse jumlah tanggungan dari status (TK/1, TK/2, K/1, K/2, dll)
+        $jumlahTanggungan = 0;
+        if (preg_match('/\/(\d)/', $statusTanggungan, $matches)) {
+            $jumlahTanggungan = intval($matches[1]);
         }
 
-        // Gabungkan tanggungan dari status dan input, max 3
-        $jumlahTanggunganTotal = min($jumlahTanggunganInput + $jumlahTanggunganDariStatus, 3);
-
-        // Hitung biaya tanggungan (jika ada)
-        $biayaTanggungan = $jumlahTanggunganTotal * 4500000; // 4.5 juta per tanggungan
-
-        // 1. Penghasilan Bruto
+        // 1. Penghasilan Bruto (hanya gaji tahunan, tanpa THR)
         $gajiTahunan = $gajiPokok * 12;
-        $bruto = $gajiTahunan + $thr;
+        $bruto = $gajiTahunan;
 
         // 2. Biaya Jabatan (5% dari bruto, max 6 juta)
         $biayaJabatan = min($bruto * 0.05, 6000000);
@@ -51,8 +41,8 @@ class PPh21Controller extends Controller
         // 3. Penghasilan Netto
         $netto = $bruto - $biayaJabatan;
 
-        // 4. PTKP - gunakan jumlah_tanggungan yang sudah digabung
-        $ptkp = $this->hitungPTKP($statusTanggungan, $jumlahTanggunganTotal);
+        // 4. PTKP
+        $ptkp = $this->hitungPTKP($statusTanggungan, $jumlahTanggungan);
 
         // 5. PKP (dibulatkan ke bawah per ribuan)
         $pkp = max($netto - $ptkp, 0);
@@ -80,9 +70,6 @@ class PPh21Controller extends Controller
 
             'gaji' => $gajiPokok,
             'gajiTahun' => $gajiTahunan,
-            'thr' => $thr,
-            'jumlah_tanggungan' => $jumlahTanggunganTotal,
-            'biaya_tanggungan' => $biayaTanggungan,
 
             'bruto' => round($bruto),
             'biayaJabatan' => round($biayaJabatan),
@@ -108,7 +95,7 @@ class PPh21Controller extends Controller
         ]);
     }
 
-    private function hitungPTKP($statusTanggungan, $jumlahTanggunganTotal)
+    private function hitungPTKP($statusTanggungan, $jumlahTanggungan)
     {
         $ptkpDasar = 54000000;
         $ptkpKawin = 4500000;
@@ -118,13 +105,13 @@ class PPh21Controller extends Controller
 
         // Jika TK (Tidak Kawin)
         if (strpos($statusTanggungan, 'TK') === 0) {
-            // PTKP dasar + tanggungan (jika ada)
-            $totalPTKP = $ptkpDasar + ($jumlahTanggunganTotal * $ptkpPerTanggungan);
+            // PTKP dasar + tanggungan
+            $totalPTKP = $ptkpDasar + ($jumlahTanggungan * $ptkpPerTanggungan);
         } 
         // Jika status dimulai dengan 'K', berarti menikah
         elseif (strpos($statusTanggungan, 'K') === 0) {
             // PTKP dasar + PTKP kawin + tanggungan
-            $totalPTKP = $ptkpDasar + $ptkpKawin + ($jumlahTanggunganTotal * $ptkpPerTanggungan);
+            $totalPTKP = $ptkpDasar + $ptkpKawin + ($jumlahTanggungan * $ptkpPerTanggungan);
         }
 
         return $totalPTKP;
@@ -132,7 +119,7 @@ class PPh21Controller extends Controller
 
     private function hitungPPhProgresif($pkp, $npwp = true)
     {
-        // Tarif per lapisan berdasarkan NPWP (per 2023, tarif sudah benar)
+        // Tarif per lapisan berdasarkan NPWP
         if ($npwp) {
             $tarif = [0.05, 0.15, 0.25, 0.30, 0.35];
         } else {
