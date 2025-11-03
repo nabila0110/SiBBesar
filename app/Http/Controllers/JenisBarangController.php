@@ -1,9 +1,10 @@
 <?php
-
+ 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\JenisBarang;
+use Illuminate\Http\Request;
+
 
 class JenisBarangController extends Controller
 {

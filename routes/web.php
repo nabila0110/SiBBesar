@@ -1,7 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
+/*
+|--------------------------------------------------------------------------
+| AUTH & DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+// Halaman login (root diarahkan ke login)
 Route::get('/', function () {
     return view('auth.login');
 });
@@ -29,17 +38,16 @@ use App\Http\Controllers\PPh21Controller;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PreferencesController;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+// Dashboard (hanya bisa diakses jika sudah login)
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard')
+    ->middleware('auth');
 
-// Minimal login route so tests that expect route('login') resolve. Adjust to your auth scaffold later.
+// Login routes
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-
-// Handle login POST from the login form
 Route::post('/login', function (Request $request) {
     $credentials = $request->validate([
         'email' => 'required|string',
@@ -51,8 +59,28 @@ Route::post('/login', function (Request $request) {
         return redirect()->intended(route('dashboard'));
     }
 
-    return back()->withErrors(['email' => 'The provided credentials do not match our records.'])->withInput();
+    return redirect('/login')->withErrors([
+        'email' => 'Email atau password tidak sesuai.',
+    ])->withInput();
 });
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT ROUTE
+|--------------------------------------------------------------------------
+*/
+Route::post('/logout', function (Request $request) {
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| ORIGINAL SYSTEM ROUTES
+|--------------------------------------------------------------------------
+*/
 
 // Resource Routes (CRUD)
 Route::resource('hutang', HutangController::class);
