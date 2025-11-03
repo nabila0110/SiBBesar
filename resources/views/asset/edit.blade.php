@@ -15,7 +15,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Perolehan</label>
-                    <input type="date" name="purchase_date" class="form-control" value="{{ old('purchase_date', $asset->purchase_date) }}" required>
+                    <input type="text" name="purchase_date" class="form-control" placeholder="dd/mm/yyyy" value="{{ old('purchase_date', $asset->purchase_date ? \Illuminate\Support\Carbon::parse($asset->purchase_date)->format('d/m/Y') : '') }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Akun Aset</label>

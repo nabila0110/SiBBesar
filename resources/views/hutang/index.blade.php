@@ -165,12 +165,12 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="invoice_date" class="form-label required">Invoice Date</label>
-                            <input type="date" id="invoice_date" name="invoice_date" class="form-control @error('invoice_date') is-invalid @enderror" value="{{ old('invoice_date') }}" required>
+                            <input type="text" id="invoice_date" name="invoice_date" class="form-control @error('invoice_date') is-invalid @enderror" placeholder="dd/mm/yyyy" value="{{ old('invoice_date') }}" required>
                             @error('invoice_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="due_date" class="form-label required">Due Date</label>
-                            <input type="date" id="due_date" name="due_date" class="form-control @error('due_date') is-invalid @enderror" value="{{ old('due_date') }}" required>
+                            <input type="text" id="due_date" name="due_date" class="form-control @error('due_date') is-invalid @enderror" placeholder="dd/mm/yyyy" value="{{ old('due_date') }}" required>
                             @error('due_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -246,12 +246,12 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="invoice_date{{ $item->id }}" class="form-label required">Invoice Date</label>
-                            <input type="date" id="invoice_date{{ $item->id }}" name="invoice_date" class="form-control @error('invoice_date') is-invalid @enderror" value="{{ old('invoice_date', \Illuminate\Support\Carbon::parse($item->invoice_date)->format('Y-m-d')) }}" required>
+                            <input type="text" id="invoice_date{{ $item->id }}" name="invoice_date" class="form-control @error('invoice_date') is-invalid @enderror" placeholder="dd/mm/yyyy" value="{{ old('invoice_date', \Illuminate\Support\Carbon::parse($item->invoice_date)->format('d/m/Y')) }}" required>
                             @error('invoice_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="due_date{{ $item->id }}" class="form-label required">Due Date</label>
-                            <input type="date" id="due_date{{ $item->id }}" name="due_date" class="form-control @error('due_date') is-invalid @enderror" value="{{ old('due_date', \Illuminate\Support\Carbon::parse($item->due_date)->format('Y-m-d')) }}" required>
+                            <input type="text" id="due_date{{ $item->id }}" name="due_date" class="form-control @error('due_date') is-invalid @enderror" placeholder="dd/mm/yyyy" value="{{ old('due_date', \Illuminate\Support\Carbon::parse($item->due_date)->format('d/m/Y')) }}" required>
                             @error('due_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -295,6 +295,85 @@
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Auto-format date input: dd/mm/yyyy
+        function autoFormatDate(input) {
+            let value = input.value.replace(/\D/g, ''); // Remove non-digits
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+            if (value.length >= 5) {
+                value = value.substring(0, 5) + '/' + value.substring(5, 9);
+            }
+            input.value = value;
+        }
+
+        // Apply auto-format to date inputs
+        const invoiceDateInput = document.getElementById('invoice_date');
+        const dueeDateInput = document.getElementById('due_date');
+        
+        if (invoiceDateInput) {
+            invoiceDateInput.addEventListener('input', function(e) {
+                autoFormatDate(this);
+            });
+        }
+        
+        if (dueeDateInput) {
+            dueeDateInput.addEventListener('input', function(e) {
+                autoFormatDate(this);
+            });
+        }
+
+        // Validate due_date is not before invoice_date on form submission
+        const hutangForm = document.querySelector('form[action="{{ route('hutang.store') }}"]');
+        if (hutangForm) {
+            hutangForm.addEventListener('submit', function(e) {
+                const invoiceDate = invoiceDateInput.value;
+                const dueDate = dueeDateInput.value;
+                
+                // Parse dates in dd/mm/yyyy format
+                const invParts = invoiceDate.split('/');
+                const dueParts = dueDate.split('/');
+                
+                if (invParts.length === 3 && dueParts.length === 3) {
+                    const invDate = new Date(invParts[2], invParts[1] - 1, invParts[0]);
+                    const dueDate_obj = new Date(dueParts[2], dueParts[1] - 1, dueParts[0]);
+                    
+                    if (dueDate_obj < invDate) {
+                        e.preventDefault();
+                        showCustomAlert({
+                            title: 'Validasi Tanggal',
+                            message: 'Tanggal jatuh tempo tidak boleh lebih awal dari tanggal invoice',
+                            type: 'error',
+                            buttons: [
+                                { text: 'OK', type: 'primary', callback: function() {
+                                    closeCustomAlert();
+                                    dueeDateInput.focus();
+                                }}
+                            ]
+                        });
+                        return false;
+                    }
+                }
+            });
+        }
+
+        // Apply same auto-format to edit modals
+        document.querySelectorAll('[id^="invoice_date"]').forEach(function(input) {
+            if (input.id !== 'invoice_date') { // Skip the main form
+                input.addEventListener('input', function(e) {
+                    autoFormatDate(this);
+                });
+            }
+        });
+
+        document.querySelectorAll('[id^="due_date"]').forEach(function(input) {
+            if (input.id !== 'due_date') { // Skip the main form
+                input.addEventListener('input', function(e) {
+                    autoFormatDate(this);
+                });
+            }
         });
 
         // Focus the first input when the add modal opens

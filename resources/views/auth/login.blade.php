@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SiBBesar — Login</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo_wb.png') }}">
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,13 +19,14 @@
             min-height: 100vh;
         }
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 400px;
             text-align: center;
-            max-width: 400px;
-            width: 100%;
         }
         .brand {
             width: 80px;
@@ -83,18 +83,26 @@
         }
         .small {
             font-size: 14px;
-            color: #666;
+            color: black;
+            font-weight: bold;
             margin-top: 20px;
         }
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+
     </style>
 </head>
 <body>
 <div class="card">
-    <img src="images.logo_pt.jpeg" alt="logo" class="brand" onerror="this.style.display='none'" />
-    <h1 class="title">SiBBesar</h1>
+    <h1 class="title">SiBBesar<h1>
+    <img src="{{ asset('images/logo_wb.png') }}" alt="User Avatar" class="user-avatar">
 
-
-    <form method="POST" action="{{ route('login') }}" style="width:100%;max-width:320px;margin:0 auto;">
+    <form method="POST" action="{{ route('login') }}">
         @csrf
 
         <div class="input">
@@ -102,7 +110,7 @@
                 <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" stroke="#666" stroke-width="1.2"/>
                 <path d="M2 22c0-3.866 3.582-7 10-7s10 3.134 10 7" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="text" name="email" placeholder="Email" value="{{ old('email') }}" required>
+            <input type="text" name="email" placeholder="Nama Anda" value="{{ old('email') }}" />
         </div>
 
         <div class="input">
@@ -110,14 +118,13 @@
                 <path d="M12 15a2 2 0 100-4 2 2 0 000 4z" stroke="#666" stroke-width="1.2"/>
                 <path d="M4 11v3a8 8 0 0016 0v-3" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="password" name="password" placeholder="Kata Sandi" required>
+            <input type="password" name="password" placeholder="Kata Sandi" />
         </div>
 
-        <button class="btn" type="submit" style="width:100%;margin-top:18px;">LOGIN</button>
+        <button class="btn" type="submit">LOGIN</button>
     </form>
 
-    <p class="small">PT Mitra Fajar Kencana</p>
+    <p class="small">PT MITRA FAJAR KENCANA</p>
 </div>
 </body>
 </html>
-

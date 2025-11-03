@@ -23,11 +23,11 @@
     <div class="row g-3 align-items-end">
       <div class="col-md-4">
         <label for="dariTanggal" class="form-label">Dari Tanggal</label>
-        <input type="date" class="form-control" id="dariTanggal" value="{{ $periode_from ?? '' }}">
+        <input type="text" class="form-control" id="dariTanggal" placeholder="dd/mm/yyyy" value="{{ $periode_from ?? '' }}">
       </div>
       <div class="col-md-4">
         <label for="sampaiTanggal" class="form-label">Sampai Tanggal</label>
-        <input type="date" class="form-control" id="sampaiTanggal" value="{{ $periode_to ?? '' }}">
+        <input type="text" class="form-control" id="sampaiTanggal" placeholder="dd/mm/yyyy" value="{{ $periode_to ?? '' }}">
       </div>
       <div class="col-md-4 d-flex gap-2">
         <button class="btn btn-primary flex-grow-1" onclick="tampilkanBukuBesar()">Tampilkan Buku Besar</button>

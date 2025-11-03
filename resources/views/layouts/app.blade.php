@@ -204,6 +204,21 @@
         </main>
     </div>
 
+    <!-- Custom Alert Modal -->
+    <div id="customAlertOverlay" class="custom-alert-overlay">
+        <div class="custom-alert-modal">
+            <img id="alertLogo" class="custom-alert-logo" src="{{ asset('images/logo_pt.jpg') }}" alt="Logo">
+            <div id="alertIcon" class="custom-alert-icon success">
+                <i class="fas fa-check"></i>
+            </div>
+            <div id="alertTitle" class="custom-alert-title">Sukses</div>
+            <div id="alertMessage" class="custom-alert-message">Operasi berhasil dilakukan</div>
+            <div class="custom-alert-buttons">
+                <button type="button" class="custom-alert-btn primary" onclick="closeCustomAlert()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS (bundle includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 

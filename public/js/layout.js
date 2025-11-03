@@ -121,3 +121,178 @@ document.querySelectorAll('.dropdown-item').forEach(item => {
         }
     });
 });
+
+// Disable navbar interactions when modal is open (like sidebar backdrop)
+document.addEventListener('shown.bs.modal', function() {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        navbar.classList.add('modal-open');
+    }
+});
+
+document.addEventListener('hidden.bs.modal', function() {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        navbar.classList.remove('modal-open');
+    }
+});
+
+// Rupiah/Currency Formatter
+function formatCurrency(value) {
+    // Remove all non-digit characters
+    let numValue = value.toString().replace(/\D/g, '');
+    
+    // Add commas every 3 digits from the right
+    return numValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function parseCurrency(value) {
+    // Remove all commas to get clean number
+    return value.toString().replace(/,/g, '');
+}
+
+// Apply currency formatting to inputs
+function setupCurrencyInputs() {
+    // List of currency-related field names
+    const currencyFields = ['amount', 'paid_amount', 'harga', 'debit', 'kredit', 'gaji_pokok', 'thr', 'price', 'cost'];
+    
+    // Find all inputs with Rp prefix in input-group (for Hutang form)
+    document.querySelectorAll('.input-group').forEach(group => {
+        if (group.textContent.includes('Rp')) {
+            const input = group.querySelector('input[type="number"]');
+            if (input && !input.dataset.currencyFormatted) {
+                formatInputField(input);
+            }
+        }
+    });
+    
+    // Find all number inputs with currency-related names
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        const inputName = input.name || input.id || '';
+        const isCurrencyField = currencyFields.some(field => 
+            inputName.toLowerCase().includes(field)
+        );
+        
+        if (isCurrencyField && !input.dataset.currencyFormatted) {
+            formatInputField(input);
+        }
+    });
+}
+
+// Helper function to format a single input field
+function formatInputField(input) {
+    // Change type to text to allow commas
+    input.type = 'text';
+    
+    // Format initial value if exists
+    if (input.value && input.value !== '0') {
+        const cleanValue = parseCurrency(input.value);
+        input.value = formatCurrency(cleanValue);
+    }
+    
+    // Format on input
+    input.addEventListener('input', function(e) {
+        const cleanValue = parseCurrency(this.value);
+        this.value = formatCurrency(cleanValue);
+    });
+
+    // Format on blur to ensure proper format
+    input.addEventListener('blur', function(e) {
+        const cleanValue = parseCurrency(this.value);
+        this.value = formatCurrency(cleanValue);
+    });
+
+    // Store clean value before form submission
+    const form = input.closest('form');
+    if (form && !form.dataset.currencyFormattedInit) {
+        form.addEventListener('submit', function(e) {
+            // Clean all currency inputs in this form before submission
+            this.querySelectorAll('input[data-currency-formatted="true"]').forEach(inp => {
+                inp.value = parseCurrency(inp.value);
+            });
+        });
+        form.dataset.currencyFormattedInit = 'true';
+    }
+    
+    input.dataset.currencyFormatted = 'true';
+}
+
+// Initialize on page load and after modals open
+document.addEventListener('DOMContentLoaded', setupCurrencyInputs);
+document.addEventListener('shown.bs.modal', setupCurrencyInputs);
+
+// Custom Alert System
+function showCustomAlert(options = {}) {
+    const {
+        title = 'Sukses',
+        message = 'Operasi berhasil dilakukan',
+        type = 'success', // success, error, warning, info
+        buttons = [{ text: 'OK', type: 'primary', callback: closeCustomAlert }],
+        onClose = null
+    } = options;
+
+    const overlay = document.getElementById('customAlertOverlay');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertTitle = document.getElementById('alertTitle');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertButtons = document.querySelector('.custom-alert-buttons');
+
+    // Set icon and styling
+    const iconMap = {
+        success: { icon: 'fas fa-check', bg: 'success' },
+        error: { icon: 'fas fa-times', bg: 'error' },
+        warning: { icon: 'fas fa-exclamation', bg: 'warning' },
+        info: { icon: 'fas fa-info-circle', bg: 'info' }
+    };
+
+    const config = iconMap[type] || iconMap.success;
+    alertIcon.className = `custom-alert-icon ${config.bg}`;
+    alertIcon.innerHTML = `<i class="${config.icon}"></i>`;
+
+    alertTitle.textContent = title;
+    alertMessage.textContent = message;
+
+    // Set buttons
+    alertButtons.innerHTML = '';
+    buttons.forEach(btn => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `custom-alert-btn ${btn.type || 'primary'}`;
+        button.textContent = btn.text || 'OK';
+        button.onclick = btn.callback || closeCustomAlert;
+        alertButtons.appendChild(button);
+    });
+
+    // Store onClose callback
+    window.alertOnClose = onClose;
+
+    // Show overlay
+    overlay.classList.add('show');
+
+    // Close on ESC key
+    const closeOnEsc = (e) => {
+        if (e.key === 'Escape') {
+            closeCustomAlert();
+            document.removeEventListener('keydown', closeOnEsc);
+        }
+    };
+    document.addEventListener('keydown', closeOnEsc);
+}
+
+function closeCustomAlert() {
+    const overlay = document.getElementById('customAlertOverlay');
+    overlay.classList.remove('show');
+
+    if (window.alertOnClose && typeof window.alertOnClose === 'function') {
+        window.alertOnClose();
+    }
+}
+
+// Override browser alert with custom alert
+window.alert = function(message, title = 'Alert') {
+    showCustomAlert({
+        title: title,
+        message: message,
+        type: 'info'
+    });
+};

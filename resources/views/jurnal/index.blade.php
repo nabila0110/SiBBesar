@@ -37,14 +37,6 @@
   </style>
 </head>
 <body>
-
-<nav class="navbar bg-white shadow-sm">
-  <div class="container-fluid px-4">
-    <span class="navbar-brand mb-0 h5 text-primary fw-bold">Keuangan</span>
-    <span class="text-muted small">Sedang Login</span>
-  </div>
-</nav>
-
 <div class="container my-5">
   <!-- Halaman Jurnal Umum -->
   <div class="container-box" id="halaman-jurnal">
@@ -59,11 +51,11 @@
     <form class="row g-3 align-items-end mb-4">
       <div class="col-md-3">
         <label class="form-label">Dari Tanggal</label>
-        <input type="date" class="form-control" id="dariTanggal" />
+        <input type="text" class="form-control" id="dariTanggal" placeholder="dd/mm/yyyy" />
       </div>
       <div class="col-md-3">
         <label class="form-label">Sampai Tanggal</label>
-        <input type="date" class="form-control" id="sampaiTanggal" />
+        <input type="text" class="form-control" id="sampaiTanggal" placeholder="dd/mm/yyyy" />
       </div>
       <div class="col-md-3">
         <button type="button" class="btn btn-jurnal" onclick="tampilkanJurnal()">Tampilkan Jurnal</button>
@@ -100,7 +92,7 @@
       <div class="row g-3">
         <div class="col-md-3">
           <label class="form-label">Tanggal Transaksi</label>
-          <input type="date" class="form-control" id="tanggal" required>
+          <input type="text" class="form-control" id="tanggal" placeholder="dd/mm/yyyy" required>
         </div>
         <div class="col-md-3">
           <label class="form-label">Nomor Bukti</label>
@@ -158,7 +150,7 @@
       <div class="row g-3">
         <div class="col-md-3">
           <label class="form-label">Tanggal Transaksi</label>
-          <input type="date" class="form-control" id="tanggal2" name="tanggal" required>
+          <input type="text" class="form-control" id="tanggal2" name="tanggal" placeholder="dd/mm/yyyy" required>
         </div>
         <div class="col-md-3">
           <label class="form-label">Nomor Bukti</label>
@@ -208,10 +200,6 @@
     </form>
   </div>
 </div>
-
-<footer class="text-center text-muted py-3 small">
-  Powered by <span class="fw-semibold text-dark">ZaliaSonia</span>
-</footer>
 
 <script>
 function bukaHalaman(hal) {
