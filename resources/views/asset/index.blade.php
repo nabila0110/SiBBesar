@@ -46,10 +46,7 @@
     </div>
   </div>
 
-  <footer>
-    2021 © Zalia:) <br>
-    Crafted with ❤
-  </footer>
+  
 
   <!-- Modal Tambah Aset Baru -->
   <div class="modal fade" id="modalTambahAset" tabindex="-1" aria-labelledby="modalTambahAsetLabel" aria-hidden="true">
