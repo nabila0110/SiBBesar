@@ -1,330 +1,183 @@
- <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-  <!-- jsPDF & autoTable -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-
 @extends('layouts.app')
 
+@section('title', 'Jurnal Umum - SiBBesar')
+
 @section('content')
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<!-- jsPDF & autoTable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- jsPDF & autoTable -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<style>
+  .table-currency { text-align: right; }
+</style>
 
-  <style>
-    body { background-color: #f2f6ff; }
-    .container-box {
-      background: #fff;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    .btn-tambah {
-      background-color: #0d6efd;
-      color: #fff;
-      border: none;
-    }
-    .btn-jurnal {
-      background-color: #dc3545;
-      color: #fff;
-      border: none;
-    }
-    table th, table td { vertical-align: middle; }
-  </style>
-</head>
-<body>
-<div class="container my-5">
-  <!-- Halaman Jurnal Umum -->
-  <div class="container-box" id="halaman-jurnal">
-    <h4 class="fw-bold mb-4 text-primary">Jurnal Umum</h4>
+<div class="container-fluid mt-4">
+  <h2 class="mb-4">Jurnal Umum</h2>
 
-    <div class="mb-4 d-flex flex-wrap gap-2">
-      <button class="btn btn-tambah" onclick="bukaHalaman('tambah-jurnal')">+ Tambah Jurnal</button>
-      <button class="btn btn-tambah" onclick="bukaHalaman('tambah-penyesuaian')">+ Tambah Penyesuaian</button>
-      <button class="btn btn-success" onclick="cetakPDF()">🖨 Cetak PDF</button>
+  @if (session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fas fa-check-circle"></i> {{ session('success') }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+  @endif
 
-    <form class="row g-3 align-items-end mb-4">
-      <div class="col-md-3">
-        <label class="form-label">Dari Tanggal</label>
-        <input type="text" class="form-control" id="dariTanggal" placeholder="dd/mm/yyyy" />
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Sampai Tanggal</label>
-        <input type="text" class="form-control" id="sampaiTanggal" placeholder="dd/mm/yyyy" />
-      </div>
-      <div class="col-md-3">
-        <button type="button" class="btn btn-jurnal" onclick="tampilkanJurnal()">Tampilkan Jurnal</button>
-      </div>
-    </form>
-
-    <h5 class="fw-bold text-center mb-2 mt-4">DAFTAR JURNAL</h5>
-    <div class="table-responsive">
-      <table class="table table-bordered" id="tabelJurnal">
-        <thead class="table-light">
-          <tr>
-            <th>Tanggal</th>
-            <th>Nomor Bukti</th>
-            <th>Keterangan</th>
-            <th>Nama Akun</th>
-            <th>YOL</th>
-            <th>SAT</th>
-            <th>Harga Satuan</th>
-            <th>Kode Akun</th>
-            <th>Hutang/Piutang</th>
-            <th>Debit</th>
-            <th>Kredit</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+  @if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+  @endif
+
+  <!-- TOMBOL -->
+  <div class="mb-4 d-flex flex-wrap gap-2">
+    <a href="{{ route('jurnal.create') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Tambah Jurnal
+    </a>
+    <button class="btn btn-success" onclick="cetakPDF()">
+      <i class="fas fa-file-pdf"></i> Cetak PDF
+    </button>
   </div>
 
-  <!-- Halaman Tambah Jurnal -->
-  <div class="container-box d-none" id="halaman-tambah-jurnal">
-    <h4 class="fw-bold text-primary mb-4">Tambah Jurnal</h4>
-    <form id="formJurnal">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Tanggal Transaksi</label>
-          <input type="text" class="form-control" id="tanggal" placeholder="dd/mm/yyyy" required>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Nomor Bukti</label>
-          <input type="text" class="form-control" id="bukti">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Keterangan</label>
-          <input type="text" class="form-control" id="keterangan">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Nama Akun</label>
-          <input type="text" class="form-control" id="akun">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">YOL</label>
-          <input type="text" class="form-control" id="yol">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">SAT</label>
-          <input type="text" class="form-control" id="sat">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Harga Satuan</label>
-          <input type="number" class="form-control" id="harga">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Kode Akun</label>
-          <input type="text" class="form-control" id="kode">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Hutang / Piutang</label>
-          <input type="text" class="form-control" id="hp">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Debit</label>
-          <input type="number" class="form-control" id="debit">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Kredit</label>
-          <input type="number" class="form-control" id="kredit">
-        </div>
-      </div>
-      <div class="mt-4">
-        <button type="button" class="btn btn-primary" onclick="simpanJurnal('jurnal')">Simpan</button>
-        <button type="button" class="btn btn-secondary" onclick="bukaHalaman('jurnal')">Kembali</button>
-      </div>
-    </form>
-  </div>
+  <!-- FILTER TANGGAL -->
+  <form method="GET" action="{{ route('jurnal.index') }}" class="row g-3 align-items-end mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Dari Tanggal</label>
+      <input type="date" class="form-control" name="dari_tanggal" value="{{ request('dari_tanggal') }}" />
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Sampai Tanggal</label>
+      <input type="date" class="form-control" name="sampai_tanggal" value="{{ request('sampai_tanggal') }}" />
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-danger">
+        <i class="fas fa-search"></i> Tampilkan Jurnal
+      </button>
+      <a href="{{ route('jurnal.index') }}" class="btn btn-secondary">
+        <i class="fas fa-redo"></i> Reset
+      </a>
+    </div>
+  </form>
 
-  <!-- Halaman Tambah Penyesuaian -->
-  <div class="container-box d-none" id="halaman-tambah-penyesuaian">
-    <h4 class="fw-bold text-primary mb-4">Tambah Penyesuaian</h4>
-    <form id="formPenyesuaian" action="{{ route('jurnal.store') }}" method="POST">
-      @csrf
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Tanggal Transaksi</label>
-          <input type="text" class="form-control" id="tanggal2" name="tanggal" placeholder="dd/mm/yyyy" required>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0 text-center">DAFTAR JURNAL</h5>
+    </div>
+    <div class="card-body">
+      @if($details->count() > 0)
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" id="tabelJurnal">
+            <thead class="table-light">
+              <tr>
+                <th>Tanggal</th>
+                <th>No. Bukti</th>
+                <th>Keterangan</th>
+                <th>Akun</th>
+                <th>Kode</th>
+                <th class="table-currency">Debit</th>
+                <th class="table-currency">Kredit</th>
+                <th>Status</th>
+                <th width="120">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($details as $detail)
+                <tr>
+                  <td>{{ \Carbon\Carbon::parse($detail->journal->transaction_date)->format('d/m/Y') }}</td>
+                  <td>{{ $detail->journal->journal_no }}</td>
+                  <td>{{ $detail->journal->description }}</td>
+                  <td>{{ $detail->account?->name ?? '-' }}</td>
+                  <td>{{ $detail->account?->code ?? '-' }}</td>
+                  <td class="table-currency">{{ number_format($detail->debit, 2, ',', '.') }}</td>
+                  <td class="table-currency">{{ number_format($detail->credit, 2, ',', '.') }}</td>
+                  <td><span class="badge bg-info">{{ ucfirst($detail->journal->status) }}</span></td>
+                  <td>
+                    <a href="{{ route('jurnal.edit', $detail->journal->id) }}" class="btn btn-sm btn-warning" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <form action="{{ route('jurnal.destroy', $detail->journal->id) }}" method="POST" style="display:inline;">
+                      @csrf @method('DELETE')
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus jurnal ini?')" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+            <tfoot>
+              <tr class="table-secondary fw-bold">
+                <td colspan="5" class="text-end">TOTAL:</td>
+                <td class="table-currency">
+                  {{ number_format($details->sum('debit'), 2, ',', '.') }}
+                </td>
+                <td class="table-currency">
+                  {{ number_format($details->sum('credit'), 2, ',', '.') }}
+                </td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Nomor Bukti</label>
-          <input type="text" class="form-control" id="bukti2" name="bukti">
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-4">
+          {{ $details->links() }}
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Keterangan</label>
-          <input type="text" class="form-control" id="keterangan2" name="keterangan">
+      @else
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i> Belum ada jurnal. <a href="{{ route('jurnal.create') }}">Buat jurnal baru</a>
         </div>
-        <div class="col-md-4">
-          <label class="form-label">Nama Akun</label>
-          <input type="text" class="form-control" id="akun2" name="akun">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">YOL</label>
-          <input type="text" class="form-control" id="yol2" name="yol">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">SAT</label>
-          <input type="text" class="form-control" id="sat2" name="sat">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Harga Satuan</label>
-          <input type="number" class="form-control" id="harga2" name="harga">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Kode Akun</label>
-          <input type="text" class="form-control" id="kode2" name="kode">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Hutang / Piutang</label>
-          <input type="text" class="form-control" id="hp2" name="hp">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Debit</label>
-          <input type="number" class="form-control" id="debit2" name="debit">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Kredit</label>
-          <input type="number" class="form-control" id="kredit2" name="kredit">
-        </div>
-      </div>
-      <div class="mt-4">
-        <button type="button" class="btn btn-primary" onclick="simpanJurnal('penyesuaian')">Simpan</button>
-        <button type="button" class="btn btn-secondary" onclick="bukaHalaman('jurnal')">Kembali</button>
-      </div>
-    </form>
+      @endif
+    </div>
   </div>
 </div>
 
 <script>
-function bukaHalaman(hal) {
-  document.querySelectorAll('.container-box').forEach(div => div.classList.add('d-none'));
-  if (hal === 'tambah-jurnal') document.getElementById('halaman-tambah-jurnal').classList.remove('d-none');
-  else if (hal === 'tambah-penyesuaian') document.getElementById('halaman-tambah-penyesuaian').classList.remove('d-none');
-  else document.getElementById('halaman-jurnal').classList.remove('d-none');
-}
-
-function simpanJurnal(type) {
-  // If penyesuaian, submit to server via AJAX and append returned journal to table
-  if (type === 'penyesuaian') {
-    const form = document.getElementById('formPenyesuaian');
-    const url = form.getAttribute('action');
-    const formData = new FormData(form);
-    // mark this as adjustment (optional flag)
-    formData.append('type', 'penyesuaian');
-
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        'Accept': 'application/json'
-      },
-      body: formData
-    })
-    .then(response => response.json())
-    .then(json => {
-      if (json.status === 'success') {
-        // append new journal row to table
-        const journal = json.data;
-        const detail = (journal.details && journal.details.length) ? journal.details[0] : null;
-        const tbody = document.querySelector('#tabelJurnal tbody');
-        const row = `<tr>
-          <td>${journal.transaction_date ?? ''}</td>
-          <td>${journal.journal_no ?? ''}</td>
-          <td>${journal.description ?? ''}</td>
-          <td>${detail && detail.account ? detail.account.name : ''}</td>
-          <td></td>
-          <td></td>
-          <td>${detail ? (detail.debit || detail.credit) : ''}</td>
-          <td>${detail && detail.account ? detail.account.code ?? '' : ''}</td>
-          <td></td>
-          <td>${detail ? detail.debit : ''}</td>
-          <td>${detail ? detail.credit : ''}</td>
-        </tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
-        alert('Penyesuaian berhasil ditambahkan.');
-        bukaHalaman('jurnal');
-      } else {
-        alert('Gagal menyimpan penyesuaian: ' + (json.message || 'Validasi error'));
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Terjadi kesalahan saat menyimpan penyesuaian. Cek console.');
-    });
-    return;
-  }
-
-  // legacy localStorage behavior for 'jurnal' (client-only)
-  const data = {
-    tanggal: document.getElementById(type === 'jurnal' ? 'tanggal' : 'tanggal2').value,
-    bukti: document.getElementById(type === 'jurnal' ? 'bukti' : 'bukti2').value,
-    ket: document.getElementById(type === 'jurnal' ? 'keterangan' : 'keterangan2').value,
-    akun: document.getElementById(type === 'jurnal' ? 'akun' : 'akun2').value,
-    yol: document.getElementById(type === 'jurnal' ? 'yol' : 'yol2').value,
-    sat: document.getElementById(type === 'jurnal' ? 'sat' : 'sat2').value,
-    harga: document.getElementById(type === 'jurnal' ? 'harga' : 'harga2').value,
-    kode: document.getElementById(type === 'jurnal' ? 'kode' : 'kode2').value,
-    hp: document.getElementById(type === 'jurnal' ? 'hp' : 'hp2').value,
-    debit: document.getElementById(type === 'jurnal' ? 'debit' : 'debit2').value,
-    kredit: document.getElementById(type === 'jurnal' ? 'kredit' : 'kredit2').value
-  };
-  const key = type === 'jurnal' ? 'dataJurnal' : 'dataPenyesuaian';
-  const arr = JSON.parse(localStorage.getItem(key)) || [];
-  arr.push(data);
-  localStorage.setItem(key, JSON.stringify(arr));
-  alert("Data berhasil disimpan!");
-  bukaHalaman('jurnal');
-}
-
-function tampilkanJurnal() {
-  const tbody = document.querySelector('#tabelJurnal tbody');
-  tbody.innerHTML = '';
-  const data = JSON.parse(localStorage.getItem('dataJurnal')) || [];
-  data.forEach(d => {
-    const row = `<tr>
-      <td>${d.tanggal}</td>
-      <td>${d.bukti}</td>
-      <td>${d.ket}</td>
-      <td>${d.akun}</td>
-      <td>${d.yol}</td>
-      <td>${d.sat}</td>
-      <td>${d.harga}</td>
-      <td>${d.kode}</td>
-      <td>${d.hp}</td>
-      <td>${d.debit}</td>
-      <td>${d.kredit}</td>
-    </tr>`;
-    tbody.insertAdjacentHTML('beforeend', row);
-  });
-}
-
 function cetakPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: "landscape" });
-  doc.setFontSize(14);
-  doc.text("Jurnal Umum", 140, 15, { align: "center" });
+  
+  // Title
+  doc.setFontSize(16);
+  doc.text("JURNAL UMUM", doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
+  
+  // Subtitle
+  doc.setFontSize(10);
+  const today = new Date().toLocaleDateString('id-ID');
+  doc.text(Tanggal Cetak: ${today}, 14, 25);
 
-  const data = JSON.parse(localStorage.getItem('dataJurnal')) || [];
-  const rows = data.map(d => [
-    d.tanggal, d.bukti, d.ket, d.akun, d.yol, d.sat, d.harga, d.kode, d.hp, d.debit, d.kredit
-  ]);
-
-  doc.autoTable({
-    startY: 25,
-    head: [["Tanggal", "No Bukti", "Keterangan", "Akun", "YOL", "SAT", "Harga", "Kode", "H/P", "Debit", "Kredit"]],
-    body: rows,
-    theme: 'grid',
-    styles: { fontSize: 9 }
+  // Ambil data dari tabel yang sudah di-render dari database
+  const rows = [];
+  document.querySelectorAll('#tabelJurnal tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length > 0) {
+      rows.push([
+        cells[0].textContent.trim(),
+        cells[1].textContent.trim(),
+        cells[2].textContent.trim(),
+        cells[3].textContent.trim(),
+        cells[4].textContent.trim(),
+        cells[5].textContent.trim(),
+        cells[6].textContent.trim(),
+        cells[7].textContent.trim()
+      ]);
+    }
   });
 
-  doc.save("Jurnal_Umum.pdf");
+  doc.autoTable({
+    startY: 35,
+    head: [["Tanggal", "No Bukti", "Keterangan", "Akun", "Kode", "Debit", "Kredit", "Status"]],
+    body: rows,
+    theme: 'grid',
+    styles: { fontSize: 9, cellPadding: 3 },
+    headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+    columnStyles: {
+      5: { halign: 'right' },
+      6: { halign: 'right' }
+    }
+  });
+
+  doc.save(Jurnal_Umum_${today.replace(/\//g, '-')}.pdf);
 }
 </script>
 

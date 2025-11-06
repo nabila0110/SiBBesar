@@ -2,270 +2,203 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Account;
 use App\Models\JournalDetail;
-use Illuminate\Support\Facades\DB;
+use App\Models\Receivable;
+use App\Models\Payable;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class NeracaSaldoController extends Controller
 {
     /**
-     * Neraca Saldo Awal - Menampilkan saldo awal periode
+     * Show the Neraca Saldo Awal page.
      */
-    public function awal(Request $request)
+    public function awal()
     {
-        $tahun = $request->get('tahun', date('Y'));
-        $bulan = $request->get('bulan', 1); // Januari sebagai default
+        $year = request()->query('year', date('Y'));
+        $neracaData = $this->getNeracaData($year);
         
-        // Tanggal awal periode (1 Januari tahun terpilih)
-        $periodeAwal = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
+        return view('neraca-saldo-awal', [
+            'neracaData' => $neracaData,
+            'year' => $year
+        ]);
+    }
+
+    /**
+     * Show the Neraca (Balance Sheet) page - Main Report
+     */
+    public function index()
+    {
+        $year = request()->query('year', date('Y'));
+        $period = request()->query('period', 'year'); // year, month, custom
         
-        // Ambil semua akun aktif
-        $accounts = Account::where('is_active', true)
+        $neracaData = $this->getNeracaData($year, $period);
+        
+        return view('neraca', [
+            'neracaData' => $neracaData,
+            'year' => $year,
+            'period' => $period
+        ]);
+    }
+
+    /**
+     * Get Balance Sheet Data organized by account type
+     */
+    private function getNeracaData($year, $period = 'year')
+    {
+        $startDate = Carbon::createFromDate($year, 1, 1)->startOfYear();
+        $endDate = Carbon::createFromDate($year, 12, 31)->endOfYear();
+
+        if ($period === 'month') {
+            $month = request()->query('month', date('m'));
+            $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+            $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        }
+
+        // Get all accounts grouped by type
+        $assets = $this->getAccountsWithBalance('asset', $startDate, $endDate);
+        $liabilities = $this->getAccountsWithBalance('liability', $startDate, $endDate);
+        $equity = $this->getAccountsWithBalance('equity', $startDate, $endDate);
+
+        // Calculate totals with receivables and payables
+        $totalAssets = $assets->sum('balance') + $this->getTotalReceivables($startDate, $endDate);
+        $totalLiabilities = $liabilities->sum('balance') + $this->getTotalPayables($startDate, $endDate);
+        $totalEquity = $equity->sum('balance');
+
+        return [
+            'assets' => $assets,
+            'liabilities' => $liabilities,
+            'equity' => $equity,
+            'receivables' => $this->getReceivablesDetail($startDate, $endDate),
+            'payables' => $this->getPayablesDetail($startDate, $endDate),
+            'totalAssets' => $totalAssets,
+            'totalLiabilities' => $totalLiabilities,
+            'totalEquity' => $totalEquity,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ];
+    }
+
+    /**
+     * Get accounts with calculated balance
+     */
+    private function getAccountsWithBalance($type, $startDate, $endDate)
+    {
+        return Account::where('type', $type)
+            ->where('is_active', true)
             ->orderBy('code')
-            ->get();
-        
-        $dataNeraca = [];
-        $totalDebit = 0;
-        $totalKredit = 0;
+            ->get()
+            ->map(function ($account) use ($startDate, $endDate) {
+                $totals = JournalDetail::whereHas('journal', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('transaction_date', [$startDate, $endDate]);
+                })
+                ->where('account_id', $account->id)
+                ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(credit),0) as total_credit')
+                ->first();
 
-        foreach ($accounts as $account) {
-            // Hitung saldo awal (transaksi sebelum tanggal periode)
-            $saldoAwal = JournalDetail::select(
-                DB::raw('COALESCE(SUM(debit), 0) as total_debit'),
-                DB::raw('COALESCE(SUM(credit), 0) as total_credit')
-            )
-            ->join('journals', 'journals.id', '=', 'journal_details.journal_id')
-            ->where('journal_details.account_id', $account->id)
-            ->where('journals.status', 'posted')
-            ->where('journals.transaction_date', '<', $periodeAwal)
-            ->first();
+                $debit = $totals->total_debit ?? 0;
+                $credit = $totals->total_credit ?? 0;
 
-            $debit = $saldoAwal->total_debit ?? 0;
-            $kredit = $saldoAwal->total_credit ?? 0;
-            
-            // Hitung saldo berdasarkan tipe akun
-            if ($account->normal_balance === 'debit') {
-                $saldo = $debit - $kredit;
-                if ($saldo > 0) {
-                    $debitAmount = $saldo;
-                    $kreditAmount = 0;
+                // Calculate balance based on normal balance
+                if ($account->normal_balance === 'debit') {
+                    $balance = $debit - $credit;
                 } else {
-                    $debitAmount = 0;
-                    $kreditAmount = abs($saldo);
+                    $balance = $credit - $debit;
                 }
-            } else {
-                $saldo = $kredit - $debit;
-                if ($saldo > 0) {
-                    $debitAmount = 0;
-                    $kreditAmount = $saldo;
-                } else {
-                    $debitAmount = abs($saldo);
-                    $kreditAmount = 0;
-                }
-            }
 
-            // Hanya tampilkan akun yang memiliki saldo
-            if ($debitAmount != 0 || $kreditAmount != 0) {
-                $dataNeraca[] = [
-                    'akun' => '[' . $account->code . '] ' . $account->name,
+                return [
                     'code' => $account->code,
                     'name' => $account->name,
-                    'debit' => $debitAmount,
-                    'kredit' => $kreditAmount,
+                    'description' => $account->description,
+                    'debit' => (float) $debit,
+                    'credit' => (float) $credit,
+                    'balance' => (float) $balance,
+                    'type' => $account->type,
                 ];
-
-                $totalDebit += $debitAmount;
-                $totalKredit += $kreditAmount;
-            }
-        }
-
-        return view('neraca-saldo-awal', compact('dataNeraca', 'tahun', 'bulan', 'totalDebit', 'totalKredit'));
+            });
     }
 
     /**
-     * Neraca Saldo Akhir - Menampilkan saldo akhir periode
+     * Get receivables detail
      */
-    public function akhir(Request $request)
+    private function getReceivablesDetail($startDate, $endDate)
     {
-        $tahun = $request->get('tahun', date('Y'));
-        $bulan = $request->get('bulan', date('m'));
-        
-        // Tanggal akhir periode
-        $periodeAkhir = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth();
-        
-        // Ambil semua akun aktif
-        $accounts = Account::where('is_active', true)
-            ->orderBy('code')
+        return Receivable::whereBetween('invoice_date', [$startDate, $endDate])
+            ->with('account')
+            ->orderBy('invoice_no')
             ->get();
-        
-        $dataNeraca = [];
-        $totalDebit = 0;
-        $totalKredit = 0;
-
-        foreach ($accounts as $account) {
-            // Hitung saldo sampai akhir periode
-            $saldo = JournalDetail::select(
-                DB::raw('COALESCE(SUM(debit), 0) as total_debit'),
-                DB::raw('COALESCE(SUM(credit), 0) as total_credit')
-            )
-            ->join('journals', 'journals.id', '=', 'journal_details.journal_id')
-            ->where('journal_details.account_id', $account->id)
-            ->where('journals.status', 'posted')
-            ->where('journals.transaction_date', '<=', $periodeAkhir)
-            ->first();
-
-            $debit = $saldo->total_debit ?? 0;
-            $kredit = $saldo->total_credit ?? 0;
-            
-            // Hitung saldo berdasarkan tipe akun
-            if ($account->normal_balance === 'debit') {
-                $saldoAkhir = $debit - $kredit;
-                if ($saldoAkhir > 0) {
-                    $debitAmount = $saldoAkhir;
-                    $kreditAmount = 0;
-                } else {
-                    $debitAmount = 0;
-                    $kreditAmount = abs($saldoAkhir);
-                }
-            } else {
-                $saldoAkhir = $kredit - $debit;
-                if ($saldoAkhir > 0) {
-                    $debitAmount = 0;
-                    $kreditAmount = $saldoAkhir;
-                } else {
-                    $debitAmount = abs($saldoAkhir);
-                    $kreditAmount = 0;
-                }
-            }
-
-            // Hanya tampilkan akun yang memiliki saldo
-            if ($debitAmount != 0 || $kreditAmount != 0) {
-                $dataNeraca[] = [
-                    'akun' => '[' . $account->code . '] ' . $account->name,
-                    'code' => $account->code,
-                    'name' => $account->name,
-                    'debit' => $debitAmount,
-                    'kredit' => $kreditAmount,
-                ];
-
-                $totalDebit += $debitAmount;
-                $totalKredit += $kreditAmount;
-            }
-        }
-
-        return view('neraca-saldo-akhir', compact('dataNeraca', 'tahun', 'bulan', 'totalDebit', 'totalKredit'));
     }
 
     /**
-     * Export Neraca Saldo Awal ke PDF
+     * Get payables detail
      */
-    public function exportAwalPDF(Request $request)
+    private function getPayablesDetail($startDate, $endDate)
     {
-        $tahun = $request->get('tahun', date('Y'));
-        $bulan = $request->get('bulan', 1);
-        
-        // Get data (reuse logic from awal method)
-        $periodeAwal = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
-        $accounts = Account::where('is_active', true)->orderBy('code')->get();
-        
-        $dataNeraca = [];
-        $totalDebit = 0;
-        $totalKredit = 0;
-
-        foreach ($accounts as $account) {
-            $saldoAwal = JournalDetail::select(
-                DB::raw('COALESCE(SUM(debit), 0) as total_debit'),
-                DB::raw('COALESCE(SUM(credit), 0) as total_credit')
-            )
-            ->join('journals', 'journals.id', '=', 'journal_details.journal_id')
-            ->where('journal_details.account_id', $account->id)
-            ->where('journals.status', 'posted')
-            ->where('journals.transaction_date', '<', $periodeAwal)
-            ->first();
-
-            $debit = $saldoAwal->total_debit ?? 0;
-            $kredit = $saldoAwal->total_credit ?? 0;
-            
-            if ($account->normal_balance === 'debit') {
-                $saldo = $debit - $kredit;
-                $debitAmount = max(0, $saldo);
-                $kreditAmount = max(0, -$saldo);
-            } else {
-                $saldo = $kredit - $debit;
-                $kreditAmount = max(0, $saldo);
-                $debitAmount = max(0, -$saldo);
-            }
-
-            if ($debitAmount != 0 || $kreditAmount != 0) {
-                $dataNeraca[] = [
-                    'akun' => '[' . $account->code . '] ' . $account->name,
-                    'debit' => $debitAmount,
-                    'kredit' => $kreditAmount,
-                ];
-                $totalDebit += $debitAmount;
-                $totalKredit += $kreditAmount;
-            }
-        }
-
-        $pdf = Pdf::loadView('neraca-saldo.pdf-awal', compact('dataNeraca', 'tahun', 'bulan', 'totalDebit', 'totalKredit'));
-        return $pdf->download('Neraca_Saldo_Awal_' . $tahun . '.pdf');
+        return Payable::whereBetween('invoice_date', [$startDate, $endDate])
+            ->with('account')
+            ->orderBy('invoice_no')
+            ->get();
     }
 
     /**
-     * Export Neraca Saldo Akhir ke PDF
+     * Get total receivables
      */
-    public function exportAkhirPDF(Request $request)
+    private function getTotalReceivables($startDate, $endDate)
     {
-        $tahun = $request->get('tahun', date('Y'));
-        $bulan = $request->get('bulan', date('m'));
-        
-        // Get data (reuse logic from akhir method)
-        $periodeAkhir = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth();
-        $accounts = Account::where('is_active', true)->orderBy('code')->get();
-        
-        $dataNeraca = [];
-        $totalDebit = 0;
-        $totalKredit = 0;
+        return Receivable::whereBetween('invoice_date', [$startDate, $endDate])
+            ->sum('remaining_amount') ?? 0;
+    }
 
-        foreach ($accounts as $account) {
-            $saldo = JournalDetail::select(
-                DB::raw('COALESCE(SUM(debit), 0) as total_debit'),
-                DB::raw('COALESCE(SUM(credit), 0) as total_credit')
-            )
-            ->join('journals', 'journals.id', '=', 'journal_details.journal_id')
-            ->where('journal_details.account_id', $account->id)
-            ->where('journals.status', 'posted')
-            ->where('journals.transaction_date', '<=', $periodeAkhir)
-            ->first();
+    /**
+     * Get total payables
+     */
+    private function getTotalPayables($startDate, $endDate)
+    {
+        return Payable::whereBetween('invoice_date', [$startDate, $endDate])
+            ->sum('remaining_amount') ?? 0;
+    }
 
-            $debit = $saldo->total_debit ?? 0;
-            $kredit = $saldo->total_credit ?? 0;
-            
-            if ($account->normal_balance === 'debit') {
-                $saldoAkhir = $debit - $kredit;
-                $debitAmount = max(0, $saldoAkhir);
-                $kreditAmount = max(0, -$saldoAkhir);
-            } else {
-                $saldoAkhir = $kredit - $debit;
-                $kreditAmount = max(0, $saldoAkhir);
-                $debitAmount = max(0, -$saldoAkhir);
-            }
+    /**
+     * Return neraca saldo data (debit/credit sums) for a given year as JSON.
+     * Frontend calls this to render the table dynamically.
+     */
+    public function dataAwal(\Illuminate\Http\Request $request)
+    {
+        $year = $request->query('year', date('Y'));
+        $start = $year . '-01-01';
+        $end = $year . '-12-31';
 
-            if ($debitAmount != 0 || $kreditAmount != 0) {
-                $dataNeraca[] = [
-                    'akun' => '[' . $account->code . '] ' . $account->name,
-                    'debit' => $debitAmount,
-                    'kredit' => $kreditAmount,
-                ];
-                $totalDebit += $debitAmount;
-                $totalKredit += $kreditAmount;
-            }
+        // Collect accounts and compute sums from journal details joined with journals
+        $accounts = Account::orderBy('code')->get();
+
+        $rows = [];
+        foreach ($accounts as $acct) {
+            $totals = JournalDetail::join('journals', 'journal_details.journal_id', '=', 'journals.id')
+                ->where('journal_details.account_id', $acct->id)
+                ->whereBetween('journals.transaction_date', [$start, $end])
+                ->selectRaw('COALESCE(SUM(journal_details.debit),0) as total_debit, COALESCE(SUM(journal_details.credit),0) as total_credit')
+                ->first();
+
+            $debit = $totals->total_debit ?? 0;
+            $credit = $totals->total_credit ?? 0;
+
+            $rows[] = [
+                'code' => $acct->code,
+                'name' => $acct->name,
+                'debit' => (float) $debit,
+                'credit' => (float) $credit,
+            ];
         }
 
-        $pdf = Pdf::loadView('neraca-saldo.pdf-akhir', compact('dataNeraca', 'tahun', 'bulan', 'totalDebit', 'totalKredit'));
-        return $pdf->download('Neraca_Saldo_Akhir_' . $tahun . '_' . $bulan . '.pdf');
+        return response()->json(['year' => $year, 'rows' => $rows]);
+    }
+
+    /**
+     * Show the Neraca Saldo Akhir page.
+     */
+    public function akhir()
+    {
+        return view('neraca-saldo-akhir');
     }
 }

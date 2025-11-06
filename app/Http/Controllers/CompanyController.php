@@ -14,11 +14,11 @@ class CompanyController extends BaseController
 
     public function index()
     {
-        return view('companies.index');
+        return view('perusahaan.index');
     }
 
     public function edit($id)
     {
-        return view('companies.edit');
+        return view('perusahaan.edit');
     }
 }

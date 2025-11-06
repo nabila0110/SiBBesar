@@ -122,18 +122,26 @@ document.querySelectorAll('.dropdown-item').forEach(item => {
     });
 });
 
-// Disable navbar interactions when modal is open (like sidebar backdrop)
+// Show/hide navbar overlay when Bootstrap modal opens/closes
 document.addEventListener('shown.bs.modal', function() {
     const navbar = document.querySelector('.navbar');
+    const navbarOverlay = document.getElementById('modalOverlayNavbar');
     if (navbar) {
         navbar.classList.add('modal-open');
+    }
+    if (navbarOverlay) {
+        navbarOverlay.classList.add('active');
     }
 });
 
 document.addEventListener('hidden.bs.modal', function() {
     const navbar = document.querySelector('.navbar');
+    const navbarOverlay = document.getElementById('modalOverlayNavbar');
     if (navbar) {
         navbar.classList.remove('modal-open');
+    }
+    if (navbarOverlay) {
+        navbarOverlay.classList.remove('active');
     }
 });
 

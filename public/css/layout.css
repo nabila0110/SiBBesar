@@ -112,7 +112,7 @@ body {
        when sidebar is visible; this will be overridden when sidebar is collapsed/hidden */
     padding-left: calc(32px + 280px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    position: fixed; /* make navbar fixed so it doesn't shift between views */
+    position: sticky; /* make navbar fixed so it doesn't shift between views */
     top: 0;
     left: 0;
     right: 0;

@@ -14,11 +14,36 @@ class JurnalController extends Controller
     /**
      * Display a listing of the journals.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // show recent journals with pagination
-        $journals = Journal::with('details.account')->orderBy('transaction_date', 'desc')->paginate(25);
-        return view('jurnal.index', compact('journals'));
+        // Query dasar sekarang ada di JournalDetail
+        // Kita juga join ke tabel journals agar bisa sorting/filter berdasarkan tanggalnya
+        $query = JournalDetail::with(['journal', 'account'])
+            ->join('journals', 'journal_details.journal_id', '=', 'journals.id')
+            ->orderBy('journals.transaction_date', 'desc') // Urutkan berdasarkan tanggal jurnal
+            ->orderBy('journal_details.id', 'asc'); // Lalu berdasarkan ID detail
+
+        // Terapkan filter tanggal jika ada di request
+        if ($request->has('dari_tanggal') && $request->input('dari_tanggal') != '') {
+            $query->where('journals.transaction_date', '>=', $request->input('dari_tanggal'));
+        }
+        if ($request->has('sampai_tanggal') && $request->input('sampai_tanggal') != '') {
+            $query->where('journals.transaction_date', '<=', $request->input('sampai_tanggal'));
+        }
+
+        // Ambil data - PENTING: kita select detailnya agar tidak bentrok nama kolom 'id'
+        // Kita paginasi 25 DETAIL (baris), bukan 25 JURNAL
+        $details = $query->select('journal_details.*')->paginate(25);
+
+        // Jika request adalah AJAX (dari JavaScript fetch), kirim data JSON
+        if ($request->wantsJson()) {
+            return response()->json($details);
+        }
+
+        // Jika tidak, tampilkan halaman Blade
+        // Untuk kompatibilitas dengan view, kita pass $journals tapi value-nya dari $details
+        // Namun kita perlu restructure data agar view masih bisa pakai $journals->details
+        return view('jurnal.index', compact('details'));
     }
 
     /**
@@ -26,7 +51,8 @@ class JurnalController extends Controller
      */
     public function create()
     {
-        return view('jurnal.create');
+        $accounts = Account::where('is_active', true)->orderBy('code')->get();
+        return view('jurnal.create', compact('accounts'));
     }
 
     /**
@@ -40,8 +66,7 @@ class JurnalController extends Controller
             'tanggal' => 'required|date',
             'bukti' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
-            'akun' => 'nullable|string',
-            'kode' => 'nullable|string',
+            'account_id' => 'required|exists:accounts,id',
             'debit' => 'nullable|numeric',
             'kredit' => 'nullable|numeric',
         ]);
@@ -60,6 +85,7 @@ class JurnalController extends Controller
 
             $debit = (float) ($request->input('debit') ?: 0);
             $credit = (float) ($request->input('kredit') ?: 0);
+            $accountId = $request->input('account_id');
 
             $journal = Journal::create([
                 'journal_no' => $journalNo,
@@ -72,34 +98,7 @@ class JurnalController extends Controller
                 'created_by' => Auth::id() ?? null,
             ]);
 
-            // Find or create account
-            $account = null;
-            $akunInput = $request->input('akun');
-            $kode = $request->input('kode');
-            if ($kode) {
-                $account = Account::where('code', $kode)->first();
-            } elseif ($akunInput) {
-                $account = Account::where('name', $akunInput)->first();
-            }
-
-            if (! $account && $akunInput) {
-                // create placeholder account of type expense
-                $code = 'AC' . strtoupper(substr(preg_replace('/[^A-Z0-9]/', '', $akunInput), 0, 6)) . rand(10,99);
-                $account = Account::create([
-                    'code' => $code,
-                    'name' => substr($akunInput,0,255),
-                    'type' => 'expense',
-                    'normal_balance' => 'debit',
-                    'is_active' => true,
-                    'balance_debit' => 0,
-                    'balance_credit' => 0,
-                ]);
-            }
-
-            $accountId = $account->id ?? null;
-
-
-            // Create a journal detail (single line)
+            // Create a journal detail (single line) with selected account
             $detail = JournalDetail::create([
                 'journal_id' => $journal->id,
                 'account_id' => $accountId,

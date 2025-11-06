@@ -50,16 +50,6 @@
                 <!-- Akuntansi Group -->
                 <div class="nav-group">
                     <div class="nav-group-title">Akuntansi</div>
-                    <a href="{{ route('hutang.index') }}"
-                        class="nav-item {{ Request::routeIs('hutang.*') ? 'active' : '' }}">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                        <span>Daftar Hutang</span>
-                    </a>
-                    <a href="{{ route('piutang.index') }}"
-                        class="nav-item {{ Request::routeIs('piutang.*') ? 'active' : '' }}">
-                        <i class="fas fa-hand-holding-usd"></i>
-                        <span>Daftar Piutang</span>
-                    </a>
                     <a href="{{ route('asset.index') }}"
                         class="nav-item {{ Request::routeIs('asset.*') ? 'active' : '' }}">
                         <i class="fas fa-box"></i>
@@ -85,16 +75,22 @@
                         <i class="fas fa-balance-scale"></i>
                         <span>Neraca Saldo Awal</span>
                     </a>
-                    <a href="{{ route('neraca-saldo-akhir') }}"
-                        class="nav-item {{ Request::routeIs('neraca-saldo-akhir') ? 'active' : '' }}">
-                        <i class="fas fa-balance-scale-right"></i>
-                        <span>Neraca Saldo Akhir</span>
-                    </a>
+                    
                 </div>
 
                 <!-- Laporan Group -->
                 <div class="nav-group">
                     <div class="nav-group-title">Laporan</div>
+                    <a href="{{ route('laporan-transaksi') }}"
+                        class="nav-item {{ Request::routeIs('laporan-transaksi') ? 'active' : '' }}">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Laporan Transaksi</span>
+                    </a>
+                    <a href="{{ route('neraca') }}"
+                        class="nav-item {{ Request::routeIs('neraca') ? 'active' : '' }}">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Neraca (Balance Sheet)</span>
+                    </a>
                     <a href="{{ route('laporan-posisi-keuangan') }}"
                         class="nav-item {{ Request::routeIs('laporan-posisi-keuangan') ? 'active' : '' }}">
                         <i class="fas fa-chart-line"></i>
@@ -127,25 +123,7 @@
                     </a>
                 </div>
 
-                <!-- Perhitungan Group -->
-                <div class="nav-group">
-                    <div class="nav-group-title">Perhitungan</div>
-                    <a href="{{ route('pph21.index') }}"
-                        class="nav-item {{ Request::routeIs('pph21.*') ? 'active' : '' }}">
-                        <i class="fas fa-calculator"></i>
-                        <span>Pajak Penghasilan</span>
-                    </a>
-                </div>
 
-                <!-- System Group -->
-                {{-- <div class="nav-group">
-                    <div class="nav-group-title">System</div>
-                    <a href="{{ route('backup-database') }}"
-                        class="nav-item {{ Request::routeIs('backup-database') ? 'active' : '' }}">
-                        <i class="fas fa-database"></i>
-                        <span>Backup Database</span>
-                    </a>
-                </div> --}}
             </nav>
         </aside>
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>

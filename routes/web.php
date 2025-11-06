@@ -30,11 +30,9 @@ use App\Http\Controllers\NeracaSaldoController;
 use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\DataBarangController;
 use App\Http\Controllers\JenisBarangController;
-use App\Http\Controllers\MerkBarangController;
 use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\PajakController;
 use App\Http\Controllers\BackupController;
-use App\Http\Controllers\PPh21Controller;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PreferencesController;
 
@@ -97,15 +95,15 @@ Route::resource('barang', DataBarangController::class)->only([
 Route::resource('supplier', SupplierController::class);
 
 // Single Page Routes (Reports & Special Pages)
+Route::get('/neraca', [NeracaSaldoController::class, 'index'])->name('neraca');
 Route::get('/neraca-saldo-awal', [NeracaSaldoController::class, 'awal'])->name('neraca-saldo-awal');
 Route::get('/neraca-saldo-akhir', [NeracaSaldoController::class, 'akhir'])->name('neraca-saldo-akhir');
+Route::get('/laporan-transaksi', [LaporanKeuanganController::class, 'transaksi'])->name('laporan-transaksi');
 Route::get('/laporan-posisi-keuangan', [LaporanKeuanganController::class, 'posisi'])->name('laporan-posisi-keuangan');
 Route::get('/laporan-laba-rugi', [LaporanKeuanganController::class, 'labaRugi'])->name('laporan-laba-rugi');
-Route::get('/pajak-penghasilan', [PPh21Controller::class, 'index'])->name('pph21.index');
 Route::get('/backup-database', [BackupController::class, 'index'])->name('backup-database');
 Route::post('/backup-database/create', [BackupController::class, 'create'])->name('backup-database.create');
-Route::get('/pph21', [PPh21Controller::class, 'index'])->name('pph21.index');
-Route::post('/pph21/calculate', [PPh21Controller::class, 'calculate'])->name('pph21.calculate');
+Route::post('/pph21/calculate', [CompanyController::class, 'calculate'])->name('pph21.calculate');
 
 // Simple profile & preferences routes used by the navbar dropdown and sidebar header.
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile')->middleware('auth');
