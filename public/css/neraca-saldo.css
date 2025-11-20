@@ -1,0 +1,38 @@
+/* Table Styles */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table td.text-end {
+    font-family: "Roboto Mono", monospace;
+}
+
+/* Total row styling */
+.table tfoot tr {
+    background-color: #f8f9fa;
+}
+
+.table tfoot td {
+    font-weight: 600;
+}
+
+/* Unbalanced totals warning */
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Year selector styling */
+#yearSelect {
+    min-width: 100px;
+    font-weight: 500;
+}
+
+/* DataTable modifications */
+.dataTables_wrapper .dataTables_length select {
+    min-width: 70px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    min-width: 250px;
+}

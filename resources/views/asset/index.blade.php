@@ -25,9 +25,9 @@
               <th>Nama Aset</th>
               <th>Tanggal Perolehan</th>
               <th>Unit</th>
-              <th>Umur Manfaat (Bulan)</th>
+              <th>Umur Manfaat (Tahun)</th>
               <th>Harga Perolehan</th>
-              <th>Akumulasi Penyusutan Perbulan</th>
+              <th>Akumulasi Penyusutan Pertahun</th>
             </tr>
           </thead>
           <tbody>
@@ -72,7 +72,7 @@
                 <input type="number" class="form-control" id="unit" required>
               </div>
               <div class="col-md-4">
-                <label class="form-label fw-semibold">Umur Manfaat (Bulan)</label>
+                <label class="form-label fw-semibold">Umur Manfaat (Tahun)</label>
                 <input type="number" class="form-control" id="umurManfaat" required>
               </div>
               <div class="col-md-4">
@@ -80,7 +80,7 @@
                 <input type="text" class="form-control" id="hargaPerolehan" placeholder="Rp" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-semibold">Akumulasi Penyusutan Perbulan</label>
+                <label class="form-label fw-semibold">Akumulasi Penyusutan Pertahun</label>
                 <input type="text" class="form-control" id="akumulasiPenyusutan" placeholder="Rp" required>
               </div>
             </div>

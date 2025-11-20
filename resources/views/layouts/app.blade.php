@@ -70,31 +70,16 @@
                         <i class="fas fa-book-open"></i>
                         <span>Buku Besar</span>
                     </a>
-                    <a href="{{ route('neraca-saldo-awal') }}"
-                        class="nav-item {{ Request::routeIs('neraca-saldo-awal') ? 'active' : '' }}">
-                        <i class="fas fa-balance-scale"></i>
-                        <span>Neraca Saldo Awal</span>
-                    </a>
                     
                 </div>
 
                 <!-- Laporan Group -->
                 <div class="nav-group">
                     <div class="nav-group-title">Laporan</div>
-                    <a href="{{ route('laporan-transaksi') }}"
-                        class="nav-item {{ Request::routeIs('laporan-transaksi') ? 'active' : '' }}">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                        <span>Laporan Transaksi</span>
-                    </a>
                     <a href="{{ route('neraca') }}"
                         class="nav-item {{ Request::routeIs('neraca') ? 'active' : '' }}">
                         <i class="fas fa-balance-scale"></i>
                         <span>Neraca (Balance Sheet)</span>
-                    </a>
-                    <a href="{{ route('laporan-posisi-keuangan') }}"
-                        class="nav-item {{ Request::routeIs('laporan-posisi-keuangan') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Laporan Posisi Keuangan</span>
                     </a>
                     <a href="{{ route('laporan-laba-rugi') }}"
                         class="nav-item {{ Request::routeIs('laporan-laba-rugi') ? 'active' : '' }}">

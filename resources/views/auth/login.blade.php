@@ -110,7 +110,7 @@
                 <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" stroke="#666" stroke-width="1.2"/>
                 <path d="M2 22c0-3.866 3.582-7 10-7s10 3.134 10 7" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="text" name="email" placeholder="Nama Anda" value="{{ old('email') }}" />
+            <input type="text" name="email" placeholder="Nama Anda" value="{{ old('name') }}" />
         </div>
 
         <div class="input">

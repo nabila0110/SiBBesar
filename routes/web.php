@@ -47,18 +47,32 @@ Route::get('/login', function () {
 })->name('login');
 
 Route::post('/login', function (Request $request) {
-    $credentials = $request->validate([
+    // The login form uses an input named "email" for the identifier (it may contain an email or a username).
+    // Accept either an email or a username (name) and attempt authentication accordingly.
+    $request->validate([
         'email' => 'required|string',
         'password' => 'required|string',
     ]);
+
+    $identifier = $request->input('email');
+    $password = $request->input('password');
+
+    // Build credentials: detect if identifier looks like an email address
+    if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+        $credentials = ['email' => $identifier, 'password' => $password];
+    } else {
+        // treat input as user name
+        $credentials = ['name' => $identifier, 'password' => $password];
+    }
 
     if (Auth::attempt($credentials)) {
         $request->session()->regenerate();
         return redirect()->intended(route('dashboard'));
     }
 
+    // Authentication failed — return to login with an error on the identifier field
     return redirect('/login')->withErrors([
-        'email' => 'Email atau password tidak sesuai.',
+        'email' => 'Nama atau password tidak sesuai.',
     ])->withInput();
 });
 

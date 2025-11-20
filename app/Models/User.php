@@ -35,15 +35,16 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * Using the $casts property ensures Laravel applies the built-in
+     * "hashed" cast (available in recent Laravel versions) when the
+     * model is assigned a plain password via mass-assignment or setAttribute.
+     *
+     * @var array<string,string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 }
