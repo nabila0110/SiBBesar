@@ -13,7 +13,7 @@
     }
     .table-buku-besar th {
         background-color: #4472C4;
-        color: white;
+        color: black;
         font-weight: bold;
         text-align: center;
         vertical-align: middle;
@@ -27,7 +27,7 @@
         text-align: right;
     }
     .subtotal-row {
-        background-color: #F2F2F2;
+        background-color: black;
         font-weight: bold;
     }
 </style>
@@ -67,7 +67,7 @@
     </form>
 
     <div class="card">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-black">
             <h5 class="mb-0 text-center">BUKU BESAR</h5>
         </div>
         <div class="card-body p-0">
@@ -192,7 +192,7 @@ function cetakPDF() {
         let startY = 52;
         
         // Header
-        doc.addImage(logo, 'PNG', margin, 10, 25, 25);
+        doc.addImage(logo, 'PNG', margin, 5, 25, 25);
         doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
         doc.text("PT MITRA FAJAR KENCANA", pageWidth / 2, 15, { align: "center" });

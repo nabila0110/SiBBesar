@@ -163,12 +163,18 @@
                                         <a href="{{ route('jurnal.edit', $journal->id) }}" class="btn btn-sm btn-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('jurnal.destroy', $journal->id) }}" method="POST" style="display:inline;">
+                                        <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                                data-id="{{ $journal->id }}" 
+                                                data-item="{{ $journal->item }}"
+                                                title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <form id="delete-form-{{ $journal->id }}" 
+                                              action="{{ route('jurnal.destroy', $journal->id) }}" 
+                                              method="POST" 
+                                              style="display: none;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus jurnal ini?')" title="Hapus">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
                                         </form>
                                     </td>
                                 </tr>
@@ -481,6 +487,39 @@
         // Save file
         XLSX.writeFile(wb, `Laporan_Jurnal_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
+
+    // SweetAlert2 for delete confirmation
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const item = this.getAttribute('data-item');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    html: `You won't be able to revert this!<br><small class="text-muted">Item: <strong>${item}</strong></small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'swal-custom-popup',
+                        title: 'swal-custom-title',
+                        htmlContainer: 'swal-custom-html'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('delete-form-' + id).submit();
+                    }
+                });
+            });
+        });
+    });
 </script>
 
 @endsection

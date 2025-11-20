@@ -36,42 +36,6 @@ class BukuBesarController extends Controller
 
         return view('buku-besar.index', compact('journals'));
     }
-}
-                            'saldo' => $saldo
-                        ];
-                    }
-                }
-
-                // Add all transactions within period
-                foreach ($entries as $entry) {
-                    if ($account->normal_balance === 'credit') {
-                        // For credit normal accounts, credit increases balance
-                        $saldo += ($entry->credit - $entry->debit);
-                    } else {
-                        // For debit normal accounts, debit increases balance
-                        $saldo += ($entry->debit - $entry->credit);
-                    }
-
-                    $rows[] = [
-                        'tanggal' => Carbon::parse($entry->tanggal)->format('d/m/Y'),
-                        'nomor' => $entry->nomor,
-                        'transaksi' => $entry->transaksi,
-                        'detail' => $entry->detail,
-                        'debit' => $entry->debit,
-                        'kredit' => $entry->credit,
-                        'saldo' => $saldo
-                    ];
-                }
-
-                $data[] = [
-                    'account' => $account,
-                    'rows' => $rows
-                ];
-            }
-        }
-
-        return view('buku-besar', compact('data', 'periode_from', 'periode_to'));
-    }
 
     /**
      * Export buku besar data to PDF (optional - can be implemented if needed)
