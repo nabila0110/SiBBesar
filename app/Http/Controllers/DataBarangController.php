@@ -17,7 +17,7 @@ class DataBarangController extends Controller
             ->when($keyword, function ($query, $keyword) {
                 $query->where('nama', 'like', "%$keyword%")
                       ->orWhere('kode', 'like', "%$keyword%");
-            })->orderBy('id', 'desc')->paginate(10);
+            })->orderBy('id', 'desc')->paginate(5);
 
         $suppliers = Supplier::orderBy('nama_supplier')->get();
 

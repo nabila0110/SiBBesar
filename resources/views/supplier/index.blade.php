@@ -15,7 +15,55 @@
     .card { border-radius: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); background: #fff; }
     h3 { font-weight: 700; }
     table td, table th { vertical-align: middle; }
-    .btn-tambah { padding: 0.375rem 0.75rem !important; font-size: 0.875rem !important; line-height: 1.5 !important; }
+    .btn-tambah { padding: 0.25rem 0.5rem !important; font-size: 0.813rem !important; line-height: 1.2 !important; height: auto !important; }
+    
+    /* Pagination styling */
+    .pagination {
+        margin: 0;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-item {
+        margin: 0 2px;
+    }
+    
+    .pagination .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        transition: all 0.15s ease-in-out;
+    }
+    
+    .pagination .page-link:hover {
+        color: #0056b3;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+        z-index: 3;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .pagination .page-link:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
   </style>
 </head>
 
@@ -78,7 +126,7 @@
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center mt-3">
-      {{ $suppliers->appends(['search' => $search])->links('pagination::bootstrap-5') }}
+      {{ $suppliers->appends(['search' => $search])->links() }}
     </div>
   </div>
 </div>

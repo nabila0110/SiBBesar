@@ -13,7 +13,7 @@ class SupplierController extends Controller
             ->when($search, function ($query) use ($search) {
                 return $query->where('nama_supplier', 'like', '%' . $search . '%')
                              ->orWhere('kode_supplier', 'like', '%' . $search . '%');
-            })->paginate(10);
+            })->paginate(3);
         return view('supplier.index', compact('suppliers', 'search'));
     }
 
