@@ -15,5 +15,14 @@ class Barang extends Model
         'nama',
         'harga',
         'stok',
+        'supplier_id',
     ];
+    
+    /**
+     * Get the supplier that owns the barang
+     */
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
 }

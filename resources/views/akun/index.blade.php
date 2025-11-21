@@ -6,9 +6,9 @@
 
 @section('content')
 
-<div class="container mt-5">
+<div class="container mt-2">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-primary">Daftar Akun</h3>
+    <h3 class="fw-bold">Daftar Akun</h3>
     <div>
       <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buatAkunModal">+ Buat Akun</button>
     </div>
@@ -30,7 +30,7 @@
           @foreach($accounts as $account)
             <tr>
               <td>{{ $loop->iteration }}</td>
-              <td>[{{ $account->code }}]</td>
+              <td>[{{ $account->category->code }}-{{ $account->code }}]</td>
               <td>{{ $account->name }}</td>
               <td>{{ $account->type }}</td>
               <td>
@@ -57,9 +57,18 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
+            <label class="form-label">Kategori Akun:</label>
+            <select name="account_category_id" id="kategoriAkun" class="form-select" required>
+              <option value="">Pilih Kategori</option>
+              @foreach($categories as $category)
+                <option value="{{ $category->id }}" data-code="{{ $category->code }}">{{ $category->code }} - {{ $category->name }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="mb-3">
             <label class="form-label">Kode Akun:</label>
-            <input type="text" name="code" id="kodeAkun" class="form-control" placeholder="1500" required>
-            <small class="text-muted">Masukkan kode tanpa tanda kurung []</small>
+            <input type="text" name="code" id="kodeAkun" class="form-control" placeholder="1100" required>
+            <small class="text-muted">Masukkan kode akun saja (tanpa kategori)</small>
           </div>
           <div class="mb-3">
             <label class="form-label">Nama Akun:</label>

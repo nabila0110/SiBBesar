@@ -29,7 +29,6 @@ use App\Http\Controllers\BukuBesarController;
 use App\Http\Controllers\NeracaSaldoController;
 use App\Http\Controllers\LaporanKeuanganController;
 use App\Http\Controllers\DataBarangController;
-use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CompanyController;
@@ -93,7 +92,6 @@ Route::resource('akun', AkunController::class);
 Route::resource('jurnal', JurnalController::class);
 Route::resource('buku-besar', BukuBesarController::class);
 Route::resource('barang', DataBarangController::class);
-Route::resource('jenis-barang', JenisBarangController::class);
 Route::resource('barang', DataBarangController::class)->only([
     'index', 'store', 'edit', 'update', 'destroy'
 ]);
@@ -101,6 +99,11 @@ Route::resource('supplier', SupplierController::class);
 
 // Single Page Routes (Reports & Special Pages)
 Route::get('/neraca', [NeracaSaldoController::class, 'index'])->name('neraca');
+Route::get('/neraca/export-pdf', [NeracaSaldoController::class, 'exportNeracaPdf'])->name('neraca.export-pdf');
+Route::get('/neraca/export-excel', [NeracaSaldoController::class, 'exportNeracaExcel'])->name('neraca.export-excel');
+Route::get('/laba-rugi', [NeracaSaldoController::class, 'labaRugi'])->name('laba-rugi');
+Route::get('/laba-rugi/export-pdf', [NeracaSaldoController::class, 'exportLabaRugiPdf'])->name('laba-rugi.export-pdf');
+Route::get('/laba-rugi/export-excel', [NeracaSaldoController::class, 'exportLabaRugiExcel'])->name('laba-rugi.export-excel');
 Route::get('/neraca-saldo-awal', [NeracaSaldoController::class, 'awal'])->name('neraca-saldo-awal');
 Route::get('/neraca-saldo-akhir', [NeracaSaldoController::class, 'akhir'])->name('neraca-saldo-akhir');
 Route::get('/laporan-transaksi', [LaporanKeuanganController::class, 'transaksi'])->name('laporan-transaksi');

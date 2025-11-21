@@ -42,7 +42,7 @@ class JurnalController extends Controller
      */
     public function create()
     {
-        $accounts = Account::where('is_active', true)->orderBy('code')->get();
+        $accounts = Account::with('category')->where('is_active', true)->orderBy('account_category_id')->orderBy('code')->get();
         return view('jurnal.create', compact('accounts'));
     }
 
@@ -138,7 +138,7 @@ class JurnalController extends Controller
     public function edit($id)
     {
         $journal = Journal::with('account')->findOrFail($id);
-        $accounts = Account::where('is_active', true)->orderBy('code')->get();
+        $accounts = Account::with('category')->where('is_active', true)->orderBy('account_category_id')->orderBy('code')->get();
         return view('jurnal.edit', compact('journal', 'accounts'));
     }
 

@@ -14,7 +14,10 @@ return new class extends Migration
             $table->string('nama');
             $table->decimal('harga', 12, 2);
             $table->integer('stok');
+            $table->unsignedBigInteger('supplier_id')->nullable();
             $table->timestamps();
+            
+            $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('set null');
         });
     }
 

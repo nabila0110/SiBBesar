@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Account;
+use App\Models\AccountCategory;
 
 class AkunController extends Controller
 {
@@ -14,12 +15,12 @@ class AkunController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $accounts = Account::select(['code', 'name', 'group', 'type']);
+            $accounts = Account::with('category')->select(['code', 'name', 'group', 'type', 'account_category_id']);
             
             return response()->json([
                 'data' => $accounts->get()->map(function($account) {
                     return [
-                        'code' => $account->code,
+                        'code' => $account->category->code . '-' . $account->code,
                         'name' => $account->name,
                         'group' => $account->group,
                         'type' => $account->type
@@ -28,9 +29,10 @@ class AkunController extends Controller
             ]);
         }
 
-            $accounts = Account::orderBy('code')->get();
+        $accounts = Account::with('category')->orderBy('account_category_id')->orderBy('code')->get();
+        $categories = AccountCategory::where('is_active', true)->orderBy('code')->get();
 
-        return view('akun.index', compact('accounts'));
+        return view('akun.index', compact('accounts', 'categories'));
     }
 
     /**
@@ -47,7 +49,8 @@ class AkunController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|unique:accounts,code',
+            'account_category_id' => 'required|exists:account_categories,id',
+            'code' => 'required',
             'name' => 'required',
             'group' => 'required|in:Assets,Liabilities,Equity,Revenue,Expense',
             'type' => 'required',
@@ -55,6 +58,7 @@ class AkunController extends Controller
         ]);
 
         $account = Account::create([
+            'account_category_id' => $validated['account_category_id'],
             'code' => $validated['code'],
             'name' => $validated['name'],
             'type' => $validated['type'],

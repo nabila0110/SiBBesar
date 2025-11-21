@@ -12,10 +12,9 @@ class CreateAccountCategoriesTable extends Migration
     {
         Schema::create('account_categories', function (Blueprint $table) {
             $table->id(); // BIGINT primary key
-            $table->string('code', 5)->unique(); // kode kategori (1,2,3,4,5)
+            $table->string('code', 10)->unique(); // Kode kategori: 1, 2, 3, dst
             $table->string('name', 255); // Nama (AKTIVA, KEWAJIBAN, dll)
             $table->enum('type', ['asset', 'liability', 'equity', 'revenue', 'expense']);
-            $table->enum('normal_balance', ['debit', 'credit']);
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps(); // created_at, updated_at

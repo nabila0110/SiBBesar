@@ -100,7 +100,7 @@
                     @php
                         $accountJournals = $accountData['data'];
                         $account = $accountJournals->first()->account;
-                        $classification = $account ? ($account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
+                        $classification = $account ? ($account->category->code . '-' . $account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
                         $currentPage = $accountData['current_page'];
                         $lastPage = $accountData['last_page'];
                         $from = $accountData['from'];
@@ -273,7 +273,7 @@ function cetakPDF() {
         @foreach($exportGrouped as $accountId => $accountJournals)
             @php
                 $account = $accountJournals->first()->account;
-                $classification = $account ? ($account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
+                $classification = $account ? ($account->category->code . '-' . $account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
             @endphp
 
             // Group header
@@ -367,7 +367,7 @@ function exportToExcel() {
     @foreach($exportGrouped as $accountId => $accountJournals)
         @php
             $account = $accountJournals->first()->account;
-            $classification = $account ? ($account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
+            $classification = $account ? ($account->category->code . '-' . $account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
             $sheetName = substr(preg_replace('/[^A-Za-z0-9 ]/', '', $classification), 0, 31);
         @endphp
 

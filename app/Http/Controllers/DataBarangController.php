@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Barang;
+use App\Models\Supplier;
 
 class DataBarangController extends Controller
 {
@@ -12,12 +13,15 @@ class DataBarangController extends Controller
     {
         $keyword = $request->search;
 
-        $barang = Barang::when($keyword, function ($query, $keyword) {
-            $query->where('nama', 'like', "%$keyword%")
-                  ->orWhere('kode', 'like', "%$keyword%");
-        })->orderBy('id', 'desc')->get();
+        $barang = Barang::with('supplier')
+            ->when($keyword, function ($query, $keyword) {
+                $query->where('nama', 'like', "%$keyword%")
+                      ->orWhere('kode', 'like', "%$keyword%");
+            })->orderBy('id', 'desc')->paginate(10);
 
-        return view('data-barang.index', compact('barang', 'keyword'));
+        $suppliers = Supplier::orderBy('nama_supplier')->get();
+
+        return view('data-barang.index', compact('barang', 'keyword', 'suppliers'));
     }
 
     // Simpan barang baru
@@ -28,6 +32,7 @@ class DataBarangController extends Controller
             'nama' => 'required',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
+            'supplier_id' => 'nullable|exists:suppliers,id',
         ]);
 
         Barang::create($request->all());
@@ -50,6 +55,7 @@ class DataBarangController extends Controller
             'nama' => 'required',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
+            'supplier_id' => 'nullable|exists:suppliers,id',
         ]);
         $barang->update($request->all());
         return redirect()->route('barang.index')->with('success', 'Barang berhasil diperbarui!');

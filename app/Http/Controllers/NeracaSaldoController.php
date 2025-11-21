@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\JournalDetail;
+use App\Models\AccountCategory;
 use App\Models\Receivable;
 use App\Models\Payable;
+use App\Models\Journal;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\NeracaExport;
+use App\Exports\LabaRugiExport;
 
 class NeracaSaldoController extends Controller
 {
@@ -26,20 +31,302 @@ class NeracaSaldoController extends Controller
     }
 
     /**
+     * Show the Laba Rugi (Income Statement) page
+     */
+    public function labaRugi(Request $request)
+    {
+        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
+        
+        // Get only revenue and expense categories
+        $categories = AccountCategory::with(['accounts' => function($query) {
+            $query->where('is_active', true)->orderBy('code');
+        }])
+        ->whereIn('type', ['revenue', 'expense'])
+        ->orderBy('code')
+        ->get();
+        
+        $labaRugiData = [];
+        
+        foreach ($categories as $category) {
+            $categoryData = [
+                'category' => $category,
+                'accounts' => [],
+                'total' => 0
+            ];
+            
+            foreach ($category->accounts as $account) {
+                $balance = $this->calculateAccountBalance($account->id, $startDate, $endDate);
+                
+                // Always add accounts
+                $categoryData['accounts'][] = [
+                    'account' => $account,
+                    'balance' => $balance
+                ];
+                $categoryData['total'] += $balance;
+            }
+            
+            $labaRugiData[] = $categoryData;
+        }
+        
+        return view('laba-rugi', [
+            'labaRugiData' => $labaRugiData,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ]);
+    }
+
+    /**
      * Show the Neraca (Balance Sheet) page - Main Report
      */
-    public function index()
+    public function index(Request $request)
     {
-        $year = request()->query('year', date('Y'));
-        $period = request()->query('period', 'year'); // year, month, custom
+        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
         
-        $neracaData = $this->getNeracaData($year, $period);
+        // Calculate net income (Revenue - Expense) for the period
+        $totalRevenue = $this->calculateTotalByType('revenue', $startDate, $endDate);
+        $totalExpense = $this->calculateTotalByType('expense', $startDate, $endDate);
+        $netIncome = $totalRevenue - $totalExpense;
+        
+        // Get only asset, liability, and equity categories (NOT revenue/expense)
+        $categories = AccountCategory::with(['accounts' => function($query) {
+            $query->where('is_active', true)->orderBy('code');
+        }])
+        ->whereIn('type', ['asset', 'liability', 'equity'])
+        ->orderBy('code')
+        ->get();
+        
+        $neracaData = [];
+        
+        foreach ($categories as $category) {
+            $categoryData = [
+                'category' => $category,
+                'accounts' => [],
+                'total' => 0
+            ];
+            
+            foreach ($category->accounts as $account) {
+                $balance = $this->calculateAccountBalance($account->id, $startDate, $endDate);
+                
+                // For "Laba Ditahan" account, add net income
+                if ($account->type === 'equity' && (stripos($account->name, 'laba') !== false || stripos($account->name, 'rugi') !== false)) {
+                    $balance += $netIncome;
+                }
+                
+                // Always add accounts for neraca even if balance is 0
+                $categoryData['accounts'][] = [
+                    'account' => $account,
+                    'balance' => $balance
+                ];
+                $categoryData['total'] += $balance;
+            }
+            
+            // Always include asset, liability, and equity categories
+            $neracaData[] = $categoryData;
+        }
+        
+        // Debug: count total accounts
+        $totalAccounts = collect($neracaData)->sum(fn($cat) => count($cat['accounts']));
+        \Log::info("Neraca - Total categories: " . count($neracaData) . ", Total accounts: " . $totalAccounts);
         
         return view('neraca', [
             'neracaData' => $neracaData,
-            'year' => $year,
-            'period' => $period
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'netIncome' => $netIncome
         ]);
+    }
+
+    /**
+     * Export Neraca to PDF
+     */
+    public function exportNeracaPdf(Request $request)
+    {
+        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
+        
+        $totalRevenue = $this->calculateTotalByType('revenue', $startDate, $endDate);
+        $totalExpense = $this->calculateTotalByType('expense', $startDate, $endDate);
+        $netIncome = $totalRevenue - $totalExpense;
+        
+        $categories = AccountCategory::with(['accounts' => function($query) {
+            $query->where('is_active', true)->orderBy('code');
+        }])
+        ->whereIn('type', ['asset', 'liability', 'equity'])
+        ->orderBy('code')
+        ->get();
+        
+        $neracaData = [];
+        
+        foreach ($categories as $category) {
+            $categoryData = [
+                'category' => $category,
+                'accounts' => [],
+                'total' => 0
+            ];
+            
+            foreach ($category->accounts as $account) {
+                $balance = $this->calculateAccountBalance($account->id, $startDate, $endDate);
+                
+                if ($account->type === 'equity' && (stripos($account->name, 'laba') !== false || stripos($account->name, 'rugi') !== false)) {
+                    $balance += $netIncome;
+                }
+                
+                $categoryData['accounts'][] = [
+                    'account' => $account,
+                    'balance' => $balance
+                ];
+                $categoryData['total'] += $balance;
+            }
+            
+            $neracaData[] = $categoryData;
+        }
+        
+        $pdf = Pdf::loadView('pdf.neraca', [
+            'neracaData' => $neracaData,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'netIncome' => $netIncome
+        ])->setPaper('a4', 'portrait');
+        
+        return $pdf->download('neraca-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Export Neraca to Excel
+     */
+    public function exportNeracaExcel(Request $request)
+    {
+        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
+        
+        return Excel::download(new NeracaExport($startDate, $endDate), 'neraca-' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * Export Laba Rugi to PDF
+     */
+    public function exportLabaRugiPdf(Request $request)
+    {
+        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
+        
+        $categories = AccountCategory::with(['accounts' => function($query) {
+            $query->where('is_active', true)->orderBy('code');
+        }])
+        ->whereIn('type', ['revenue', 'expense'])
+        ->orderBy('code')
+        ->get();
+        
+        $labaRugiData = [];
+        
+        foreach ($categories as $category) {
+            $categoryData = [
+                'category' => $category,
+                'accounts' => [],
+                'total' => 0
+            ];
+            
+            foreach ($category->accounts as $account) {
+                $balance = $this->calculateAccountBalance($account->id, $startDate, $endDate);
+                
+                $categoryData['accounts'][] = [
+                    'account' => $account,
+                    'balance' => $balance
+                ];
+                $categoryData['total'] += $balance;
+            }
+            
+            $labaRugiData[] = $categoryData;
+        }
+        
+        $pdf = Pdf::loadView('pdf.laba-rugi', [
+            'labaRugiData' => $labaRugiData,
+            'startDate' => $startDate,
+            'endDate' => $endDate
+        ])->setPaper('a4', 'portrait');
+        
+        return $pdf->download('laba-rugi-' . date('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Export Laba Rugi to Excel
+     */
+    public function exportLabaRugiExcel(Request $request)
+    {
+        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
+        
+        return Excel::download(new LabaRugiExport($startDate, $endDate), 'laba-rugi-' . date('Y-m-d') . '.xlsx');
+    }
+    
+    /**
+     * Calculate total for all accounts of a specific type
+     */
+    private function calculateTotalByType($type, $startDate, $endDate)
+    {
+        $accounts = Account::where('type', $type)->where('is_active', true)->pluck('id');
+        
+        $totalIn = Journal::whereIn('account_id', $accounts)
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->where('type', 'in')
+            ->sum('total');
+            
+        $totalOut = Journal::whereIn('account_id', $accounts)
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->where('type', 'out')
+            ->sum('total');
+        
+        if ($type === 'revenue') {
+            return $totalIn - $totalOut;
+        } elseif ($type === 'expense') {
+            return $totalOut - $totalIn;
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Calculate account balance for a period
+     */
+    private function calculateAccountBalance($accountId, $startDate, $endDate)
+    {
+        $account = Account::find($accountId);
+        
+        // Get totals from journals based on type
+        $totalIn = Journal::where('account_id', $accountId)
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->where('type', 'in')
+            ->sum('total');
+            
+        $totalOut = Journal::where('account_id', $accountId)
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->where('type', 'out')
+            ->sum('total');
+        
+        // Logic based on account type and transaction type:
+        // TYPE 'IN' = Uang masuk/penerimaan
+        // TYPE 'OUT' = Uang keluar/pengeluaran
+        
+        // For REVENUE accounts (credit): type 'in' increases balance (positive)
+        // For EXPENSE accounts (debit): type 'out' increases balance (positive for showing expense amount)
+        // For ASSET accounts (debit): type 'in' increases, type 'out' decreases
+        // For LIABILITY accounts (credit): type 'in' increases (terima hutang), type 'out' decreases (bayar hutang)
+        
+        if ($account->type === 'revenue') {
+            // Revenue: uang masuk (type 'in') adalah pendapatan
+            return $totalIn - $totalOut;
+        } elseif ($account->type === 'expense') {
+            // Expense: uang keluar (type 'out') adalah beban
+            return $totalOut - $totalIn;
+        } elseif ($account->normal_balance === 'debit') {
+            // Asset: uang masuk menambah, uang keluar mengurangi
+            return $totalIn - $totalOut;
+        } else {
+            // Liability, Equity: uang masuk menambah, uang keluar mengurangi
+            return $totalIn - $totalOut;
+        }
     }
 
     /**
@@ -90,21 +377,23 @@ class NeracaSaldoController extends Controller
             ->orderBy('code')
             ->get()
             ->map(function ($account) use ($startDate, $endDate) {
-                $totals = JournalDetail::whereHas('journal', function ($query) use ($startDate, $endDate) {
-                    $query->whereBetween('transaction_date', [$startDate, $endDate]);
-                })
-                ->where('account_id', $account->id)
-                ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(credit),0) as total_credit')
-                ->first();
-
-                $debit = $totals->total_debit ?? 0;
-                $credit = $totals->total_credit ?? 0;
+                $totalIn = Journal::where('account_id', $account->id)
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->where('type', 'in')
+                    ->sum('total');
+                    
+                $totalOut = Journal::where('account_id', $account->id)
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->where('type', 'out')
+                    ->sum('total');
 
                 // Calculate balance based on normal balance
                 if ($account->normal_balance === 'debit') {
-                    $balance = $debit - $credit;
+                    // For debit accounts: IN increases, OUT decreases
+                    $balance = $totalIn - $totalOut;
                 } else {
-                    $balance = $credit - $debit;
+                    // For credit accounts: OUT increases, IN decreases
+                    $balance = $totalOut - $totalIn;
                 }
 
                 return [
@@ -169,19 +458,24 @@ class NeracaSaldoController extends Controller
         $start = $year . '-01-01';
         $end = $year . '-12-31';
 
-        // Collect accounts and compute sums from journal details joined with journals
+        // Collect accounts and compute sums from journals
         $accounts = Account::orderBy('code')->get();
 
         $rows = [];
         foreach ($accounts as $acct) {
-            $totals = JournalDetail::join('journals', 'journal_details.journal_id', '=', 'journals.id')
-                ->where('journal_details.account_id', $acct->id)
-                ->whereBetween('journals.transaction_date', [$start, $end])
-                ->selectRaw('COALESCE(SUM(journal_details.debit),0) as total_debit, COALESCE(SUM(journal_details.credit),0) as total_credit')
-                ->first();
+            $totalIn = Journal::where('account_id', $acct->id)
+                ->whereBetween('transaction_date', [$start, $end])
+                ->where('type', 'in')
+                ->sum('total');
+                
+            $totalOut = Journal::where('account_id', $acct->id)
+                ->whereBetween('transaction_date', [$start, $end])
+                ->where('type', 'out')
+                ->sum('total');
 
-            $debit = $totals->total_debit ?? 0;
-            $credit = $totals->total_credit ?? 0;
+            // For neraca saldo: type 'in' = debit, type 'out' = credit
+            $debit = $totalIn;
+            $credit = $totalOut;
 
             $rows[] = [
                 'code' => $acct->code,

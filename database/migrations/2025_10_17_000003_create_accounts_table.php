@@ -14,10 +14,10 @@ return new class extends Migration{
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('code', 20)->unique();
+            $table->string('code', 20);
             $table->string('name', 255);
 
-            $table->unsignedBigInteger('account_category_id')->nullable();
+            $table->unsignedBigInteger('account_category_id');
             $table->unsignedBigInteger('account_type_id')->nullable();
 
             $table->enum('type', ['asset', 'liability', 'equity', 'revenue', 'expense']);
@@ -34,10 +34,14 @@ return new class extends Migration{
             $table->timestamps();
             $table->softDeletes();
 
-            // Foreign keys and indexes (nullable keys added above)
+            // Foreign keys and indexes
             $table->index(['code']);
             $table->index(['type']);
             $table->index(['is_active']);
+            $table->unique(['account_category_id', 'code'], 'unique_category_code');
+
+            $table->foreign('account_category_id')->references('id')->on('account_categories')->onDelete('restrict');
+
         });
     }
 

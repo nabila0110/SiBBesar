@@ -92,6 +92,11 @@
                         <i class="fas fa-balance-scale"></i>
                         <span>Neraca (Balance Sheet)</span>
                     </a>
+                    <a href="{{ route('laba-rugi') }}"
+                        class="nav-item {{ Request::routeIs('laba-rugi') ? 'active' : '' }}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Laba Rugi (Income Statement)</span>
+                    </a>
                 </div>
 
                 <!-- Persediaan Group -->

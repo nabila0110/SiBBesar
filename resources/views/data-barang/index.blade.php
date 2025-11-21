@@ -15,6 +15,7 @@
     .card { border-radius: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); background: #fff; }
     h3 { font-weight: 700; }
     table td, table th { vertical-align: middle; }
+    .btn-tambah { padding: 0.375rem 0.75rem !important; font-size: 0.875rem !important; line-height: 1.5 !important; }
   </style>
 </head>
 
@@ -38,7 +39,7 @@
       </form>
 
       <!-- ➕ Tambah Barang -->
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">Tambah Barang</button>
+      <button class="btn btn-primary btn-tambah" data-bs-toggle="modal" data-bs-target="#modalTambah">+ Tambah Barang</button>
     </div>
 
     <!-- 📋 Tabel Data Barang -->
@@ -51,17 +52,19 @@
             <th>Nama Barang</th>
             <th>Harga</th>
             <th>Stok</th>
+            <th>Supplier</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
-          @forelse($barang as $b)
+          @forelse($barang as $index => $b)
             <tr>
-              <td>{{ $loop->iteration }}</td>
+              <td>{{ $barang->firstItem() + $index }}</td>
               <td>{{ $b->kode }}</td>
               <td>{{ $b->nama }}</td>
               <td>Rp {{ number_format($b->harga, 0, ',', '.') }}</td>
               <td>{{ $b->stok }}</td>
+              <td>{{ $b->supplier->nama_supplier ?? '-' }}</td>
               <td>
                 <button class="btn btn-warning btn-sm edit-btn" data-id="{{ $b->id }}">Edit</button>
                 <form action="{{ route('barang.destroy', $b->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus barang ini?')">
@@ -71,10 +74,15 @@
               </td>
             </tr>
           @empty
-            <tr><td colspan="6" class="text-center text-muted">Belum ada data barang</td></tr>
+            <tr><td colspan="7" class="text-center text-muted">Belum ada data barang</td></tr>
           @endforelse
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-3">
+      {{ $barang->appends(['search' => $keyword])->links('pagination::bootstrap-5') }}
     </div>
   </div>
 </div>
@@ -105,6 +113,15 @@
           <div class="mb-2">
             <label>Stok</label>
             <input type="number" name="stok" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label>Supplier (Opsional)</label>
+            <select name="supplier_id" class="form-control">
+              <option value="">-- Pilih Supplier --</option>
+              @foreach($suppliers as $supplier)
+                <option value="{{ $supplier->id }}">{{ $supplier->nama_supplier }}</option>
+              @endforeach
+            </select>
           </div>
         </div>
         <div class="modal-footer">
@@ -145,6 +162,15 @@
             <label>Stok</label>
             <input type="number" name="stok" id="editStok" class="form-control" required>
           </div>
+          <div class="mb-2">
+            <label>Supplier (Opsional)</label>
+            <select name="supplier_id" id="editSupplierId" class="form-control">
+              <option value="">-- Pilih Supplier --</option>
+              @foreach($suppliers as $supplier)
+                <option value="{{ $supplier->id }}">{{ $supplier->nama_supplier }}</option>
+              @endforeach
+            </select>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -154,8 +180,6 @@
     </div>
   </div>
 </div>
-
-<p class="text-center text-muted small mt-3">Powered by Rana</p>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -171,6 +195,7 @@
           document.getElementById('editNama').value = data.nama;
           document.getElementById('editHarga').value = data.harga;
           document.getElementById('editStok').value = data.stok;
+          document.getElementById('editSupplierId').value = data.supplier_id || '';
           document.getElementById('editForm').action = /barang/${id};
           new bootstrap.Modal(document.getElementById('modalEdit')).show();
         });

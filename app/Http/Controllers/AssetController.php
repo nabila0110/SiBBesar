@@ -13,8 +13,8 @@ class AssetController extends Controller
      */
     public function index()
     {
-        $assets = Asset::with('account')->orderBy('created_at', 'desc')->get();
-        $accounts = \App\Models\Account::where('type', 'asset')->orderBy('name')->get();
+        $assets = Asset::with('account')->orderBy('created_at', 'desc')->paginate(4);
+        $accounts = \App\Models\Account::with('category')->where('type', 'asset')->orderBy('account_category_id')->orderBy('name')->get();
         return view('asset.index', [
             'assets' => $assets,
             'accounts' => $accounts
@@ -66,7 +66,7 @@ class AssetController extends Controller
                 'depreciation_rate' => $request->depreciation_rate,
                 'location' => $request->location,
                 'condition' => $request->condition,
-                'status' => 'active'
+                'status' => $request->status ?? 'active'
             ]);
 
             return response()->json([

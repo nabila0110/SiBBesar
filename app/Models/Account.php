@@ -30,6 +30,14 @@ class Account extends Model
     }
 
     /**
+     * Get full account code with category prefix
+     */
+    public function getFullCodeAttribute()
+    {
+        return $this->category ? ($this->category->code . '-' . $this->code) : $this->code;
+    }
+
+    /**
      * Get balance for this account. If $start/$end provided, compute from journal details,
      * otherwise return cached debit-credit.
      * Positive = debit balance, Negative = credit balance

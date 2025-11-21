@@ -189,7 +189,7 @@
                                 <option value="">-- Pilih Account --</option>
                                 @foreach($accounts as $account)
                                     <option value="{{ $account->id }}" {{ old('account_id', $journal->account_id) == $account->id ? 'selected' : '' }}>
-                                        {{ $account->code }} - {{ $account->name }}
+                                        {{ $account->category->code }}-{{ $account->code }} - {{ $account->name }}
                                     </option>
                                 @endforeach
                             </select>

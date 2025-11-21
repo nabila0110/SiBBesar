@@ -9,15 +9,16 @@ class SupplierController extends Controller
 {
     public function index(Request $request) {
         $search = $request->get('search');
-        $suppliers = Supplier::when($search, function ($query) use ($search) {
-            return $query->where('nama_supplier', 'like', '%' . $search . '%')
-                         ->orWhere('kode_supplier', 'like', '%' . $search . '%');
-        })->paginate(10);
-        return view('persediaan.supplier.index', compact('suppliers', 'search'));
+        $suppliers = Supplier::withCount('barangs')
+            ->when($search, function ($query) use ($search) {
+                return $query->where('nama_supplier', 'like', '%' . $search . '%')
+                             ->orWhere('kode_supplier', 'like', '%' . $search . '%');
+            })->paginate(10);
+        return view('supplier.index', compact('suppliers', 'search'));
     }
 
     public function create() {
-        return view('persediaan.supplier.form');
+        return view('supplier.form');
     }
 
     public function store(Request $request) {
@@ -32,7 +33,13 @@ class SupplierController extends Controller
 
     public function edit($id) {
         $supplier = Supplier::findOrFail($id);
-        return view('persediaan.supplier.edit', compact('supplier'));
+        
+        // Jika request AJAX, return JSON
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json($supplier);
+        }
+        
+        return view('supplier.edit', compact('supplier'));
     }
 
     public function update(Request $request, $id) {
