@@ -12,24 +12,39 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Seed users
-        $this->call(UserSeeder::class);
+        // Seed users only if none exist
+        if (User::count() === 0) {
+            $this->call(UserSeeder::class);
+        }
 
-        // Create company
-        Company::create([
-            'uuid' => (string) \Illuminate\Support\Str::uuid(),
-            'name' => 'PT. Example Company',
-            'address_line1' => 'Jakarta, Indonesia',
-            'phone' => '021-1234567',
-            'email' => 'info@example.com',
-        ]);
+        // Create company only if none exists
+        if (Company::count() === 0) {
+            Company::create([
+                'uuid' => (string) \Illuminate\Support\Str::uuid(),
+                'name' => 'PT. Example Company',
+                'address_line1' => 'Jakarta, Indonesia',
+                'phone' => '021-1234567',
+                'email' => 'info@example.com',
+            ]);
+        }
 
         // Create account categories and accounts
         $this->createAccountStructure();
+        
+        // Seed assets and journals with test data
+        $this->call([
+            AssetSeeder::class,
+            JournalSeeder::class,
+        ]);
     }
 
     private function createAccountStructure()
     {
+        // Check if account structure already exists
+        if (AccountCategory::count() > 0) {
+            return;
+        }
+        
         // 1. ASSETS
         $assetCategory = AccountCategory::create([
             'code' => '1',

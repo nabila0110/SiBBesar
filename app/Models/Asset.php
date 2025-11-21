@@ -9,7 +9,7 @@ class Asset extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['asset_no','account_id','asset_name','description','purchase_date','purchase_price','depreciation_rate','accumulated_depreciation','book_value','status','notes'];
+    protected $fillable = ['account_id','asset_name','description','purchase_date','purchase_price','depreciation_rate','location','condition','status'];
 
     public function account()
     {

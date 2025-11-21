@@ -26,7 +26,7 @@ class HutangController extends Controller
             $query->where('transaction_date', '<=', $request->input('sampai_tanggal'));
         }
 
-        $journals = $query->paginate(25);
+        $journals = $query->paginate(6);
 
         return view('hutang.index', compact('journals'));
     }

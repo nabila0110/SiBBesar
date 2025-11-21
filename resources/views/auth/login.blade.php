@@ -110,7 +110,7 @@
                 <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" stroke="#666" stroke-width="1.2"/>
                 <path d="M2 22c0-3.866 3.582-7 10-7s10 3.134 10 7" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="text" name="email" placeholder="Nama Anda" value="{{ old('name') }}" />
+            <input type="name" name="name" placeholder="Name" value="{{ old('name') }}" required autocomplete="email" autofocus />
         </div>
 
         <div class="input">
@@ -118,8 +118,18 @@
                 <path d="M12 15a2 2 0 100-4 2 2 0 000 4z" stroke="#666" stroke-width="1.2"/>
                 <path d="M4 11v3a8 8 0 0016 0v-3" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="password" name="password" placeholder="Kata Sandi" />
+            <input type="password" name="password" placeholder="Kata Sandi" required autocomplete="current-password" />
         </div>
+
+        @if ($errors->any())
+            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: left;">
+                <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: 14px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <button class="btn" type="submit">LOGIN</button>
     </form>

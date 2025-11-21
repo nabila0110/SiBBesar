@@ -3,6 +3,69 @@
 @section('title', 'Daftar Hutang - SiBBesar')
 
 @section('content')
+<style>
+    .table-hutang {
+        font-size: 0.75rem;
+    }
+
+    .table-hutang th,
+    .table-hutang td {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.75rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    /* Pagination styling */
+    .pagination {
+        margin: 0;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-item {
+        margin: 0 2px;
+    }
+    
+    .pagination .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        transition: all 0.15s ease-in-out;
+    }
+    
+    .pagination .page-link:hover {
+        color: #0056b3;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+        z-index: 3;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .pagination .page-link:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        outline: none;
+    }
+</style>
 <div class="container-fluid px-4">
     <div class="row justify-content-center">
         <div class="col-12">
@@ -26,7 +89,7 @@
             <div class="card shadow-sm">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0">
+                        <table class="table table-bordered table-hover align-middle mb-0 table-hutang">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 50px;">No</th>
@@ -117,20 +180,14 @@
                     </div>
 
                     <!-- Pagination -->
-                    @if($journals->hasPages())
-                        <div class="d-flex justify-content-between align-items-center p-3 border-top">
-                            <div class="text-muted">
-                                @if($journals->total() > 0)
-                                    Menampilkan {{ $journals->firstItem() }} sampai {{ $journals->lastItem() }} dari {{ $journals->total() }} data
-                                @else
-                                    Menampilkan 0 sampai 0 dari 0 data
-                                @endif
-                            </div>
-                            <div>
-                                {{ $journals->links() }}
-                            </div>
+                    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                        <div class="text-muted small">
+                            Showing {{ $journals->firstItem() ?? 0 }} to {{ $journals->lastItem() ?? 0 }} of {{ $journals->total() }} results
                         </div>
-                    @endif
+                        <div>
+                            {{ $journals->links('pagination::bootstrap-4') }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

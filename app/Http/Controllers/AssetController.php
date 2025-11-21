@@ -40,7 +40,8 @@ class AssetController extends Controller
             'description' => 'nullable|string',
             'purchase_price' => 'required',
             'depreciation_rate' => 'required|numeric|min:0|max:100',
-            'accumulated_depreciation' => 'required',
+            'location' => 'nullable|string|max:15',
+            'condition' => 'nullable|string|max:15',
             'account_id' => 'required|exists:accounts,id'
         ]);
 
@@ -55,22 +56,16 @@ class AssetController extends Controller
         try {
             // Clean currency format and convert to numeric values
             $purchase_price = (float) str_replace(['Rp', '.', ',', ' '], '', $request->purchase_price);
-            $accumulated_depreciation = (float) str_replace(['Rp', '.', ',', ' '], '', $request->accumulated_depreciation);
-
-            // Generate asset number
-            $lastAsset = Asset::orderBy('id', 'desc')->first();
-            $assetNo = 'AST' . str_pad(($lastAsset ? ($lastAsset->id + 1) : 1), 5, '0', STR_PAD_LEFT);
 
             $asset = Asset::create([
-                'asset_no' => $assetNo,
                 'asset_name' => $request->asset_name,
                 'purchase_date' => $request->purchase_date,
                 'description' => $request->description,
                 'account_id' => $request->account_id,
                 'purchase_price' => $purchase_price,
                 'depreciation_rate' => $request->depreciation_rate,
-                'accumulated_depreciation' => $accumulated_depreciation,
-                'book_value' => $purchase_price - $accumulated_depreciation,
+                'location' => $request->location,
+                'condition' => $request->condition,
                 'status' => 'active'
             ]);
 
@@ -121,7 +116,8 @@ class AssetController extends Controller
             'description' => 'nullable|string',
             'purchase_price' => 'required',
             'depreciation_rate' => 'required|numeric|min:0|max:100',
-            'accumulated_depreciation' => 'required',
+            'location' => 'nullable|string|max:15',
+            'condition' => 'nullable|string|max:15',
             'account_id' => 'required|exists:accounts,id'
         ]);
 
@@ -138,7 +134,6 @@ class AssetController extends Controller
             
             // Clean currency format and convert to numeric values
             $purchase_price = (float) str_replace(['Rp', '.', ',', ' '], '', $request->purchase_price);
-            $accumulated_depreciation = (float) str_replace(['Rp', '.', ',', ' '], '', $request->accumulated_depreciation);
 
             $asset->update([
                 'asset_name' => $request->asset_name,
@@ -147,8 +142,8 @@ class AssetController extends Controller
                 'account_id' => $request->account_id,
                 'purchase_price' => $purchase_price,
                 'depreciation_rate' => $request->depreciation_rate,
-                'accumulated_depreciation' => $accumulated_depreciation,
-                'book_value' => $purchase_price - $accumulated_depreciation
+                'location' => $request->location,
+                'condition' => $request->condition
             ]);
 
             // If request expects JSON (AJAX), return JSON; otherwise redirect back to index with flash

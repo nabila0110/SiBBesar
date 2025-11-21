@@ -61,7 +61,12 @@
                         class="nav-item {{ Request::routeIs('akun.*') ? 'active' : '' }}">
                         <i class="fas fa-list-alt"></i>
                         <span>Daftar Akun</span>
-                    </a>
+                    </a>                  
+                </div>
+
+                <!-- Laporan Group -->
+                <div class="nav-group">
+                <div class="nav-group-title">Laporan</div>
                     <a href="{{ route('jurnal.index') }}"
                         class="nav-item {{ Request::routeIs('jurnal.*') ? 'active' : '' }}">
                         <i class="fas fa-book"></i>
@@ -72,21 +77,20 @@
                         <i class="fas fa-book-open"></i>
                         <span>Buku Besar</span>
                     </a>
-                    
-                </div>
-
-                <!-- Laporan Group -->
-                <div class="nav-group">
-                    <div class="nav-group-title">Laporan</div>
+                    <a href="{{ route('hutang.index') }}"
+                        class="nav-item {{ Request::routeIs('hutang.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Hutang</span>
+                    </a>
+                    <a href="{{ route('piutang.index') }}"
+                        class="nav-item {{ Request::routeIs('piutang.*') ? 'active' : '' }}">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Piutang</span>
+                    </a>
                     <a href="{{ route('neraca') }}"
                         class="nav-item {{ Request::routeIs('neraca') ? 'active' : '' }}">
                         <i class="fas fa-balance-scale"></i>
                         <span>Neraca (Balance Sheet)</span>
-                    </a>
-                    <a href="{{ route('laporan-laba-rugi') }}"
-                        class="nav-item {{ Request::routeIs('laporan-laba-rugi') ? 'active' : '' }}">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Laporan Laba Rugi</span>
                     </a>
                 </div>
 
@@ -97,11 +101,6 @@
                         class="nav-item {{ Request::routeIs('barang.*') ? 'active' : '' }}">
                         <i class="fas fa-boxes"></i>
                         <span>Data Barang</span>
-                    </a>
-                    <a href="{{ route('jenis-barang.index') }}"
-                        class="nav-item {{ Request::routeIs('jenis-barang.*') ? 'active' : '' }}">
-                        <i class="fas fa-tags"></i>
-                        <span>Jenis Barang</span>
                     </a>
                     <a href="{{ route('supplier.index') }}"
                         class="nav-item {{ Request::routeIs('supplier.*') ? 'active' : '' }}">

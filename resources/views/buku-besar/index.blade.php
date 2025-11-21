@@ -2,14 +2,12 @@
 
 @section('title', 'Buku Besar - SiBBesar')
 
-<!-- jsPDF & autoTable -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+@section('content')
 
 <style>
     .table-buku-besar {
-        font-size: 0.85rem;
+        font-size: 0.7rem;
+        width: 100%;
     }
     .table-buku-besar th {
         background-color: #4472C4;
@@ -17,6 +15,17 @@
         font-weight: bold;
         text-align: center;
         vertical-align: middle;
+        padding: 0.3rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    .table-buku-besar td {
+        padding: 0.3rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    /* Item bisa wrap */
+    .table-buku-besar td:nth-child(4) {
+        white-space: normal;
+        max-width: 200px;
     }
     .account-header {
         background-color: #D9E1F2;
@@ -30,10 +39,25 @@
         background-color: black;
         font-weight: bold;
     }
+    .container-fluid {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+    }
 </style>
 
+<!-- jsPDF & autoTable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 @section('content')
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-4" style="max-width: 100%; overflow-x: hidden;">
     <h2 class="mb-4">Buku Besar</h2>
 
     <!-- Tombol Aksi -->

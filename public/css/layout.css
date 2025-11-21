@@ -107,7 +107,7 @@ body {
     align-items: center;
     justify-content: space-between;
     /* base horizontal padding (right and left base) */
-    padding: 0 32px;
+    padding: 0 0px;
     /* add left offset equal to sidebar width so navbar content doesn't overlap sidebar
        when sidebar is visible; this will be overridden when sidebar is collapsed/hidden */
     padding-left: calc(32px + 280px);
@@ -322,7 +322,7 @@ body {
 /* Content Wrapper */
 .content-wrapper {
     padding: 12px;
-    padding-top: calc(12px + 70px); /* add top padding equal to navbar height so content isn't hidden */
+    padding-top: 24px; /* reduced from calc(12px + 70px) for tighter spacing below navbar */
     min-height: calc(100vh - 70px);
 }
 

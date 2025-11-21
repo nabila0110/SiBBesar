@@ -37,6 +37,77 @@
         background-color: #17a2b8;
         color: white;
     }
+    
+    /* Perbaikan untuk table yang lebar */
+    .container-fluid {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+    }
+    
+    #tabelJurnal {
+        width: 100%;
+        font-size: 0.7rem;
+    }
+    
+    #tabelJurnal th,
+    #tabelJurnal td {
+        padding: 0.3rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    
+    /* Kolom Item bisa wrap */
+    #tabelJurnal th:nth-child(3),
+    #tabelJurnal td:nth-child(3) {
+        white-space: normal;
+        max-width: 200px;
+    }
+
+    /* Pagination styling */
+    .pagination {
+        margin: 0;
+    }
+    
+    .pagination .page-link {
+        color: #2563eb;
+        border: 1px solid #e5e7eb;
+        padding: 0.5rem 0.75rem;
+        margin: 0 2px;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .pagination .page-link:hover {
+        background-color: #eff6ff;
+        border-color: #2563eb;
+        color: #1d4ed8;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .pagination .page-item.disabled .page-link {
+        color: #9ca3af;
+        background-color: #f9fafb;
+        border-color: #e5e7eb;
+        cursor: not-allowed;
+    }
+    
+    .pagination .page-link:focus {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        outline: none;
+    }
 </style>
 
 <div class="container-fluid mt-4">
