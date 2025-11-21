@@ -2,262 +2,169 @@
 
 @section('title', 'Daftar Piutang - SiBBesar')
 
-@push('styles')
-    <link href="{{ asset('css/piutang.css') }}" rel="stylesheet">
-@endpush
-
 @section('content')
 <div class="container-fluid px-4">
-    <div class="row">
+    <div class="row justify-content-center">
         <div class="col-12">
+            <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-                <h1 class="h2 mb-0">Daftar Piutang</h1>
-                @if(isset($accounts) && $accounts->count() > 0)
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahPiutangModal">+ Tambah Piutang Baru</button>
-                @else
-                    <a href="{{ route('akun.create') }}" class="btn btn-warning">Buat Akun Terlebih Dahulu</a>
-                @endif
+                <h1 class="h2 mb-0">Daftar Piutang (Belum Lunas)</h1>
+                <a href="{{ route('jurnal.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Tambah Data Jurnal
+                </a>
             </div>
 
+            <!-- Success Message -->
             @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             @endif
 
-            <div class="card mb-4 piutang-card">
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center">
-                                <span>Show</span>
-                                <select class="form-select mx-2 entries-select" style="width:auto;">
-                                    <option>10</option>
-                                    <option selected>25</option>
-                                </select>
-                                <span>entries</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" placeholder="Search...">
-                        </div>
-                    </div>
-
-                    <div class="table-responsive piutang-table">
-                        <table class="table table-hover">
-                            <thead>
+            <!-- Main Table -->
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>No</th>
-                                    <th>Invoice No</th>
-                                    <th>Customer</th>
-                                    <th>Invoice Date</th>
-                                    <th>Due Date</th>
-                                    <th>Amount</th>
-                                    <th>Paid</th>
-                                    <th>Remaining</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
+                                    <th style="width: 50px;">No</th>
+                                    <th style="width: 100px;">Tanggal</th>
+                                    <th style="width: 180px;">Item</th>
+                                    <th style="width: 70px;" class="text-end">Qty</th>
+                                    <th style="width: 80px;">Satuan</th>
+                                    <th style="width: 100px;" class="text-end">@</th>
+                                    <th style="width: 120px;" class="text-end">Total</th>
+                                    <th style="width: 100px;" class="text-end">PPN 11%</th>
+                                    <th style="width: 130px;" class="text-end">Final Total</th>
+                                    <th style="width: 120px;">Project</th>
+                                    <th style="width: 150px;">Perusahaan</th>
+                                    <th style="width: 100px;">Ket</th>
+                                    <th style="width: 100px;">Nota</th>
+                                    <th style="width: 90px;" class="text-center">Status</th>
+                                    <th style="width: 200px;">Account</th>
+                                    <th style="width: 90px;" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($piutang as $i => $item)
+                                @php
+                                    $subtotal = 0;
+                                    $subtotalPPN = 0;
+                                    $grandTotal = 0;
+                                @endphp
+                                @forelse($journals as $index => $journal)
+                                    @php
+                                        $subtotal += $journal->total;
+                                        $subtotalPPN += $journal->ppn_amount;
+                                        $grandTotal += $journal->final_total;
+                                    @endphp
                                     <tr>
-                                        <td>{{ $piutang->firstItem() + $i }}</td>
-                                        <td>{{ $item->invoice_no }}</td>
-                                        <td>{{ $item->customer_name }}</td>
-                                        <td>{{ \Illuminate\Support\Carbon::parse($item->invoice_date)->format('Y-m-d') }}</td>
-                                        <td>{{ \Illuminate\Support\Carbon::parse($item->due_date)->format('Y-m-d') }}</td>
-                                        <td class="currency">Rp {{ number_format($item->amount, 2, ',', '.') }}</td>
-                                        <td class="currency">Rp {{ number_format($item->paid_amount, 2, ',', '.') }}</td>
-                                        <td class="currency">Rp {{ number_format($item->remaining_amount, 2, ',', '.') }}</td>
-                                        <td>{{ ucfirst($item->status) }}</td>
-                                        <td class="piutang-actions">
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#editPiutangModal{{ $item->id }}">Edit</button>
-                                                <form action="{{ route('piutang.destroy', $item->id) }}" method="POST">
+                                        <td class="text-center">{{ $journals->firstItem() + $index }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($journal->transaction_date)->format('d/m/Y') }}</td>
+                                        <td>{{ $journal->item }}</td>
+                                        <td class="text-end">{{ number_format($journal->quantity, 0, ',', '.') }}</td>
+                                        <td>{{ $journal->satuan }}</td>
+                                        <td class="text-end">{{ number_format($journal->price, 0, ',', '.') }}</td>
+                                        <td class="text-end">{{ number_format($journal->total, 0, ',', '.') }}</td>
+                                        <td class="text-end">{{ $journal->tax ? number_format($journal->ppn_amount, 0, ',', '.') : '-' }}</td>
+                                        <td class="text-end fw-bold">{{ number_format($journal->final_total, 0, ',', '.') }}</td>
+                                        <td>{{ $journal->project ?? '-' }}</td>
+                                        <td>{{ $journal->company ?? '-' }}</td>
+                                        <td>{{ $journal->ket ?? '-' }}</td>
+                                        <td>{{ $journal->nota ?? '-' }}</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success">PIUTANG</span>
+                                        </td>
+                                        <td><small>{{ $journal->account ? $journal->account->code . ' - ' . $journal->account->name : '-' }}</small></td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('jurnal.edit', $journal->id) }}" class="btn btn-sm btn-info" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                                                        data-id="{{ $journal->id }}" 
+                                                        data-item="{{ $journal->item }}"
+                                                        title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <form id="delete-form-{{ $journal->id }}" action="{{ route('jurnal.destroy', $journal->id) }}" method="POST" style="display: none;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button class="btn btn-sm btn-danger" onclick="return confirm('Hapus?')">Hapus</button>
                                                 </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="10" class="text-center">Tidak ada data piutang</td></tr>
+                                    <tr>
+                                        <td colspan="16" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                            <p class="text-muted mb-0">Tidak ada data piutang yang belum lunas</p>
+                                        </td>
+                                    </tr>
                                 @endforelse
+                                @if($journals->count() > 0)
+                                    <tr class="table-secondary fw-bold">
+                                        <td colspan="6" class="text-end">TOTAL:</td>
+                                        <td class="text-end">{{ number_format($subtotal, 0, ',', '.') }}</td>
+                                        <td class="text-end">{{ number_format($subtotalPPN, 0, ',', '.') }}</td>
+                                        <td class="text-end">{{ number_format($grandTotal, 0, ',', '.') }}</td>
+                                        <td colspan="7"></td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div>
-                            @if($piutang->total() > 0)
-                                Showing {{ $piutang->firstItem() }} to {{ $piutang->lastItem() }} of {{ $piutang->total() }} entries
-                            @endif
+                    <!-- Pagination -->
+                    @if($journals->hasPages())
+                        <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                            <div class="text-muted">
+                                @if($journals->total() > 0)
+                                    Menampilkan {{ $journals->firstItem() }} sampai {{ $journals->lastItem() }} dari {{ $journals->total() }} data
+                                @else
+                                    Menampilkan 0 sampai 0 dari 0 data
+                                @endif
+                            </div>
+                            <div>
+                                {{ $journals->links() }}
+                            </div>
                         </div>
-                        {{ $piutang->links() }}
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Add Modal -->
-<div class="modal fade" id="tambahPiutangModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tambah Piutang Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('piutang.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Invoice No</label>
-                        <input type="text" name="invoice_no" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Akun</label>
-                        <select name="account_id" class="form-select" required>
-                            <option value="">-- Pilih Akun --</option>
-                            @foreach($accounts as $acc)
-                                <option value="{{ $acc->id }}">{{ $acc->code ?? '' }} - {{ $acc->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Customer</label>
-                        <input type="text" name="customer_name" class="form-control" required>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3"><label class="form-label">Invoice Date</label><input type="text" name="invoice_date" class="form-control" placeholder="dd/mm/yyyy" required></div>
-                        <div class="col-md-6 mb-3"><label class="form-label">Due Date</label><input type="text" name="due_date" class="form-control" placeholder="dd/mm/yyyy" required></div>
-                    </div>
-                    <div class="mb-3"><label class="form-label">Amount</label><input type="number" step="0.01" name="amount" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Paid Amount</label><input type="number" step="0.01" name="paid_amount" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Notes</label><textarea name="notes" class="form-control"></textarea></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Tambah</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Modals -->
-@foreach($piutang as $item)
-<div class="modal fade" id="editPiutangModal{{ $item->id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Piutang</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('piutang.update', $item->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Invoice No</label><input type="text" name="invoice_no" value="{{ $item->invoice_no }}" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Customer</label><input type="text" name="customer_name" value="{{ $item->customer_name }}" class="form-control" required></div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3"><label class="form-label">Invoice Date</label><input type="text" name="invoice_date" value="{{ \Illuminate\Support\Carbon::parse($item->invoice_date)->format('d/m/Y') }}" class="form-control" placeholder="dd/mm/yyyy" required></div>
-                        <div class="col-md-6 mb-3"><label class="form-label">Due Date</label><input type="text" name="due_date" value="{{ \Illuminate\Support\Carbon::parse($item->due_date)->format('d/m/Y') }}" class="form-control" placeholder="dd/mm/yyyy" required></div>
-                    </div>
-                    <div class="mb-3"><label class="form-label">Amount</label><input type="number" step="0.01" name="amount" value="{{ $item->amount }}" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Paid Amount</label><input type="number" step="0.01" name="paid_amount" value="{{ $item->paid_amount }}" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Notes</label><textarea name="notes" class="form-control">{{ $item->notes }}</textarea></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function(){
-        // Auto-format date input: dd/mm/yyyy
-        function autoFormatDate(input) {
-            let value = input.value.replace(/\D/g, ''); // Remove non-digits
-            if (value.length >= 2) {
-                value = value.substring(0, 2) + '/' + value.substring(2);
-            }
-            if (value.length >= 5) {
-                value = value.substring(0, 5) + '/' + value.substring(5, 9);
-            }
-            input.value = value;
-        }
-
-        // Apply auto-format to all date inputs
-        document.querySelectorAll('input[name="invoice_date"]').forEach(function(input) {
-            input.addEventListener('input', function(e) {
-                autoFormatDate(this);
-            });
-        });
-
-        document.querySelectorAll('input[name="due_date"]').forEach(function(input) {
-            input.addEventListener('input', function(e) {
-                autoFormatDate(this);
-            });
-        });
-
-        // Validate due_date is not before invoice_date on form submission
-        document.querySelectorAll('form[action*="piutang"]').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                const invoiceDateInput = form.querySelector('input[name="invoice_date"]');
-                const dueDateInput = form.querySelector('input[name="due_date"]');
+    document.addEventListener('DOMContentLoaded', function() {
+        // SweetAlert2 for delete confirmation
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const journalId = this.getAttribute('data-id');
+                const journalItem = this.getAttribute('data-item');
                 
-                if (invoiceDateInput && dueDateInput) {
-                    const invoiceDate = invoiceDateInput.value;
-                    const dueDate = dueDateInput.value;
-                    
-                    // Parse dates in dd/mm/yyyy format
-                    const invParts = invoiceDate.split('/');
-                    const dueParts = dueDate.split('/');
-                    
-                    if (invParts.length === 3 && dueParts.length === 3) {
-                        const invDate = new Date(invParts[2], invParts[1] - 1, invParts[0]);
-                        const dueDate_obj = new Date(dueParts[2], dueParts[1] - 1, dueParts[0]);
-                        
-                        if (dueDate_obj < invDate) {
-                            e.preventDefault();
-                            showCustomAlert({
-                                title: 'Validasi Tanggal',
-                                message: 'Tanggal jatuh tempo tidak boleh lebih awal dari tanggal invoice',
-                                type: 'error',
-                                buttons: [
-                                    { text: 'OK', type: 'primary', callback: function() {
-                                        closeCustomAlert();
-                                        dueDateInput.focus();
-                                    }}
-                                ]
-                            });
-                            return false;
-                        }
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    html: `Anda akan menghapus data:<br><strong>${journalItem}</strong>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById(`delete-form-${journalId}`).submit();
                     }
-                }
+                });
             });
         });
-
-        var modal = document.getElementById('tambahPiutangModal');
-        if(modal){
-            modal.addEventListener('shown.bs.modal', function(){
-                var el = modal.querySelector('input[name="invoice_no"]'); if(el) el.focus();
-            });
-        }
-        @if($errors->any())
-            var m = new bootstrap.Modal(document.getElementById('tambahPiutangModal'));
-            m.show();
-        @endif
     });
 </script>
 @endpush
 
 @endsection
-

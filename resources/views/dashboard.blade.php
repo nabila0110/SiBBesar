@@ -9,7 +9,7 @@
 
 <!-- Stats Grid -->
 <div class="stats-grid">
-    <!-- Buku Besar -->
+    <!-- Jurnal Umum -->
     <a href="{{ route('jurnal.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
             <div class="stat-label">Jurnal Umum</div>
@@ -30,22 +30,28 @@
             <i class="fas fa-list-alt"></i>
         </div>
     </a>
-    <a href="{{ route('laporan-posisi-keuangan') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+    
+    <!-- Hutang -->
+    <a href="{{ route('hutang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
-            <div class="stat-label">Neraca</div>
-            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Posisi Keuangan</div>
+            <div class="stat-label">Hutang</div>
+            <div class="stat-label" style="font-size: 14px; color: #dc3545; font-weight: 600;">Rp {{ number_format($totalHutang, 0, ',', '.') }}</div>
+            <div class="stat-value" style="font-size: 18px;">{{ $countHutang }} transaksi</div>
         </div>
-        <div class="stat-icon blue">
-            <i class="fas fa-balance-scale"></i>
+        <div class="stat-icon" style="background-color: #fee2e2;">
+            <i class="fas fa-money-bill-wave" style="color: #dc3545;"></i>
         </div>
     </a>
-    <a href="{{ route('asset.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
+    
+    <!-- Piutang -->
+    <a href="{{ route('piutang.index') }}" class="stat-card" style="text-decoration: none; color: inherit;">
         <div class="stat-content">
-            <div class="stat-label">Daftar Aset</div>
-            <div class="stat-label" style="font-size: 12px; color: #6b7280;">Manajemen Aset</div>
+            <div class="stat-label">Piutang</div>
+            <div class="stat-label" style="font-size: 14px; color: #198754; font-weight: 600;">Rp {{ number_format($totalPiutang, 0, ',', '.') }}</div>
+            <div class="stat-value" style="font-size: 18px;">{{ $countPiutang }} transaksi</div>
         </div>
-        <div class="stat-icon blue">
-            <i class="fas fa-warehouse"></i>
+        <div class="stat-icon" style="background-color: #d1fae5;">
+            <i class="fas fa-hand-holding-usd" style="color: #198754;"></i>
         </div>
     </a>
 </div>

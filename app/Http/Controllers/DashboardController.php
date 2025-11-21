@@ -4,54 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Journal;
-use App\Models\Payable;
-use App\Models\Receivable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Defensive: if DB/migrations haven't been run the models may throw exceptions.
         try {
-            // Get total cash/money from all asset accounts
-            $allAssetAccounts = Account::where('type', 'asset')->get();
-            $totalSaldoKas = $allAssetAccounts->sum(function($acc) {
-                return $acc->getBalance() ?? 0;
-            });
-
-            $receivableAccounts = Account::where('code', 'like', '1-2%')->get();
-            $piutangUsaha = $receivableAccounts->sum(function($acc) {
-                return $acc->getBalance() ?? 0;
-            });
-
-            $payableAccounts = Account::where('code', 'like', '2-1%')->get();
-            $hutangUsaha = $payableAccounts->sum(function($acc) {
-                return $acc->getBalance() ?? 0;
-            });
-
+            // Count total journals
             $journalCount = Journal::count();
-            $recentJournals = Journal::latest()->limit(5)->get();
             
-            // Get total receivables and payables from database
-            $totalRecievables = Receivable::sum('remaining_amount') ?? 0;
-            $totalPayables = Payable::sum('remaining_amount') ?? 0;
-            $accountCount = Account::count();
+            // Count total accounts
+            $accountCount = Account::where('is_active', true)->count();
+            
+            // Calculate HUTANG: OUT + TIDAK_LUNAS
+            $totalHutang = Journal::where('type', 'out')
+                ->where('payment_status', 'tidak_lunas')
+                ->sum('final_total');
+            
+            // Calculate PIUTANG: IN + TIDAK_LUNAS
+            $totalPiutang = Journal::where('type', 'in')
+                ->where('payment_status', 'tidak_lunas')
+                ->sum('final_total');
+            
+            // Count hutang transactions
+            $countHutang = Journal::where('type', 'out')
+                ->where('payment_status', 'tidak_lunas')
+                ->count();
+            
+            // Count piutang transactions
+            $countPiutang = Journal::where('type', 'in')
+                ->where('payment_status', 'tidak_lunas')
+                ->count();
+                
         } catch (\Exception $e) {
             // If tables don't exist or DB not migrated, fall back to zeros
-            $totalSaldoKas = 0;
-            $piutangUsaha = 0;
-            $hutangUsaha = 0;
             $journalCount = 0;
-            $totalRecievables = 0;
-            $totalPayables = 0;
             $accountCount = 0;
+            $totalHutang = 0;
+            $totalPiutang = 0;
+            $countHutang = 0;
+            $countPiutang = 0;
         }
 
         return view('dashboard', compact(
-            'totalSaldoKas', 'piutangUsaha', 'hutangUsaha', 'recentJournals', 
-            'journalCount', 'totalRecievables', 'totalPayables', 'accountCount'
+            'journalCount', 
+            'accountCount', 
+            'totalHutang', 
+            'totalPiutang',
+            'countHutang',
+            'countPiutang'
         ));
     }
 }
-
