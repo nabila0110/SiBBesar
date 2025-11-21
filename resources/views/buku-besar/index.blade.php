@@ -57,7 +57,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 @section('content')
-<div class="container-fluid mt-4" style="max-width: 100%; overflow-x: hidden;">
+<div class="container-fluid mt-0">
     <h2 class="mb-4">Buku Besar</h2>
 
     <!-- Tombol Aksi -->
@@ -95,15 +95,17 @@
             <h5 class="mb-0 text-center">BUKU BESAR</h5>
         </div>
         <div class="card-body p-0">
-            @php
-                $groupedJournals = $journals->groupBy('account_id');
-            @endphp
-
             @if($groupedJournals->count() > 0)
-                @foreach($groupedJournals as $accountId => $accountJournals)
+                @foreach($groupedJournals as $accountId => $accountData)
                     @php
+                        $accountJournals = $accountData['data'];
                         $account = $accountJournals->first()->account;
                         $classification = $account ? ($account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
+                        $currentPage = $accountData['current_page'];
+                        $lastPage = $accountData['last_page'];
+                        $from = $accountData['from'];
+                        $to = $accountData['to'];
+                        $total = $accountData['total'];
                     @endphp
                     
                     <!-- Account Group Header -->
@@ -134,7 +136,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $no = 1; @endphp
+                                @php $no = $from; @endphp
                                 @foreach($accountJournals as $journal)
                                     <tr>
                                         <td class="text-center">{{ $no++ }}</td>
@@ -174,16 +176,46 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="subtotal-row">
-                                <tr>
-                                    <td colspan="7" class="text-end">TOTAL:</td>
-                                    <td class="table-currency">Rp {{ number_format($accountJournals->sum('total'), 0, ',', '.') }}</td>
-                                    <td class="table-currency">Rp {{ number_format($accountJournals->sum('ppn_amount'), 0, ',', '.') }}</td>
-                                    <td colspan="7"></td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
+
+                    <!-- Pagination per Account -->
+                    @if($lastPage > 1)
+                        <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                            <div class="text-muted small">
+                                Showing {{ $from }} to {{ $to }} of {{ $total }} results
+                            </div>
+                            <nav>
+                                <ul class="pagination mb-0">
+                                    @if($currentPage > 1)
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page_{{ $accountId }}={{ $currentPage - 1 }}{{ request('dari_tanggal') ? '&dari_tanggal='.request('dari_tanggal') : '' }}{{ request('sampai_tanggal') ? '&sampai_tanggal='.request('sampai_tanggal') : '' }}">Prev</a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Prev</span>
+                                        </li>
+                                    @endif
+
+                                    @for($i = 1; $i <= $lastPage; $i++)
+                                        <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
+                                            <a class="page-link" href="?page_{{ $accountId }}={{ $i }}{{ request('dari_tanggal') ? '&dari_tanggal='.request('dari_tanggal') : '' }}{{ request('sampai_tanggal') ? '&sampai_tanggal='.request('sampai_tanggal') : '' }}">{{ $i }}</a>
+                                        </li>
+                                    @endfor
+
+                                    @if($currentPage < $lastPage)
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page_{{ $accountId }}={{ $currentPage + 1 }}{{ request('dari_tanggal') ? '&dari_tanggal='.request('dari_tanggal') : '' }}{{ request('sampai_tanggal') ? '&sampai_tanggal='.request('sampai_tanggal') : '' }}">Next</a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Next</span>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </nav>
+                        </div>
+                    @endif
                     <br>
                 @endforeach
             @else
@@ -235,10 +267,10 @@ function cetakPDF() {
         doc.text(`Tanggal Cetak: ${today}`, pageWidth / 2, 46, { align: "center" });
 
         @php
-            $groupedJournals = $journals->groupBy('account_id');
+            $exportGrouped = $journals->groupBy('account_id');
         @endphp
 
-        @foreach($groupedJournals as $accountId => $accountJournals)
+        @foreach($exportGrouped as $accountId => $accountJournals)
             @php
                 $account = $accountJournals->first()->account;
                 $classification = $account ? ($account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';
@@ -329,10 +361,10 @@ function exportToExcel() {
     const wb = XLSX.utils.book_new();
     
     @php
-        $groupedJournals = $journals->groupBy('account_id');
+        $exportGrouped = $journals->groupBy('account_id');
     @endphp
 
-    @foreach($groupedJournals as $accountId => $accountJournals)
+    @foreach($exportGrouped as $accountId => $accountJournals)
         @php
             $account = $accountJournals->first()->account;
             $classification = $account ? ($account->code . ' - ' . $account->name) : 'Tanpa Klasifikasi';

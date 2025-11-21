@@ -70,7 +70,7 @@
     <div class="row justify-content-center">
         <div class="col-12">
             <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mt-2 mb-3">
                 <h1 class="h2 mb-0">Daftar Piutang (Belum Lunas)</h1>
                 <a href="{{ route('jurnal.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Tambah Data Jurnal

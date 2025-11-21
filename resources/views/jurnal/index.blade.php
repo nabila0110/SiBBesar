@@ -72,45 +72,53 @@
     /* Pagination styling */
     .pagination {
         margin: 0;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-item {
+        margin: 0 2px;
     }
     
     .pagination .page-link {
-        color: #2563eb;
-        border: 1px solid #e5e7eb;
-        padding: 0.5rem 0.75rem;
-        margin: 0 2px;
-        border-radius: 0.375rem;
+        color: #6c757d;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        padding: 0.375rem 0.75rem;
         font-size: 0.875rem;
-        transition: all 0.2s;
+        line-height: 1.5;
+        border-radius: 0.25rem;
+        transition: all 0.15s ease-in-out;
     }
     
     .pagination .page-link:hover {
-        background-color: #eff6ff;
-        border-color: #2563eb;
-        color: #1d4ed8;
+        color: #0056b3;
+        background-color: #e9ecef;
+        border-color: #dee2e6;
     }
     
     .pagination .page-item.active .page-link {
-        background-color: #2563eb;
-        border-color: #2563eb;
+        background-color: #007bff;
+        border-color: #007bff;
         color: white;
-        font-weight: 600;
+        z-index: 3;
     }
     
     .pagination .page-item.disabled .page-link {
-        color: #9ca3af;
-        background-color: #f9fafb;
-        border-color: #e5e7eb;
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        opacity: 0.5;
         cursor: not-allowed;
+        pointer-events: none;
     }
     
     .pagination .page-link:focus {
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         outline: none;
     }
 </style>
 
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-2">
     <h2 class="mb-4">Jurnal Umum</h2>
 
     @if (session('success'))
@@ -268,8 +276,13 @@
                 </div>
 
                 <!-- Pagination -->
-                <div class="d-flex justify-content-center mt-4 mb-3">
-                    {{ $journals->links() }}
+                <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                    <div class="text-muted small">
+                        Showing {{ $journals->firstItem() ?? 0 }} to {{ $journals->lastItem() ?? 0 }} of {{ $journals->total() }} results
+                    </div>
+                    <div>
+                        {{ $journals->links('pagination::bootstrap-4') }}
+                    </div>
                 </div>
             @else
                 <div class="alert alert-info m-3">

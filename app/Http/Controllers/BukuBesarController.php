@@ -30,11 +30,29 @@ class BukuBesarController extends Controller
 
         $journals = $query->get();
 
+        // Group by account and paginate each group
+        $groupedJournals = $journals->groupBy('account_id')->map(function ($accountJournals) use ($request) {
+            $accountId = $accountJournals->first()->account_id;
+            $page = $request->input('page_' . $accountId, 1);
+            $perPage = 2;
+            
+            return [
+                'data' => $accountJournals->forPage($page, $perPage),
+                'total' => $accountJournals->count(),
+                'current_page' => $page,
+                'last_page' => ceil($accountJournals->count() / $perPage),
+                'per_page' => $perPage,
+                'from' => ($page - 1) * $perPage + 1,
+                'to' => min($page * $perPage, $accountJournals->count())
+            ];
+        });
+
         if ($request->wantsJson()) {
             return response()->json($journals);
         }
 
-        return view('buku-besar.index', compact('journals'));
+        // Pass both full journals (for exports) and paginated groups (for display)
+        return view('buku-besar.index', compact('groupedJournals', 'journals'));
     }
 
     /**

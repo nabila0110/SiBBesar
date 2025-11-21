@@ -28,7 +28,7 @@ class JurnalController extends Controller
             $query->where('transaction_date', '<=', $request->input('sampai_tanggal'));
         }
 
-        $journals = $query->paginate(25);
+        $journals = $query->paginate(6);
 
         if ($request->wantsJson()) {
             return response()->json($journals);
@@ -158,7 +158,6 @@ class JurnalController extends Controller
             'tax' => 'nullable|boolean',
             'project' => 'nullable|string|max:255',
             'company' => 'nullable|string|max:255',
-            'ket' => 'nullable|string|max:255',
             'nota' => 'required|string|max:255',
             'type' => 'required|in:in,out',
             'payment_status' => 'required|in:lunas,tidak_lunas',
@@ -198,7 +197,6 @@ class JurnalController extends Controller
                 'final_total' => $final_total,
                 'project' => $request->input('project'),
                 'company' => $request->input('company'),
-                'ket' => $request->input('ket'),
                 'nota' => $request->input('nota'),
                 'type' => $request->input('type'),
                 'payment_status' => $request->input('payment_status'),
