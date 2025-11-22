@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Supplier extends Model
 {
     use HasFactory;
-    protected $fillable = ['kode_supplier', 'nama_supplier'];
+    protected $fillable = ['nama_supplier', 'email', 'alamat', 'telepon'];
     
     /**
      * Get the barang for the supplier

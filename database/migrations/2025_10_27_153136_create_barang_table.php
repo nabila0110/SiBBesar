@@ -1,4 +1,4 @@
-\<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('barang', function (Blueprint $table) {
             $table->id();
-            $table->string('kode')->unique();
             $table->string('nama');
             $table->decimal('harga', 12, 2);
             $table->integer('stok');

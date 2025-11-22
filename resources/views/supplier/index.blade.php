@@ -15,20 +15,41 @@
     .card { border-radius: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); background: #fff; }
     h3 { font-weight: 700; }
     table td, table th { vertical-align: middle; }
-    .btn-tambah { padding: 0.25rem 0.5rem !important; font-size: 0.813rem !important; line-height: 1.2 !important; height: auto !important; }
     
-    /* Pagination styling */
+    /* Search form */
+    .search-form {
+        max-width: 400px;
+    }
+    
+    .search-form input {
+        width: 280px;
+    }
+    
+    .btn-tambah { 
+        padding: 0.5rem 1rem !important; 
+        font-size: 0.9375rem !important;
+        font-weight: 400 !important;
+        border-radius: 0.375rem !important;
+        white-space: nowrap;
+        width: auto !important;
+        max-width: fit-content !important;
+    }
+    
+    /* Pagination styling - matching daftar hutang */
     .pagination {
         margin: 0;
+        display: flex;
+        align-items: center;
         gap: 0.25rem;
+        justify-content: center;
     }
     
     .pagination .page-item {
-        margin: 0 2px;
+        margin: 0;
     }
     
     .pagination .page-link {
-        color: #6c757d;
+        color: #495057;
         background-color: #fff;
         border: 1px solid #dee2e6;
         padding: 0.375rem 0.75rem;
@@ -36,6 +57,11 @@
         line-height: 1.5;
         border-radius: 0.25rem;
         transition: all 0.15s ease-in-out;
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .pagination .page-link:hover {
@@ -49,6 +75,7 @@
         border-color: #007bff;
         color: white;
         z-index: 3;
+        font-weight: 500;
     }
     
     .pagination .page-item.disabled .page-link {
@@ -61,15 +88,15 @@
     }
     
     .pagination .page-link:focus {
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        box-shadow: none;
         outline: none;
     }
   </style>
 </head>
 
 <body>
-<div class="container my-5">
-  <h3 class="mb-4">🏭 Data Supplier</h3>
+<div class="container my-3">
+  <h3 class="mb-3">Data Supplier</h3>
 
   @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show">
@@ -80,24 +107,23 @@
 
   <div class="card p-4">
     <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
-      <!-- 🔍 Form Pencarian -->
-      <form action="{{ route('supplier.index') }}" method="GET" class="d-flex flex-wrap gap-2">
-        <input type="text" name="search" class="form-control" placeholder="Cari nama / kode supplier..." value="{{ $search ?? '' }}">
+      <form action="{{ route('supplier.index') }}" method="GET" class="d-flex flex-wrap gap-2 search-form">
+        <input type="text" name="search" class="form-control" placeholder="Cari nama / email / telepon..." value="{{ $search ?? '' }}">
         <button type="submit" class="btn btn-outline-primary">Cari</button>
       </form>
 
-      <!-- ➕ Tambah Supplier -->
       <button class="btn btn-primary btn-tambah" data-bs-toggle="modal" data-bs-target="#modalTambah">+ Tambah Supplier</button>
     </div>
 
-    <!-- 📋 Tabel Data Supplier -->
     <div class="table-responsive">
       <table class="table table-striped align-middle">
         <thead class="table-light">
           <tr>
             <th>No</th>
-            <th>Kode Supplier</th>
             <th>Nama Supplier</th>
+            <th>Email</th>
+            <th>Telepon</th>
+            <th>Alamat</th>
             <th>Jumlah Barang</th>
             <th>Aksi</th>
           </tr>
@@ -106,8 +132,10 @@
           @forelse($suppliers as $index => $supplier)
             <tr>
               <td>{{ $suppliers->firstItem() + $index }}</td>
-              <td>{{ $supplier->kode_supplier }}</td>
               <td>{{ $supplier->nama_supplier }}</td>
+              <td>{{ $supplier->email ?? '-' }}</td>
+              <td>{{ $supplier->telepon ?? '-' }}</td>
+              <td>{{ $supplier->alamat ?? '-' }}</td>
               <td>{{ $supplier->barangs_count }} item</td>
               <td>
                 <button class="btn btn-warning btn-sm edit-btn" data-id="{{ $supplier->id }}">Edit</button>
@@ -118,15 +146,20 @@
               </td>
             </tr>
           @empty
-            <tr><td colspan="5" class="text-center text-muted">Belum ada data supplier</td></tr>
+            <tr><td colspan="7" class="text-center text-muted">Belum ada data supplier</td></tr>
           @endforelse
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-3">
-      {{ $suppliers->appends(['search' => $search])->links() }}
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="text-muted">
+        Showing {{ $suppliers->firstItem() ?? 0 }} to {{ $suppliers->lastItem() ?? 0 }} of {{ $suppliers->total() }} results
+      </div>
+      <div>
+        {{ $suppliers->appends(['search' => $search])->links() }}
+      </div>
     </div>
   </div>
 </div>
@@ -143,12 +176,20 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label>Kode Supplier</label>
-            <input type="text" name="kode_supplier" class="form-control" required>
+            <label>Nama Supplier <span class="text-danger">*</span></label>
+            <input type="text" name="nama_supplier" class="form-control" required maxlength="100">
           </div>
           <div class="mb-3">
-            <label>Nama Supplier</label>
-            <input type="text" name="nama_supplier" class="form-control" required>
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" maxlength="50">
+          </div>
+          <div class="mb-3">
+            <label>Telepon</label>
+            <input type="text" name="telepon" class="form-control" maxlength="20">
+          </div>
+          <div class="mb-3">
+            <label>Alamat</label>
+            <textarea name="alamat" class="form-control" rows="2" maxlength="255"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -174,12 +215,20 @@
         <div class="modal-body">
           <input type="hidden" id="editId">
           <div class="mb-3">
-            <label>Kode Supplier</label>
-            <input type="text" name="kode_supplier" id="editKode" class="form-control" required>
+            <label>Nama Supplier <span class="text-danger">*</span></label>
+            <input type="text" name="nama_supplier" id="editNama" class="form-control" required maxlength="100">
           </div>
           <div class="mb-3">
-            <label>Nama Supplier</label>
-            <input type="text" name="nama_supplier" id="editNama" class="form-control" required>
+            <label>Email</label>
+            <input type="email" name="email" id="editEmail" class="form-control" maxlength="50">
+          </div>
+          <div class="mb-3">
+            <label>Telepon</label>
+            <input type="text" name="telepon" id="editTelepon" class="form-control" maxlength="20">
+          </div>
+          <div class="mb-3">
+            <label>Alamat</label>
+            <textarea name="alamat" id="editAlamat" class="form-control" rows="2" maxlength="255"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -191,8 +240,6 @@
   </div>
 </div>
 
-<p class="text-center text-muted small mt-3">Powered by Rana</p>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   // Fetch data untuk modal edit
@@ -203,8 +250,10 @@
         .then(res => res.json())
         .then(data => {
           document.getElementById('editId').value = data.id;
-          document.getElementById('editKode').value = data.kode_supplier;
           document.getElementById('editNama').value = data.nama_supplier;
+          document.getElementById('editEmail').value = data.email || '';
+          document.getElementById('editTelepon').value = data.telepon || '';
+          document.getElementById('editAlamat').value = data.alamat || '';
           document.getElementById('editForm').action = `/supplier/${id}`;
           new bootstrap.Modal(document.getElementById('modalEdit')).show();
         });

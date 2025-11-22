@@ -15,20 +15,42 @@
     .card { border-radius: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); background: #fff; }
     h3 { font-weight: 700; }
     table td, table th { vertical-align: middle; }
-    .btn-tambah { padding: 0.25rem 0.5rem !important; font-size: 0.813rem !important; line-height: 1.2 !important; height: auto !important; }
     
-    /* Pagination styling */
+    /* Search form */
+    .search-form {
+        max-width: 400px;
+    }
+    
+    .search-form input {
+        width: 280px;
+    }
+    
+    .btn-tambah { 
+        padding: 0.5rem 1rem !important; 
+        font-size: 0.9375rem !important; 
+        line-height: 1.5 !important; 
+        font-weight: 400 !important;
+        border-radius: 0.375rem !important;
+        white-space: nowrap;
+        width: auto !important;
+        max-width: fit-content !important;
+    }
+    
+    /* Pagination styling - matching daftar hutang */
     .pagination {
         margin: 0;
+        display: flex;
+        align-items: center;
         gap: 0.25rem;
+        justify-content: center;
     }
     
     .pagination .page-item {
-        margin: 0 2px;
+        margin: 0;
     }
     
     .pagination .page-link {
-        color: #6c757d;
+        color: #495057;
         background-color: #fff;
         border: 1px solid #dee2e6;
         padding: 0.375rem 0.75rem;
@@ -36,6 +58,11 @@
         line-height: 1.5;
         border-radius: 0.25rem;
         transition: all 0.15s ease-in-out;
+        min-width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .pagination .page-link:hover {
@@ -49,6 +76,7 @@
         border-color: #007bff;
         color: white;
         z-index: 3;
+        font-weight: 500;
     }
     
     .pagination .page-item.disabled .page-link {
@@ -61,15 +89,15 @@
     }
     
     .pagination .page-link:focus {
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        box-shadow: none;
         outline: none;
     }
   </style>
 </head>
 
 <body>
-<div class="container my-5">
-  <h3 class="mb-4">Data Barang</h3>
+<div class="container my-3">
+  <h3 class="mb-3">Data Barang</h3>
 
   @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show">
@@ -81,8 +109,8 @@
   <div class="card p-4">
     <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
       <!-- 🔍 Form Pencarian -->
-      <form action="{{ route('barang.index') }}" method="GET" class="d-flex flex-wrap gap-2">
-        <input type="text" name="search" class="form-control" placeholder="Cari nama / kode barang..." value="{{ $keyword ?? '' }}">
+      <form action="{{ route('barang.index') }}" method="GET" class="d-flex flex-wrap gap-2 search-form">
+        <input type="text" name="search" class="form-control" placeholder="Cari nama barang..." value="{{ $keyword ?? '' }}">
         <button type="submit" class="btn btn-outline-primary">Cari</button>
       </form>
 
@@ -96,7 +124,6 @@
         <thead class="table-light">
           <tr>
             <th>No</th>
-            <th>Kode</th>
             <th>Nama Barang</th>
             <th>Harga</th>
             <th>Stok</th>
@@ -108,7 +135,6 @@
           @forelse($barang as $index => $b)
             <tr>
               <td>{{ $barang->firstItem() + $index }}</td>
-              <td>{{ $b->kode }}</td>
               <td>{{ $b->nama }}</td>
               <td>Rp {{ number_format($b->harga, 0, ',', '.') }}</td>
               <td>{{ $b->stok }}</td>
@@ -122,15 +148,20 @@
               </td>
             </tr>
           @empty
-            <tr><td colspan="7" class="text-center text-muted">Belum ada data barang</td></tr>
+            <tr><td colspan="8" class="text-center text-muted">Belum ada data barang</td></tr>
           @endforelse
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-3">
-      {{ $barang->appends(['search' => $keyword])->links() }}
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <div class="text-muted">
+        Showing {{ $barang->firstItem() ?? 0 }} to {{ $barang->lastItem() ?? 0 }} of {{ $barang->total() }} results
+      </div>
+      <div>
+        {{ $barang->appends(['search' => $keyword])->links() }}
+      </div>
     </div>
   </div>
 </div>
@@ -146,24 +177,20 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-2">
-            <label>Kode Barang</label>
-            <input type="text" name="kode" class="form-control" required>
+          <div class="mb-3">
+            <label>Nama Barang <span class="text-danger">*</span></label>
+            <input type="text" name="nama" class="form-control" required maxlength="255">
           </div>
-          <div class="mb-2">
-            <label>Nama Barang</label>
-            <input type="text" name="nama" class="form-control" required>
+          <div class="mb-3">
+            <label class="form-label">Harga <span class="text-danger">*</span></label>
+            <input type="number" name="harga" class="form-control" required min="0" step="0.01">
           </div>
-          <div class="mb-2">
-            <label>Harga</label>
-            <input type="number" name="harga" class="form-control" required>
+          <div class="mb-3">
+            <label class="form-label">Stok <span class="text-danger">*</span></label>
+            <input type="number" name="stok" class="form-control" required min="0">
           </div>
-          <div class="mb-2">
-            <label>Stok</label>
-            <input type="number" name="stok" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label>Supplier (Opsional)</label>
+          <div class="mb-3">
+            <label class="form-label">Supplier (Opsional)</label>
             <select name="supplier_id" class="form-control">
               <option value="">-- Pilih Supplier --</option>
               @foreach($suppliers as $supplier)
@@ -194,24 +221,20 @@
         </div>
         <div class="modal-body">
           <input type="hidden" id="editId">
-          <div class="mb-2">
-            <label>Kode Barang</label>
-            <input type="text" name="kode" id="editKode" class="form-control" required>
+          <div class="mb-3">
+            <label>Nama Barang <span class="text-danger">*</span></label>
+            <input type="text" name="nama" id="editNama" class="form-control" required maxlength="255">
           </div>
-          <div class="mb-2">
-            <label>Nama Barang</label>
-            <input type="text" name="nama" id="editNama" class="form-control" required>
+          <div class="mb-3">
+            <label class="form-label">Harga <span class="text-danger">*</span></label>
+            <input type="number" name="harga" id="editHarga" class="form-control" required min="0" step="0.01">
           </div>
-          <div class="mb-2">
-            <label>Harga</label>
-            <input type="number" name="harga" id="editHarga" class="form-control" required>
+          <div class="mb-3">
+            <label class="form-label">Stok <span class="text-danger">*</span></label>
+            <input type="number" name="stok" id="editStok" class="form-control" required min="0">
           </div>
-          <div class="mb-2">
-            <label>Stok</label>
-            <input type="number" name="stok" id="editStok" class="form-control" required>
-          </div>
-          <div class="mb-2">
-            <label>Supplier (Opsional)</label>
+          <div class="mb-3">
+            <label class="form-label">Supplier (Opsional)</label>
             <select name="supplier_id" id="editSupplierId" class="form-control">
               <option value="">-- Pilih Supplier --</option>
               @foreach($suppliers as $supplier)
@@ -239,7 +262,6 @@
         .then(res => res.json())
         .then(data => {
           document.getElementById('editId').value = data.id;
-          document.getElementById('editKode').value = data.kode;
           document.getElementById('editNama').value = data.nama;
           document.getElementById('editHarga').value = data.harga;
           document.getElementById('editStok').value = data.stok;

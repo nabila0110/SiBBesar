@@ -9,8 +9,10 @@ return new class extends Migration {
     {
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_supplier', 50)->unique();
             $table->string('nama_supplier', 100);
+            $table->string('email', 50)->nullable();
+            $table->string('alamat', 255)->nullable();
+            $table->string('telepon', 20)->nullable();
             $table->timestamps();
         });
     }

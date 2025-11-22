@@ -28,8 +28,8 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => 'required|unique:barang,kode',
-            'nama' => 'required',
+            'kode' => 'required|unique:barang,kode|max:50',
+            'nama' => 'required|max:255',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
             'supplier_id' => 'nullable|exists:suppliers,id',
@@ -51,8 +51,8 @@ class DataBarangController extends Controller
     {
         $barang = Barang::findOrFail($id);
         $request->validate([
-            'kode' => 'required|unique:barang,kode,' . $id,
-            'nama' => 'required',
+            'kode' => 'required|unique:barang,kode,' . $id . '|max:50',
+            'nama' => 'required|max:255',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
             'supplier_id' => 'nullable|exists:suppliers,id',

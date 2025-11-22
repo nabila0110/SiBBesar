@@ -12,8 +12,9 @@ class SupplierController extends Controller
         $suppliers = Supplier::withCount('barangs')
             ->when($search, function ($query) use ($search) {
                 return $query->where('nama_supplier', 'like', '%' . $search . '%')
-                             ->orWhere('kode_supplier', 'like', '%' . $search . '%');
-            })->paginate(3);
+                             ->orWhere('email', 'like', '%' . $search . '%')
+                             ->orWhere('telepon', 'like', '%' . $search . '%');
+            })->paginate(5);
         return view('supplier.index', compact('suppliers', 'search'));
     }
 
@@ -23,8 +24,10 @@ class SupplierController extends Controller
 
     public function store(Request $request) {
         $request->validate([
-            'kode_supplier' => 'required|unique:suppliers,kode_supplier',
-            'nama_supplier' => 'required',
+            'nama_supplier' => 'required|max:100',
+            'email' => 'nullable|email|max:50',
+            'alamat' => 'nullable|max:255',
+            'telepon' => 'nullable|max:20',
         ]);
 
         Supplier::create($request->all());
@@ -44,8 +47,10 @@ class SupplierController extends Controller
 
     public function update(Request $request, $id) {
         $request->validate([
-            'kode_supplier' => 'required|unique:suppliers,kode_supplier,' . $id,
-            'nama_supplier' => 'required',
+            'nama_supplier' => 'required|max:100',
+            'email' => 'nullable|email|max:50',
+            'alamat' => 'nullable|max:255',
+            'telepon' => 'nullable|max:20',
         ]);
 
         $supplier = Supplier::findOrFail($id);

@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('barang', function (Blueprint $table) {
-            $table->unsignedBigInteger('supplier_id')->nullable()->after('stok');
-            $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('set null');
+            $table->dropColumn('kode');
         });
     }
 
@@ -23,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('barang', function (Blueprint $table) {
-            $table->dropForeign(['supplier_id']);
-            $table->dropColumn('supplier_id');
+            $table->string('kode')->unique()->after('id');
         });
     }
 };
