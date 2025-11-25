@@ -63,7 +63,7 @@ class BukuBesarController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $query = Journal::with(['account', 'creator'])
+        $query = Journal::with(['account.category', 'creator'])
             ->orderBy('account_id')
             ->orderBy('transaction_date', 'asc')
             ->orderBy('id', 'asc');
@@ -103,7 +103,7 @@ class BukuBesarController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $query = Journal::with(['account', 'creator'])
+        $query = Journal::with(['account.category', 'creator'])
             ->orderBy('account_id')
             ->orderBy('transaction_date', 'asc')
             ->orderBy('id', 'asc');

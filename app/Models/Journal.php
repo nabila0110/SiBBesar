@@ -22,7 +22,6 @@ class Journal extends Model
         'ppn_amount',
         'final_total',
         'project',
-        'company',
         'ket',
         'nota',
         'type',

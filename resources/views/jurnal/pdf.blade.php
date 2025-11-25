@@ -171,9 +171,8 @@
                 <th style="width: 8%;">Harga</th>
                 <th style="width: 8%;">Total</th>
                 <th style="width: 7%;">PPN 11%</th>
-                <th style="width: 9%;">Project</th>
-                <th style="width: 9%;">Perusahaan</th>
-                <th style="width: 5%;">Ket</th>
+                <th style="width: 10%;">Project</th>
+                <th style="width: 6%;">Ket</th>
                 <th style="width: 6%;">Nota</th>
                 <th style="width: 5%;">IN/OUT</th>
                 <th style="width: 6%;">Status</th>

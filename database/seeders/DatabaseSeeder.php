@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Company;
 use App\Models\AccountCategory;
 use App\Models\Account;
 
@@ -15,17 +14,6 @@ class DatabaseSeeder extends Seeder
         // Seed users only if none exist
         if (User::count() === 0) {
             $this->call(UserSeeder::class);
-        }
-
-        // Create company only if none exists
-        if (Company::count() === 0) {
-            Company::create([
-                'uuid' => (string) \Illuminate\Support\Str::uuid(),
-                'name' => 'PT. Example Company',
-                'address_line1' => 'Jakarta, Indonesia',
-                'phone' => '021-1234567',
-                'email' => 'info@example.com',
-            ]);
         }
 
         // Create account categories and accounts

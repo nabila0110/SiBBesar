@@ -153,41 +153,46 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 2.5%;">No</th>
+                    <th style="width: 3%;">No</th>
                     <th style="width: 6%;">Tanggal</th>
-                    <th style="width: 14%;">Item</th>
-                    <th style="width: 3.5%;">Qty</th>
+                    <th style="width: 6%;">Nota</th>
+                    <th style="width: 16%;">Item</th>
+                    <th style="width: 4%;">Qty</th>
                     <th style="width: 5%;">Satuan</th>
-                    <th style="width: 9%;">Harga</th>
+                    <th style="width: 8%;">Harga</th>
                     <th style="width: 9%;">Total</th>
                     <th style="width: 8%;">PPN 11%</th>
                     <th style="width: 9%;">Project</th>
-                    <th style="width: 9%;">Perusahaan</th>
-                    <th style="width: 5%;">Ket</th>
+                    <th style="width: 7%;">Ket</th>
                     <th style="width: 5%;">Type</th>
-                    <th style="width: 6%;">Status</th>
+                    <th style="width: 7%;">Status</th>
+                    <th style="width: 7%;">Klasifikasi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($journals as $journal)
+                @php
+                    $classification = $journal->account ? ($journal->account->category->code . '-' . $journal->account->code . ' - ' . $journal->account->name) : '-';
+                @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td class="text-center">{{ date('d/m/Y', strtotime($journal->transaction_date)) }}</td>
+                    <td>{{ $journal->nota }}</td>
                     <td>{{ $journal->item }}</td>
-                    <td class="text-center">{{ $journal->qty }}</td>
-                    <td class="text-center">{{ $journal->satuan }}</td>
+                    <td class="text-center">{{ number_format($journal->quantity, 0) }}</td>
+                    <td class="text-center">{{ $journal->satuan ?: '-' }}</td>
                     <td class="text-right">Rp {{ number_format($journal->price, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($journal->total, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ $journal->ppn_amount > 0 ? 'Rp ' . number_format($journal->ppn_amount, 0, ',', '.') : '-' }}</td>
-                    <td>{{ $journal->project }}</td>
-                    <td>{{ $journal->company }}</td>
-                    <td class="text-center">{{ $journal->notes }}</td>
+                    <td class="text-right">{{ $journal->tax ? 'Rp ' . number_format($journal->ppn_amount, 0, ',', '.') : '-' }}</td>
+                    <td>{{ $journal->project ?: '-' }}</td>
+                    <td class="text-center">{{ $journal->ket ?: '-' }}</td>
                     <td class="text-center">{{ strtoupper($journal->type) }}</td>
                     <td class="text-center">{{ strtoupper($journal->payment_status) }}</td>
+                    <td style="font-size: 5.5pt;">{{ $classification }}</td>
                 </tr>
                 @endforeach
                 <tr class="subtotal-row">
-                    <td colspan="6" class="text-right">SUBTOTAL:</td>
+                    <td colspan="7" class="text-right">SUBTOTAL:</td>
                     <td class="text-right">Rp {{ number_format($journals->sum('total'), 0, ',', '.') }}</td>
                     <td colspan="6"></td>
                 </tr>

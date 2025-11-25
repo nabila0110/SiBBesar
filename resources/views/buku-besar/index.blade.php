@@ -6,8 +6,11 @@
 
 <style>
     .table-buku-besar {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         width: 100%;
+        min-width: 1200px;
+        table-layout: fixed; /* Fix untuk Edge */
+        border-collapse: collapse;
     }
     .table-buku-besar th {
         background-color: #4472C4;
@@ -15,22 +18,66 @@
         font-weight: bold;
         text-align: center;
         vertical-align: middle;
-        padding: 0.3rem 0.2rem;
-        font-size: 0.7rem;
+        padding: 0.4rem 0.3rem;
+        font-size: 0.65rem;
+        white-space: nowrap;
+        box-sizing: border-box; /* Fix untuk Edge */
     }
     .table-buku-besar td {
-        padding: 0.3rem 0.2rem;
-        font-size: 0.7rem;
+        padding: 0.4rem 0.3rem;
+        font-size: 0.65rem;
+        vertical-align: middle;
+        box-sizing: border-box; /* Fix untuk Edge */
+        word-wrap: break-word;
     }
-    /* Item bisa wrap */
-    .table-buku-besar td:nth-child(4) {
-        white-space: normal;
-        max-width: 200px;
-    }
+    /* Kolom dengan lebar spesifik - dengan persentase untuk Edge */
+    .table-buku-besar th:nth-child(1), 
+    .table-buku-besar td:nth-child(1) { width: 3%; min-width: 35px; text-align: center; } /* NO */
+    
+    .table-buku-besar th:nth-child(2), 
+    .table-buku-besar td:nth-child(2) { width: 6%; min-width: 70px; white-space: nowrap; font-size: 0.6rem; } /* TGL */
+    
+    .table-buku-besar th:nth-child(3), 
+    .table-buku-besar td:nth-child(3) { width: 7%; min-width: 85px; white-space: nowrap; font-size: 0.6rem; } /* NOTA */
+    
+    .table-buku-besar th:nth-child(4), 
+    .table-buku-besar td:nth-child(4) { width: 20%; min-width: 180px; max-width: 280px; white-space: normal; word-break: break-word; } /* ITEM */
+    
+    .table-buku-besar th:nth-child(5), 
+    .table-buku-besar td:nth-child(5) { width: 4%; min-width: 45px; text-align: center; } /* QTY */
+    
+    .table-buku-besar th:nth-child(6), 
+    .table-buku-besar td:nth-child(6) { width: 4%; min-width: 50px; text-align: center; } /* SAT */
+    
+    .table-buku-besar th:nth-child(7), 
+    .table-buku-besar td:nth-child(7) { width: 8%; min-width: 90px; text-align: right; font-size: 0.6rem; } /* @ */
+    
+    .table-buku-besar th:nth-child(8), 
+    .table-buku-besar td:nth-child(8) { width: 9%; min-width: 100px; text-align: right; font-size: 0.6rem; } /* TOTAL */
+    
+    .table-buku-besar th:nth-child(9), 
+    .table-buku-besar td:nth-child(9) { width: 8%; min-width: 90px; text-align: right; font-size: 0.6rem; } /* PPN */
+    
+    .table-buku-besar th:nth-child(10), 
+    .table-buku-besar td:nth-child(10) { width: 8%; min-width: 90px; font-size: 0.6rem; } /* PROJECT */
+    
+    .table-buku-besar th:nth-child(11), 
+    .table-buku-besar td:nth-child(11) { width: 7%; min-width: 80px; text-align: center; } /* KET */
+    
+    .table-buku-besar th:nth-child(12), 
+    .table-buku-besar td:nth-child(12) { width: 4%; min-width: 50px; text-align: center; } /* I/O */
+    
+    .table-buku-besar th:nth-child(13), 
+    .table-buku-besar td:nth-child(13) { width: 4%; min-width: 50px; text-align: center; } /* STATUS */
+    
+    .table-buku-besar th:nth-child(14), 
+    .table-buku-besar td:nth-child(14) { width: 12%; min-width: 140px; font-size: 0.6rem; } /* KLASIFIKASI */
+    
     .account-header {
         background-color: #D9E1F2;
         font-weight: bold;
         padding: 8px;
+        font-size: 0.75rem;
     }
     .table-currency {
         text-align: right;
@@ -41,13 +88,25 @@
     }
     .container-fluid {
         max-width: 100%;
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
     .table-responsive {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar; /* Fix untuk Edge */
         margin-bottom: 1rem;
+        width: 100%;
+    }
+    .card-body {
+        padding: 0.5rem !important;
+    }
+    
+    /* Khusus untuk Microsoft Edge */
+    @supports (-ms-ime-align:auto) {
+        .table-buku-besar {
+            table-layout: auto;
+        }
     }
 </style>
 
@@ -113,20 +172,18 @@
                             <thead>
                                 <tr>
                                     <th>NO</th>
-                                    <th>TANGGAL</th>
+                                    <th>TGL</th>
                                     <th>NOTA</th>
                                     <th>ITEM</th>
                                     <th>QTY</th>
-                                    <th>SATUAN</th>
+                                    <th>SAT</th>
                                     <th>@</th>
                                     <th>TOTAL</th>
-                                    <th>PPN 11%</th>
+                                    <th>PPN</th>
                                     <th>PROJECT</th>
-                                    <th>PERUSAHAAN</th>
                                     <th>KET</th>
-                                    <th>NOTA</th>
-                                    <th>IN/OUT</th>
-                                    <th>LUNAS/TIDAK LUNAS</th>
+                                    <th>I/O</th>
+                                    <th>STATUS</th>
                                     <th>KLASIFIKASI</th>
                                 </tr>
                             </thead>
@@ -135,24 +192,22 @@
                                 @foreach($accountJournals as $journal)
                                     <tr>
                                         <td class="text-center">{{ $no++ }}</td>
-                                        <td class="text-center">{{ \Carbon\Carbon::parse($journal->transaction_date)->format('d/m/Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($journal->transaction_date)->format('d/m/y') }}</td>
                                         <td>{{ $journal->nota }}</td>
                                         <td>{{ $journal->item }}</td>
                                         <td class="text-center">{{ number_format($journal->quantity, 0) }}</td>
                                         <td class="text-center">{{ $journal->satuan ?: '-' }}</td>
-                                        <td class="table-currency">Rp {{ number_format($journal->price, 0, ',', '.') }}</td>
-                                        <td class="table-currency">Rp {{ number_format($journal->total, 0, ',', '.') }}</td>
+                                        <td class="table-currency">{{ number_format($journal->price, 0, ',', '.') }}</td>
+                                        <td class="table-currency">{{ number_format($journal->total, 0, ',', '.') }}</td>
                                         <td class="table-currency">
                                             @if($journal->tax)
-                                                Rp {{ number_format($journal->ppn_amount, 0, ',', '.') }}
+                                                {{ number_format($journal->ppn_amount, 0, ',', '.') }}
                                             @else
                                                 -
                                             @endif
                                         </td>
                                         <td>{{ $journal->project ?: '-' }}</td>
-                                        <td>{{ $journal->company ?: '-' }}</td>
                                         <td class="text-center">{{ $journal->ket ?: '-' }}</td>
-                                        <td>{{ $journal->nota }}</td>
                                         <td class="text-center">
                                             @if($journal->type === 'in')
                                                 <span class="badge bg-success">IN</span>
@@ -162,9 +217,9 @@
                                         </td>
                                         <td class="text-center">
                                             @if($journal->payment_status === 'lunas')
-                                                <span class="badge bg-success">LUNAS</span>
+                                                <span class="badge bg-success">L</span>
                                             @else
-                                                <span class="badge bg-warning text-dark">TIDAK LUNAS</span>
+                                                <span class="badge bg-warning text-dark">TL</span>
                                             @endif
                                         </td>
                                         <td><small>{{ $classification }}</small></td>
@@ -292,7 +347,6 @@
                     "Rp {{ number_format($journal->total, 0, ',', '.') }}",
                     "{{ $journal->tax ? 'Rp ' . number_format($journal->ppn_amount, 0, ',', '.') : '-' }}",
                     "{{ $journal->project ?: '-' }}",
-                    "{{ $journal->company ?: '-' }}",
                     "{{ $journal->ket ?: '-' }}",
                     "{{ $journal->nota }}",
                     "{{ $journal->type === 'in' ? 'IN' : 'OUT' }}",
@@ -384,7 +438,6 @@ function exportToExcel() {
                 "Rp {{ number_format($journal->total, 0, ',', '.') }}",
                 "{{ $journal->tax ? 'Rp ' . number_format($journal->ppn_amount, 0, ',', '.') : '-' }}",
                 "{{ $journal->project ?: '-' }}",
-                "{{ $journal->company ?: '-' }}",
                 "{{ $journal->ket ?: '-' }}",
                 "{{ $journal->nota }}",
                 "{{ $journal->type === 'in' ? 'IN' : 'OUT' }}",

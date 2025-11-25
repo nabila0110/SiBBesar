@@ -101,9 +101,8 @@
                                     <th style="width: 120px;" class="text-end">Total</th>
                                     <th style="width: 100px;" class="text-end">PPN 11%</th>
                                     <th style="width: 130px;" class="text-end">Final Total</th>
-                                    <th style="width: 120px;">Project</th>
-                                    <th style="width: 150px;">Perusahaan</th>
-                                    <th style="width: 100px;">Ket</th>
+                                    <th style="width: 150px;">Project</th>
+                                    <th style="width: 150px;">Ket</th>
                                     <th style="width: 100px;">Nota</th>
                                     <th style="width: 90px;" class="text-center">Status</th>
                                     <th style="width: 200px;">Account</th>
@@ -133,7 +132,6 @@
                                         <td class="text-end">{{ $journal->tax ? number_format($journal->ppn_amount, 0, ',', '.') : '-' }}</td>
                                         <td class="text-end fw-bold">{{ number_format($journal->final_total, 0, ',', '.') }}</td>
                                         <td>{{ $journal->project ?? '-' }}</td>
-                                        <td>{{ $journal->company ?? '-' }}</td>
                                         <td>{{ $journal->ket ?? '-' }}</td>
                                         <td>{{ $journal->nota ?? '-' }}</td>
                                         <td class="text-center">

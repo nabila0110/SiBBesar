@@ -182,7 +182,6 @@
                                 <th class="table-currency">Total</th>
                                 <th class="table-currency">PPN 11%</th>
                                 <th>Project</th>
-                                <th>Perusahaan</th>
                                 <th class="text-center">Ket</th>
                                 <th>Nota</th>
                                 <th class="text-center">IN/OUT</th>
@@ -210,7 +209,6 @@
                                         @endif
                                     </td>
                                     <td>{{ $journal->project ?: '-' }}</td>
-                                    <td>{{ $journal->company ?: '-' }}</td>
                                     <td class="text-center">{{ $journal->ket ?: '-' }}</td>
                                     <td>{{ $journal->nota }}</td>
                                     <td class="text-center">
@@ -287,5 +285,23 @@
         </div>
     </div>
 </div>
+
+<script>
+// Handle delete button
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const item = this.getAttribute('data-item');
+            
+            if (confirm(`Apakah Anda yakin ingin menghapus jurnal "${item}"?`)) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        });
+    });
+});
+</script>
 
 @endsection

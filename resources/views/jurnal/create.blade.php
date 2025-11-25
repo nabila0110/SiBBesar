@@ -144,14 +144,6 @@
                             @error('project')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="company" class="form-label">Perusahaan</label>
-                            <input type="text" class="form-control @error('company') is-invalid @enderror" 
-                                   id="company" name="company" placeholder="Nama perusahaan" value="{{ old('company') }}">
-                            @error('company')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
-                    </div>
                 </div>
 
                 <div class="row">
