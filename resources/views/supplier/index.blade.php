@@ -139,9 +139,17 @@
               <td>{{ $supplier->barangs_count }} item</td>
               <td>
                 <button class="btn btn-warning btn-sm edit-btn" data-id="{{ $supplier->id }}">Edit</button>
-                <form action="{{ route('supplier.destroy', $supplier->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus supplier ini? Barang terkait akan kehilangan data supplier.')">
-                  @csrf @method('DELETE')
-                  <button class="btn btn-danger btn-sm">Hapus</button>
+                <button type="button" class="btn btn-danger btn-sm delete-btn" 
+                        data-id="{{ $supplier->id }}" 
+                        data-nama="{{ $supplier->nama_supplier }}">
+                  Hapus
+                </button>
+                <form id="delete-form-{{ $supplier->id }}" 
+                      action="{{ route('supplier.destroy', $supplier->id) }}" 
+                      method="POST" 
+                      style="display: none;">
+                  @csrf
+                  @method('DELETE')
                 </form>
               </td>
             </tr>
@@ -158,7 +166,7 @@
         Showing {{ $suppliers->firstItem() ?? 0 }} to {{ $suppliers->lastItem() ?? 0 }} of {{ $suppliers->total() }} results
       </div>
       <div>
-        {{ $suppliers->appends(['search' => $search])->links() }}
+        {{ $suppliers->appends(['search' => request('search')])->links() }}
       </div>
     </div>
   </div>
@@ -241,12 +249,18 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   // Fetch data untuk modal edit
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const id = this.dataset.id;
-      fetch(`/supplier/${id}/edit`)
+      fetch(`/supplier/${id}/edit`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
         .then(res => res.json())
         .then(data => {
           document.getElementById('editId').value = data.id;
@@ -256,7 +270,38 @@
           document.getElementById('editAlamat').value = data.alamat || '';
           document.getElementById('editForm').action = `/supplier/${id}`;
           new bootstrap.Modal(document.getElementById('modalEdit')).show();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Gagal memuat data supplier'
+          });
         });
+    });
+  });
+
+  // Handle delete dengan SweetAlert2
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const nama = this.dataset.nama;
+      
+      Swal.fire({
+        title: 'Hapus Supplier?',
+        text: `Yakin ingin menghapus "${nama}"? Barang terkait akan kehilangan data supplier.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById(`delete-form-${id}`).submit();
+        }
+      });
     });
   });
 </script>

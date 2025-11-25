@@ -141,9 +141,17 @@
               <td>{{ $b->supplier->nama_supplier ?? '-' }}</td>
               <td>
                 <button class="btn btn-warning btn-sm edit-btn" data-id="{{ $b->id }}">Edit</button>
-                <form action="{{ route('barang.destroy', $b->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus barang ini?')">
-                  @csrf @method('DELETE')
-                  <button class="btn btn-danger btn-sm">Hapus</button>
+                <button type="button" class="btn btn-danger btn-sm delete-btn" 
+                        data-id="{{ $b->id }}" 
+                        data-nama="{{ $b->nama }}">
+                  Hapus
+                </button>
+                <form id="delete-form-{{ $b->id }}" 
+                      action="{{ route('barang.destroy', $b->id) }}" 
+                      method="POST" 
+                      style="display: none;">
+                  @csrf
+                  @method('DELETE')
                 </form>
               </td>
             </tr>
@@ -160,7 +168,7 @@
         Showing {{ $barang->firstItem() ?? 0 }} to {{ $barang->lastItem() ?? 0 }} of {{ $barang->total() }} results
       </div>
       <div>
-        {{ $barang->appends(['search' => $keyword])->links() }}
+        {{ $barang->appends(['search' => request('search')])->links() }}
       </div>
     </div>
   </div>
@@ -253,12 +261,18 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   // Fetch data untuk modal edit
   document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const id = this.dataset.id;
-      fetch(/barang/${id}/edit)
+      fetch(`/barang/${id}/edit`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
         .then(res => res.json())
         .then(data => {
           document.getElementById('editId').value = data.id;
@@ -266,9 +280,40 @@
           document.getElementById('editHarga').value = data.harga;
           document.getElementById('editStok').value = data.stok;
           document.getElementById('editSupplierId').value = data.supplier_id || '';
-          document.getElementById('editForm').action = /barang/${id};
+          document.getElementById('editForm').action = `/barang/${id}`;
           new bootstrap.Modal(document.getElementById('modalEdit')).show();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Gagal memuat data barang'
+          });
         });
+    });
+  });
+
+  // Handle delete dengan SweetAlert2
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const nama = this.dataset.nama;
+      
+      Swal.fire({
+        title: 'Hapus Barang?',
+        text: `Yakin ingin menghapus "${nama}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById(`delete-form-${id}`).submit();
+        }
+      });
     });
   });
 </script>

@@ -110,12 +110,8 @@ Route::get('/laba-rugi/export-pdf', [NeracaSaldoController::class, 'exportLabaRu
 Route::get('/laba-rugi/export-excel', [NeracaSaldoController::class, 'exportLabaRugiExcel'])->name('laba-rugi.export-excel');
 Route::get('/neraca-saldo-awal', [NeracaSaldoController::class, 'awal'])->name('neraca-saldo-awal');
 Route::get('/neraca-saldo-akhir', [NeracaSaldoController::class, 'akhir'])->name('neraca-saldo-akhir');
-Route::get('/laporan-transaksi', [LaporanKeuanganController::class, 'transaksi'])->name('laporan-transaksi');
-Route::get('/laporan-posisi-keuangan', [LaporanKeuanganController::class, 'posisi'])->name('laporan-posisi-keuangan');
-Route::get('/laporan-laba-rugi', [LaporanKeuanganController::class, 'labaRugi'])->name('laporan-laba-rugi');
 Route::get('/backup-database', [BackupController::class, 'index'])->name('backup-database');
 Route::post('/backup-database/create', [BackupController::class, 'create'])->name('backup-database.create');
-Route::post('/pph21/calculate', [CompanyController::class, 'calculate'])->name('pph21.calculate');
 
 // Simple profile & preferences routes used by the navbar dropdown and sidebar header.
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile')->middleware('auth');

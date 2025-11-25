@@ -100,6 +100,15 @@ class AssetController extends Controller
     public function edit(string $id)
     {
         $asset = Asset::findOrFail($id);
+        
+        // Jika request AJAX, return JSON
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'data' => $asset
+            ]);
+        }
+        
         return view('asset.edit', [
             'asset' => $asset
         ]);
@@ -118,7 +127,8 @@ class AssetController extends Controller
             'depreciation_rate' => 'required|numeric|min:0|max:100',
             'location' => 'nullable|string|max:15',
             'condition' => 'nullable|string|max:15',
-            'account_id' => 'required|exists:accounts,id'
+            'account_id' => 'required|exists:accounts,id',
+            'status' => 'nullable|in:active,retired,disposed'
         ]);
 
         if ($validator->fails()) {
@@ -143,7 +153,8 @@ class AssetController extends Controller
                 'purchase_price' => $purchase_price,
                 'depreciation_rate' => $request->depreciation_rate,
                 'location' => $request->location,
-                'condition' => $request->condition
+                'condition' => $request->condition,
+                'status' => $request->status ?? 'active'
             ]);
 
             // If request expects JSON (AJAX), return JSON; otherwise redirect back to index with flash

@@ -331,82 +331,147 @@
       const id = this.getAttribute('data-id');
       
       // Fetch asset data
-      fetch(`/asset/${id}/edit`)
+      fetch(`/asset/${id}/edit`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
         .then(response => response.json())
         .then(data => {
           if (data.status === 'success') {
             const asset = data.data;
             
-            // Populate form
-            document.getElementById('editId').value = asset.id;
-            document.getElementById('editNamaAset').value = asset.asset_name;
-            document.getElementById('editTanggalPerolehan').value = asset.purchase_date;
-            document.getElementById('editDescription').value = asset.description || '';
-            document.getElementById('editAccountId').value = asset.account_id;
-            document.getElementById('editHargaPerolehan').value = 'Rp ' + parseInt(asset.purchase_price).toLocaleString('id-ID');
-            document.getElementById('editDepreciationRate').value = asset.depreciation_rate;
-            document.getElementById('editLocation').value = asset.location || '';
-            document.getElementById('editCondition').value = asset.condition || '';
-            document.getElementById('editStatus').value = asset.status;
+            // Populate form - pastikan element ada
+            const editId = document.getElementById('editId');
+            const editNamaAset = document.getElementById('editNamaAset');
+            const editTanggalPerolehan = document.getElementById('editTanggalPerolehan');
+            const editDescription = document.getElementById('editDescription');
+            const editAccountId = document.getElementById('editAccountId');
+            const editHargaPerolehan = document.getElementById('editHargaPerolehan');
+            const editDepreciationRate = document.getElementById('editDepreciationRate');
+            const editLocation = document.getElementById('editLocation');
+            const editCondition = document.getElementById('editCondition');
+            const editStatus = document.getElementById('editStatus');
+            
+            if (editId) editId.value = asset.id;
+            if (editNamaAset) editNamaAset.value = asset.asset_name || '';
+            if (editTanggalPerolehan) editTanggalPerolehan.value = asset.purchase_date || '';
+            if (editDescription) editDescription.value = asset.description || '';
+            if (editAccountId) editAccountId.value = asset.account_id || '';
+            if (editHargaPerolehan) editHargaPerolehan.value = 'Rp ' + parseInt(asset.purchase_price || 0).toLocaleString('id-ID');
+            if (editDepreciationRate) editDepreciationRate.value = asset.depreciation_rate || '';
+            if (editLocation) editLocation.value = asset.location || '';
+            if (editCondition) editCondition.value = asset.condition || '';
+            if (editStatus) editStatus.value = asset.status || 'active';
+            
+            console.log('Data loaded:', asset);
           }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Gagal memuat data asset'
+          });
+        });
     });
   });
 
-  // Add event listener for edit form currency input
-  document.getElementById('editHargaPerolehan').addEventListener('input', function(e) {
-    formatCurrency(e.target);
-  });
-
-  // Handle update
-  document.getElementById('updateAset').addEventListener('click', function() {
-    const form = document.getElementById('formEditAset');
-    
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    const id = document.getElementById('editId').value;
-    const formData = new FormData(form);
-    
-    fetch(`/asset/${id}`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+  // Handle update dengan event delegation
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'updateAset') {
+      const form = document.getElementById('formEditAset');
+      
+      if (!form) {
+        console.error('Form not found');
+        return;
       }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil!',
-          text: data.message,
-          confirmButtonText: 'OK'
-        }).then(() => {
-          location.reload();
-        });
-      } else {
+      
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const id = document.getElementById('editId').value;
+      
+      if (!id) {
         Swal.fire({
           icon: 'error',
-          title: 'Gagal!',
-          text: data.message || 'Terjadi kesalahan',
+          title: 'Error',
+          text: 'ID asset tidak ditemukan'
+        });
+        return;
+      }
+      
+      const formData = new FormData(form);
+      
+      // Tambahkan _method untuk PUT
+      formData.append('_method', 'PUT');
+      
+      // Format harga perolehan (hapus Rp dan titik)
+      const hargaInput = document.getElementById('editHargaPerolehan');
+      if (hargaInput && hargaInput.value) {
+        const hargaValue = hargaInput.value.replace(/[^\d]/g, '');
+        formData.set('purchase_price', hargaValue);
+      }
+      
+      // Log untuk debugging
+      console.log('Updating asset ID:', id);
+      
+      fetch(`/asset/${id}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+        if (data.status === 'success') {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditAset'));
+          if (modal) modal.hide();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: data.message,
+            confirmButtonText: 'OK'
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: data.message || 'Terjadi kesalahan',
+            confirmButtonText: 'OK'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Terjadi kesalahan saat mengupdate data',
           confirmButtonText: 'OK'
         });
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'Terjadi kesalahan saat mengupdate data',
-        confirmButtonText: 'OK'
       });
-    });
+    }
+  });
+
+  // Format currency untuk edit form dengan event delegation
+  document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'editHargaPerolehan') {
+      formatCurrency(e.target);
+    }
   });
 </script>
 
