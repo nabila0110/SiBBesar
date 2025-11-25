@@ -29,6 +29,7 @@ class CreateAssetsTable extends Migration
 
             $table->index(['account_id']);
             $table->index(['purchase_date']);
+            
 
             $table->foreign('account_id')->references('id')->on('accounts')->onDelete('restrict');
         });

@@ -38,4 +38,3 @@ class BarangSeeder extends Seeder
         echo "Created " . count($barangs) . " barang items.\n";
     }
 }
-

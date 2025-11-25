@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
 use App\Exports\NeracaExport;
 use App\Exports\LabaRugiExport;
 
@@ -128,7 +129,7 @@ class NeracaSaldoController extends Controller
         
         // Debug: count total accounts
         $totalAccounts = collect($neracaData)->sum(fn($cat) => count($cat['accounts']));
-        \Log::info("Neraca - Total categories: " . count($neracaData) . ", Total accounts: " . $totalAccounts);
+        Log::info("Neraca - Total categories: " . count($neracaData) . ", Total accounts: " . $totalAccounts);
         
         return view('neraca', [
             'neracaData' => $neracaData,
@@ -395,6 +396,10 @@ class NeracaSaldoController extends Controller
                     // For credit accounts: OUT increases, IN decreases
                     $balance = $totalOut - $totalIn;
                 }
+
+                // Present debit/credit using transaction types: 'in' => debit, 'out' => credit
+                $debit = $totalIn;
+                $credit = $totalOut;
 
                 return [
                     'code' => $account->code,

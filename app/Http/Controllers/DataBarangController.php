@@ -15,8 +15,7 @@ class DataBarangController extends Controller
 
         $barang = Barang::with('supplier')
             ->when($keyword, function ($query, $keyword) {
-                $query->where('nama', 'like', "%$keyword%")
-                      ->orWhere('kode', 'like', "%$keyword%");
+                $query->where('nama', 'like', "%$keyword%");
             })->orderBy('id', 'desc')->paginate(5);
 
         $suppliers = Supplier::orderBy('nama_supplier')->get();
@@ -28,7 +27,6 @@ class DataBarangController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => 'required|unique:barang,kode|max:50',
             'nama' => 'required|max:255',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',
@@ -51,7 +49,6 @@ class DataBarangController extends Controller
     {
         $barang = Barang::findOrFail($id);
         $request->validate([
-            'kode' => 'required|unique:barang,kode,' . $id . '|max:50',
             'nama' => 'required|max:255',
             'harga' => 'required|numeric|min:0',
             'stok' => 'required|integer|min:0',

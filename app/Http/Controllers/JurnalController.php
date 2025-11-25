@@ -8,6 +8,9 @@ use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
 
 class JurnalController extends Controller
 {
@@ -230,5 +233,67 @@ class JurnalController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->withErrors('Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Export Jurnal to PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $query = Journal::with(['account', 'creator'])
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        // Filter tanggal
+        if ($request->has('dari_tanggal') && $request->input('dari_tanggal') != '') {
+            $query->where('transaction_date', '>=', $request->input('dari_tanggal'));
+        }
+        if ($request->has('sampai_tanggal') && $request->input('sampai_tanggal') != '') {
+            $query->where('transaction_date', '<=', $request->input('sampai_tanggal'));
+        }
+
+        $journals = $query->get();
+        
+        $data = [
+            'journals' => $journals,
+            'dari_tanggal' => $request->input('dari_tanggal'),
+            'sampai_tanggal' => $request->input('sampai_tanggal'),
+            'tanggal_cetak' => Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('D MMMM YYYY'),
+            'user' => Auth::user()->name ?? 'Admin'
+        ];
+
+        $pdf = Pdf::loadView('jurnal.pdf', $data)
+            ->setPaper('a4', 'landscape')
+            ->setOption('margin-top', 10)
+            ->setOption('margin-bottom', 10)
+            ->setOption('margin-left', 10)
+            ->setOption('margin-right', 10);
+
+        $filename = 'Laporan_Jurnal_' . date('Y-m-d_His') . '.pdf';
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Export Jurnal to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $query = Journal::with(['account', 'creator'])
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc');
+
+        // Filter tanggal
+        if ($request->has('dari_tanggal') && $request->input('dari_tanggal') != '') {
+            $query->where('transaction_date', '>=', $request->input('dari_tanggal'));
+        }
+        if ($request->has('sampai_tanggal') && $request->input('sampai_tanggal') != '') {
+            $query->where('transaction_date', '<=', $request->input('sampai_tanggal'));
+        }
+
+        $journals = $query->get();
+
+        $filename = 'Laporan_Jurnal_' . date('Y-m-d_His') . '.xlsx';
+        
+        return Excel::download(new \App\Exports\JurnalExport($journals), $filename);
     }
 }

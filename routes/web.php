@@ -90,7 +90,11 @@ Route::resource('piutang', PiutangController::class);
 Route::resource('asset', AssetController::class);
 Route::resource('akun', AkunController::class);
 Route::resource('jurnal', JurnalController::class);
+Route::get('/jurnal/export/pdf', [JurnalController::class, 'exportPdf'])->name('jurnal.export.pdf');
+Route::get('/jurnal/export/excel', [JurnalController::class, 'exportExcel'])->name('jurnal.export.excel');
 Route::resource('buku-besar', BukuBesarController::class);
+Route::get('/buku-besar/export/pdf', [BukuBesarController::class, 'exportPdf'])->name('buku-besar.export.pdf');
+Route::get('/buku-besar/export/excel', [BukuBesarController::class, 'exportExcel'])->name('buku-besar.export.excel');
 Route::resource('barang', DataBarangController::class);
 Route::resource('barang', DataBarangController::class)->only([
     'index', 'store', 'edit', 'update', 'destroy'

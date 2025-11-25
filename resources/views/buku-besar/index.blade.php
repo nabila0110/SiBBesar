@@ -51,23 +51,18 @@
     }
 </style>
 
-<!-- jsPDF & autoTable -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 @section('content')
 <div class="container-fluid mt-0">
     <h2 class="mb-4">Buku Besar</h2>
 
     <!-- Tombol Aksi -->
     <div class="mb-4 d-flex flex-wrap gap-2">
-        <button class="btn btn-success" onclick="exportToExcel()">
+        <a href="{{ route('buku-besar.export.excel', request()->all()) }}" class="btn btn-success">
             <i class="fas fa-file-excel"></i> Export Excel
-        </button>
-        <button class="btn btn-danger" onclick="cetakPDF()">
+        </a>
+        <a href="{{ route('buku-besar.export.pdf', request()->all()) }}" class="btn btn-danger">
             <i class="fas fa-file-pdf"></i> Cetak PDF
-        </button>
+        </a>
     </div>
 
     <!-- Filter Tanggal -->
@@ -227,8 +222,7 @@
     </div>
 </div>
 
-<script>
-function cetakPDF() {
+@endsection
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
         orientation: "landscape",
