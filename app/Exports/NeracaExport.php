@@ -39,6 +39,11 @@ class NeracaExport implements FromCollection, WithHeadings, WithStyles, WithTitl
         $totalExpense = $this->calculateTotalByType('expense');
         $netIncome = $totalRevenue - $totalExpense;
         
+        // Variabel untuk total keseluruhan
+        $totalAktiva = 0;
+        $totalKewajiban = 0;
+        $totalEkuitas = 0;
+        
         foreach ($categories as $category) {
             // Add category header
             $data->push([
@@ -56,12 +61,12 @@ class NeracaExport implements FromCollection, WithHeadings, WithStyles, WithTitl
                     $balance += $netIncome;
                 }
                 
-                $categoryTotal += $balance;
+                $categoryTotal += abs($balance);
                 
                 $data->push([
                     'kode' => $category->code . '-' . $account->code,
                     'nama' => $account->name,
-                    'saldo' => $balance
+                    'saldo' => abs($balance)
                 ]);
             }
             
@@ -69,11 +74,47 @@ class NeracaExport implements FromCollection, WithHeadings, WithStyles, WithTitl
             $data->push([
                 'kode' => '',
                 'nama' => 'TOTAL ' . strtoupper($category->name),
-                'saldo' => $categoryTotal
+                'saldo' => abs($categoryTotal)
             ]);
+            
+            // Akumulasi total berdasarkan tipe
+            if ($category->type === 'asset') {
+                $totalAktiva += abs($categoryTotal);
+            } elseif ($category->type === 'liability') {
+                $totalKewajiban += abs($categoryTotal);
+            } elseif ($category->type === 'equity') {
+                $totalEkuitas += abs($categoryTotal);
+            }
             
             $data->push(['kode' => '', 'nama' => '', 'saldo' => '']); // Empty row
         }
+        
+        // Tambahkan grand total
+        $data->push([
+            'kode' => '',
+            'nama' => 'TOTAL AKTIVA',
+            'saldo' => $totalAktiva
+        ]);
+        
+        $data->push([
+            'kode' => '',
+            'nama' => 'TOTAL KEWAJIBAN',
+            'saldo' => $totalKewajiban
+        ]);
+        
+        $data->push([
+            'kode' => '',
+            'nama' => 'TOTAL EKUITAS',
+            'saldo' => $totalEkuitas
+        ]);
+        
+        $data->push(['kode' => '', 'nama' => '', 'saldo' => '']); // Empty row
+        
+        $data->push([
+            'kode' => '',
+            'nama' => 'TOTAL KEWAJIBAN & EKUITAS',
+            'saldo' => $totalKewajiban + $totalEkuitas
+        ]);
         
         return $data;
     }

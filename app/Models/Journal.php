@@ -21,6 +21,10 @@ class Journal extends Model
         'tax',
         'ppn_amount',
         'final_total',
+        'debit',
+        'kredit',
+        'paired_journal_id',
+        'is_paired',
         'project',
         'ket',
         'nota',
@@ -41,6 +45,9 @@ class Journal extends Model
         'tax' => 'boolean',
         'ppn_amount' => 'decimal:2',
         'final_total' => 'decimal:2',
+        'debit' => 'decimal:2',
+        'kredit' => 'decimal:2',
+        'is_paired' => 'boolean',
     ];
 
     /**
@@ -65,6 +72,14 @@ class Journal extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Relationship to paired journal (double entry)
+     */
+    public function pairedJournal()
+    {
+        return $this->belongsTo(Journal::class, 'paired_journal_id');
     }
 
     /**

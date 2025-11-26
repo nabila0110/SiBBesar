@@ -13,6 +13,11 @@
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahAset">
           + Tambah Aset Baru
         </button>
+        
+        <!-- Search Box -->
+        <div class="d-flex align-items-center">
+          <input type="text" id="searchAset" class="form-control" placeholder="Cari aset..." style="width: 300px;">
+        </div>
       </div>
 
       <!-- Tabel Aset -->
@@ -34,13 +39,12 @@
               <th>Aksi</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="tabelAsetBody">
             @forelse($assets as $index => $asset)
             @php
               $yearsHeld = \Carbon\Carbon::parse($asset->purchase_date)->floatDiffInYears(\Carbon\Carbon::now());
               $accumulatedDepreciation = $asset->purchase_price * ($asset->depreciation_rate / 100) * $yearsHeld;
               $bookValue = $asset->purchase_price - $accumulatedDepreciation;
-              // Ensure book value doesn't go negative
               $bookValue = max(0, $bookValue);
             @endphp
             <tr>
@@ -78,7 +82,7 @@
               </td>
             </tr>
             @empty
-            <tr>
+            <tr id="emptyRow">
               <td colspan="12" class="text-center">Belum ada data aset</td>
             </tr>
             @endforelse
@@ -158,57 +162,11 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-semibold">Akun Aset <span class="text-danger">*</span></label>
-                <select class="form-select" name="account_id" id="accountId" required>
-                  <option value="">Pilih Akun</option>
-                  @foreach($accounts as $account)
-                    <option value="{{ $account->id }}">{{ $account->category->code }}-{{ $account->code }} - {{ $account->name }}</option>
-                  @endforeach
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Harga Perolehan <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="purchase_price" id="hargaPerolehan" placeholder="Rp 0" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Tarif Penyusutan (%) <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" name="depreciation_rate" id="depreciationRate" step="0.01" min="0" max="100" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Lokasi</label>
-                <input type="text" class="form-control" name="location" id="location" maxlength="15">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Kondisi</label>
-                <select class="form-select" name="condition" id="condition">
-                  <option value="">Pilih Kondisi</option>
-                  <option value="Sangat Baik">Sangat Baik</option>
-                  <option value="Baik">Baik</option>
-                  <option value="Cukup">Cukup</option>
-                  <option value="Kurang Baik">Kurang Baik</option>
-                  <option value="Rusak">Rusak</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Status</label>
-                <select class="form-select" name="status" id="status">
-                  <option value="active" selected>Active</option>
-                  <option value="retired">Retired</option>
-                  <option value="disposed">Disposed</option>
-                </select>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary" id="simpanAset">Simpan</button>
-        </div>
-      </div>
-    </div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
   // Format currency input
   function formatCurrency(input) {
     let value = input.value.replace(/[^\d]/g, '');
@@ -608,3 +566,318 @@
   </div>
 
 @endsection
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Search functionality - vanilla JavaScript
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchAset');
+    const tableBody = document.getElementById('tabelAsetBody');
+    
+    if (searchInput && tableBody) {
+      const rows = tableBody.getElementsByTagName('tr');
+      
+      searchInput.addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const text = row.textContent.toLowerCase();
+          
+          if (text.indexOf(searchValue) > -1) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        }
+      });
+    }
+  });
+
+  // Format currency input
+  function formatCurrency(input) {
+    let value = input.value.replace(/[^\d]/g, '');
+    if (value) {
+      value = parseInt(value).toLocaleString('id-ID');
+      input.value = 'Rp ' + value;
+    } else {
+      input.value = '';
+    }
+  }
+
+  // Add event listeners for currency inputs when document is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    const hargaPerolehan = document.getElementById('hargaPerolehan');
+    const akumulasiPenyusutan = document.getElementById('akumulasiPenyusutan');
+    
+    if (hargaPerolehan) {
+      hargaPerolehan.addEventListener('input', function(e) {
+        formatCurrency(e.target);
+      });
+    }
+    
+    if (akumulasiPenyusutan) {
+      akumulasiPenyusutan.addEventListener('input', function(e) {
+        formatCurrency(e.target);
+      });
+    }
+  });
+
+  // Handle form submission untuk tambah aset
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'simpanAset') {
+      const form = document.getElementById('formAset');
+      
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const formData = new FormData(form);
+      
+      // Format harga perolehan (hapus Rp dan titik)
+      const hargaInput = document.getElementById('hargaPerolehan');
+      if (hargaInput && hargaInput.value) {
+        const hargaValue = hargaInput.value.replace(/[^\d]/g, '');
+        formData.set('purchase_price', hargaValue);
+      }
+      
+      // Format akumulasi penyusutan (hapus Rp dan titik)
+      const akumulasiInput = document.getElementById('akumulasiPenyusutan');
+      if (akumulasiInput && akumulasiInput.value) {
+        const akumulasiValue = akumulasiInput.value.replace(/[^\d]/g, '');
+        formData.set('accumulated_depreciation', akumulasiValue);
+      }
+      
+      fetch('{{ route("asset.store") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: data.message,
+            confirmButtonText: 'OK'
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: data.message || 'Terjadi kesalahan',
+            confirmButtonText: 'OK'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Terjadi kesalahan saat menyimpan data',
+          confirmButtonText: 'OK'
+        });
+      });
+    }
+  });
+
+  // Handle delete dengan event delegation
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.closest('.btn-delete')) {
+      const button = e.target.closest('.btn-delete');
+      const id = button.getAttribute('data-id');
+      const name = button.getAttribute('data-name');
+      
+      Swal.fire({
+        title: 'Hapus Aset?',
+        text: `Yakin ingin menghapus ${name}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/asset/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              Swal.fire({
+                icon: 'success',
+                title: 'Terhapus!',
+                text: data.message,
+                confirmButtonText: 'OK'
+              }).then(() => {
+                location.reload();
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'Terjadi kesalahan saat menghapus data',
+              confirmButtonText: 'OK'
+            });
+          });
+        }
+      });
+    }
+  });
+
+  // Handle edit button dengan event delegation
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.closest('.btn-edit')) {
+      const button = e.target.closest('.btn-edit');
+      const id = button.getAttribute('data-id');
+      
+      // Fetch asset data
+      fetch(`/asset/${id}/edit`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const asset = data.data;
+            
+            // Populate form
+            const editId = document.getElementById('editId');
+            const editNamaAset = document.getElementById('editNamaAset');
+            const editTanggalPerolehan = document.getElementById('editTanggalPerolehan');
+            const editDescription = document.getElementById('editDescription');
+            const editAccountId = document.getElementById('editAccountId');
+            const editHargaPerolehan = document.getElementById('editHargaPerolehan');
+            const editDepreciationRate = document.getElementById('editDepreciationRate');
+            const editLocation = document.getElementById('editLocation');
+            const editCondition = document.getElementById('editCondition');
+            const editStatus = document.getElementById('editStatus');
+            
+            if (editId) editId.value = asset.id;
+            if (editNamaAset) editNamaAset.value = asset.asset_name || '';
+            if (editTanggalPerolehan) editTanggalPerolehan.value = asset.purchase_date || '';
+            if (editDescription) editDescription.value = asset.description || '';
+            if (editAccountId) editAccountId.value = asset.account_id || '';
+            if (editHargaPerolehan) editHargaPerolehan.value = 'Rp ' + parseInt(asset.purchase_price || 0).toLocaleString('id-ID');
+            if (editDepreciationRate) editDepreciationRate.value = asset.depreciation_rate || '';
+            if (editLocation) editLocation.value = asset.location || '';
+            if (editCondition) editCondition.value = asset.condition || '';
+            if (editStatus) editStatus.value = asset.status || 'active';
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Gagal memuat data asset'
+          });
+        });
+    }
+  });
+
+  // Handle update dengan event delegation
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'updateAset') {
+      const form = document.getElementById('formEditAset');
+      
+      if (!form) {
+        console.error('Form not found');
+        return;
+      }
+      
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const id = document.getElementById('editId').value;
+      
+      if (!id) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'ID asset tidak ditemukan'
+        });
+        return;
+      }
+      
+      const formData = new FormData(form);
+      
+      // Tambahkan _method untuk PUT
+      formData.append('_method', 'PUT');
+      
+      // Format harga perolehan (hapus Rp dan titik)
+      const hargaInput = document.getElementById('editHargaPerolehan');
+      if (hargaInput && hargaInput.value) {
+        const hargaValue = hargaInput.value.replace(/[^\d]/g, '');
+        formData.set('purchase_price', hargaValue);
+      }
+      
+      fetch(`/asset/${id}`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditAset'));
+          if (modal) modal.hide();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: data.message,
+            confirmButtonText: 'OK'
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: data.message || 'Terjadi kesalahan',
+            confirmButtonText: 'OK'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Terjadi kesalahan saat mengupdate data',
+          confirmButtonText: 'OK'
+        });
+      });
+    }
+  });
+
+  // Format currency untuk edit form dengan event delegation
+  document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'editHargaPerolehan') {
+      formatCurrency(e.target);
+    }
+  });
+</script>

@@ -14,13 +14,13 @@
 
     @if ($errors->any())
         <div class="alert alert-danger alert-dismissible fade show">
-            <strong>Error!</strong> Periksa kembali input Anda:
-            <ul class="mb-0 mt-2">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Error! Periksa kembali input Anda:</h5>
+            <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
@@ -38,7 +38,8 @@
                         <div class="mb-3">
                             <label for="transaction_date" class="form-label">Tanggal <span class="text-danger">*</span></label>
                             <input type="date" class="form-control @error('transaction_date') is-invalid @enderror" 
-                                   id="transaction_date" name="transaction_date" value="{{ old('transaction_date', $journal->transaction_date) }}" required>
+                                   id="transaction_date" name="transaction_date" 
+                                   value="{{ old('transaction_date', \Carbon\Carbon::parse($journal->transaction_date)->format('Y-m-d')) }}" required>
                             @error('transaction_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -248,6 +249,7 @@
     </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const qtyInput = document.getElementById('quantity');
@@ -257,6 +259,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalDisplay = document.getElementById('total_display');
     const ppnDisplay = document.getElementById('ppn_display');
     const finalTotalDisplay = document.getElementById('final_total_display');
+    const transactionDateInput = document.getElementById('transaction_date');
+
+    // Preserve tanggal yang sudah diisi - jangan reset
+    if (transactionDateInput && transactionDateInput.value) {
+        // Simpan tanggal asli
+        const originalDate = transactionDateInput.value;
+        
+        // Set attribute untuk mencegah reset
+        transactionDateInput.setAttribute('data-original-date', originalDate);
+        
+        // Listener untuk mencegah perubahan tidak sengaja
+        transactionDateInput.addEventListener('change', function() {
+            if (this.value === '') {
+                this.value = this.getAttribute('data-original-date');
+            }
+        });
+    }
 
     function calculateTotals() {
         // Remove any formatting from input and parse as number
@@ -320,6 +339,30 @@ document.addEventListener('DOMContentLoaded', function() {
         priceDisplay.value = formatRupiah(parseInt(priceInput.value));
     }
     calculateTotals();
+
+    // Handle form submission dengan konfirmasi
+    const form = document.getElementById('journalForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Update Jurnal?',
+                text: 'Pastikan semua data sudah benar',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Update!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Submit form
+                    form.submit();
+                }
+            });
+        });
+    }
 });
 </script>
 @endsection

@@ -11,7 +11,7 @@ class Account extends Model
     protected $fillable = [
         'code','name','type','normal_balance','is_active',
         'balance_debit','balance_credit','description',
-        'account_category_id','account_type_id','group','expense_type'
+        'account_type_id','group','expense_type'
     ];
 
     public function category()
@@ -19,28 +19,26 @@ class Account extends Model
         return $this->belongsTo(AccountCategory::class, 'account_category_id');
     }
 
-    public function accountType()
+    public function journals()
     {
-        return $this->belongsTo(AccountType::class, 'account_type_id');
+        return $this->hasMany(Journal::class, 'account_id');
     }
 
-    public function journalDetails()
+    public function assets()
     {
-        return $this->hasMany(JournalDetail::class);
+        return $this->hasMany(Asset::class, 'account_id');
     }
 
     /**
-     * Get full account code with category prefix
+     * Get full account code
      */
     public function getFullCodeAttribute()
     {
-        return $this->category ? ($this->category->code . '-' . $this->code) : $this->code;
+        return $this->code;
     }
 
     /**
-     * Get balance for this account. If $start/$end provided, compute from journal details,
-     * otherwise return cached debit-credit.
-     * Positive = debit balance, Negative = credit balance
+     * Get balance for this account.
      */
     public function getBalance($start = null, $end = null)
     {
@@ -50,11 +48,11 @@ class Account extends Model
             return $debit - $credit;
         }
 
-        $query = $this->journalDetails()->join('journals', 'journal_details.journal_id', '=', 'journals.id')
-            ->selectRaw('COALESCE(SUM(journal_details.debit),0) as total_debit, COALESCE(SUM(journal_details.credit),0) as total_credit');
+        $query = $this->journals()
+            ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(kredit),0) as total_credit');
 
-        if ($start) $query->where('journals.transaction_date', '>=', $start);
-        if ($end) $query->where('journals.transaction_date', '<=', $end);
+        if ($start) $query->where('transaction_date', '>=', $start);
+        if ($end) $query->where('transaction_date', '<=', $end);
 
         $totals = $query->first();
         $debit = $totals->total_debit ?? 0;

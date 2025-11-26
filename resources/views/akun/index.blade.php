@@ -10,6 +10,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold">Daftar Akun</h3>
     <div>
+      <a href="{{ route('akun.kategori') }}" class="btn btn-info me-2">📁 Kelola Kategori</a>
       <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buatAkunModal">+ Buat Akun</button>
     </div>
   </div>
@@ -22,6 +23,7 @@
             <th style="width:50px">No</th>
             <th style="width:110px">Kode</th>
             <th>Nama Akun</th>
+            <th style="width:150px">Kategori</th>
             <th style="width:120px">Tipe</th>
             <th style="width:220px">Tindakan</th>
           </tr>
@@ -30,9 +32,19 @@
           @foreach($accounts as $account)
             <tr>
               <td>{{ $loop->iteration }}</td>
-              <td>[{{ $account->category->code }}-{{ $account->code }}]</td>
+              <td>[{{ $account->category->code ?? '' }}-{{ $account->code }}]</td>
               <td>{{ $account->name }}</td>
-              <td>{{ $account->type }}</td>
+              <td>{{ $account->category->name ?? '-' }}</td>
+              <td>
+                <span class="badge bg-{{ 
+                  $account->type == 'asset' ? 'primary' : 
+                  ($account->type == 'liability' ? 'warning' : 
+                  ($account->type == 'equity' ? 'info' : 
+                  ($account->type == 'revenue' ? 'success' : 'danger'))) 
+                }}">
+                  {{ ucfirst($account->type) }}
+                </span>
+              </td>
               <td>
                 <button class="btn btn-edit btn-sm me-1 edit-row">Edit</button>
                 <button class="btn btn-hapus btn-sm delete-row">Hapus</button>
@@ -57,46 +69,39 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Kategori Akun:</label>
+            <label class="form-label fw-semibold">Tipe Akun: <span class="text-danger">*</span></label>
+            <select name="type" id="tipeAkun" class="form-select" required>
+              <option value="">Pilih Tipe</option>
+              <option value="asset">Asset (Aset)</option>
+              <option value="liability">Liability (Kewajiban)</option>
+              <option value="equity">Equity (Modal)</option>
+              <option value="revenue">Revenue (Pendapatan)</option>
+              <option value="expense">Expense (Beban)</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Kategori: <span class="text-danger">*</span></label>
             <select name="account_category_id" id="kategoriAkun" class="form-select" required>
-              <option value="">Pilih Kategori</option>
-              @foreach($categories as $category)
-                <option value="{{ $category->id }}" data-code="{{ $category->code }}">{{ $category->code }} - {{ $category->name }}</option>
-              @endforeach
+              <option value="">Pilih kategori</option>
             </select>
+            <small class="text-muted">Pilih tipe terlebih dahulu</small>
           </div>
+          
           <div class="mb-3">
-            <label class="form-label">Kode Akun:</label>
-            <input type="text" name="code" id="kodeAkun" class="form-control" placeholder="1100" required>
-            <small class="text-muted">Masukkan kode akun saja (tanpa kategori)</small>
+            <label class="form-label fw-semibold">Kode Akun: <span class="text-danger">*</span></label>
+            <input type="text" name="code" id="kodeAkun" class="form-control" placeholder="Contoh: 1100" required>
+            <small class="text-muted">Masukkan kode akun unik</small>
           </div>
+          
           <div class="mb-3">
-            <label class="form-label">Nama Akun:</label>
-            <input type="text" name="name" id="namaAkun" class="form-control" placeholder="Contoh: Petty Cash" required>
+            <label class="form-label fw-semibold">Nama Akun: <span class="text-danger">*</span></label>
+            <input type="text" name="name" id="namaAkun" class="form-control" placeholder="Contoh: Kas" required>
           </div>
+          
           <div class="mb-3">
-            <label class="form-label">Kelompok Akun:</label>
-            <select name="group" id="kelompok" class="form-select" required>
-              <option value="Assets">Assets</option>
-              <option value="Liabilities">Liabilities</option>
-              <option value="Equity">Equity</option>
-              <option value="Revenue">Revenue</option>
-              <option value="Expense">Expense</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Tipe Akun:</label>
-            <select name="type" id="tipe" class="form-select" required>
-              <option value="asset">Asset</option>
-              <option value="liability">Liability</option>
-              <option value="equity">Equity</option>
-              <option value="revenue">Revenue</option>
-              <option value="expense">Expense</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Jenis Beban (opsional):</label>
-            <input type="text" name="expense_type" id="jenisBeban" class="form-control" placeholder="Beban Kas">
+            <label class="form-label">Deskripsi:</label>
+            <textarea name="description" id="deskripsi" class="form-control" rows="2" placeholder="Keterangan tambahan (opsional)"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -109,12 +114,8 @@
 </div>
 
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<!-- Custom JS -->
-<script src="{{ asset('js/akun.js') }}"></script>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/akun.js') }}"></script>
+@endpush

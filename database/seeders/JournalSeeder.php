@@ -10,101 +10,202 @@ class JournalSeeder extends Seeder
 {
     public function run()
     {
-        // Get expense and revenue accounts
-        $expenseAccount = Account::where('type', 'expense')->first();
-        $revenueAccount = Account::where('type', 'revenue')->first();
+        // Get specific accounts for double entry
+        $bebanGajiAccount = Account::where('name', 'LIKE', '%Gaji%')->where('type', 'expense')->first();
+        $pendapatanJasaAccount = Account::where('name', 'LIKE', '%Jasa%')->where('type', 'revenue')->first();
+        $bebanMaterialAccount = Account::where('name', 'LIKE', '%Material%')->where('type', 'expense')->first();
+        
+        // Get required accounts for double entry pairing
+        $kasAccount = Account::whereHas('category', function($q) {
+            $q->where('type', 'asset');
+        })->where('code', '1100')->first();
+        
+        $piutangAccount = Account::whereHas('category', function($q) {
+            $q->where('type', 'asset');
+        })->where('code', '1300')->first();
+        
+        $hutangAccount = Account::whereHas('category', function($q) {
+            $q->where('type', 'liability');
+        })->where('code', '1100')->first();
         
         // If no accounts found, abort
-        if (!$expenseAccount || !$revenueAccount) {
-            $this->command->warn('Expense or Revenue accounts not found. Please run DatabaseSeeder first.');
+        if (!$bebanGajiAccount || !$pendapatanJasaAccount || !$kasAccount || !$piutangAccount || !$hutangAccount) {
+            $this->command->warn('Required accounts not found. Please run AccountSeeder first.');
             return;
         }
 
-        $journals = [
-            // JANUARI 2025
-            ['transaction_date' => '2025-01-05', 'item' => 'Pembayaran Proyek Instalasi Pipa Perumahan Griya Asri', 'quantity' => 1, 'satuan' => 'paket', 'price' => 85000000, 'total' => 85000000, 'tax' => true, 'ppn_amount' => 9350000, 'final_total' => 94350000, 'project' => 'GRIYA ASRI', 'company' => 'PT PROPERTI SEJAHTERA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-001', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-01-08', 'item' => 'Gaji Karyawan Bulan Januari', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-001', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-01-12', 'item' => 'Pembelian Material Pipa PVC 4 inch', 'quantity' => 200, 'satuan' => 'batang', 'price' => 125000, 'total' => 25000000, 'tax' => true, 'ppn_amount' => 2750000, 'final_total' => 27750000, 'project' => 'GRIYA ASRI', 'company' => 'CV MATERIAL JAYA', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-01-18', 'item' => 'DP Proyek Pembangunan Drainage Mall Sentosa', 'quantity' => 1, 'satuan' => 'paket', 'price' => 120000000, 'total' => 120000000, 'tax' => true, 'ppn_amount' => 13200000, 'final_total' => 133200000, 'project' => 'MALL SENTOSA', 'company' => 'PT MALL SEJAHTERA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-002', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-01-25', 'item' => 'Sewa Excavator dan Dump Truck', 'quantity' => 10, 'satuan' => 'hari', 'price' => 3200000, 'total' => 32000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 32000000, 'project' => 'MALL SENTOSA', 'company' => 'CV ALAT BERAT', 'ket' => 'TRANSPORT', 'nota' => 'RENT-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        $this->command->info('Creating journals with double entry system...');
 
-            // FEBRUARI 2025
-            ['transaction_date' => '2025-02-03', 'item' => 'Pelunasan Proyek Instalasi Pipa Perumahan Griya Asri', 'quantity' => 1, 'satuan' => 'paket', 'price' => 45000000, 'total' => 45000000, 'tax' => true, 'ppn_amount' => 4950000, 'final_total' => 49950000, 'project' => 'GRIYA ASRI', 'company' => 'PT PROPERTI SEJAHTERA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-003', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-02-07', 'item' => 'Gaji Karyawan Bulan Februari', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-002', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-02-14', 'item' => 'Pembelian Semen dan Pasir untuk Proyek', 'quantity' => 1, 'satuan' => 'lot', 'price' => 18500000, 'total' => 18500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 18500000, 'project' => 'MALL SENTOSA', 'company' => 'TOKO BANGUNAN JAYA', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-002', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-02-20', 'item' => 'Progress Payment 30% Proyek Mall Sentosa', 'quantity' => 1, 'satuan' => 'paket', 'price' => 95000000, 'total' => 95000000, 'tax' => true, 'ppn_amount' => 10450000, 'final_total' => 105450000, 'project' => 'MALL SENTOSA', 'company' => 'PT MALL SEJAHTERA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-004', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-02-28', 'item' => 'Service dan Maintenance Alat Berat', 'quantity' => 5, 'satuan' => 'unit', 'price' => 4500000, 'total' => 22500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 22500000, 'project' => 'OPERASIONAL', 'company' => 'BENGKEL ALAT BERAT', 'ket' => 'ADMINISTRASI', 'nota' => 'SVC-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // CONTOH 1: Pendapatan Jasa - Lunas (IN + LUNAS → Kas bertambah)
+        $this->createDoubleEntryJournal(
+            '2025-11-20',
+            'Pembayaran Proyek Paving Jalan Komplek',
+            1,
+            'paket',
+            30000000,
+            true,
+            'KOMPLEK ELITE',
+            'CV-001',
+            'in',
+            'lunas',
+            $pendapatanJasaAccount->id,
+            $kasAccount->id
+        );
 
-            // MARET 2025
-            ['transaction_date' => '2025-03-05', 'item' => 'Proyek Perbaikan Sistem Drainase Komplek Permata', 'quantity' => 1, 'satuan' => 'paket', 'price' => 72000000, 'total' => 72000000, 'tax' => true, 'ppn_amount' => 7920000, 'final_total' => 79920000, 'project' => 'KOMPLEK PERMATA', 'company' => 'PEMDA KOTA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-005', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-03-08', 'item' => 'Gaji Karyawan Bulan Maret', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-003', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-03-15', 'item' => 'Pembelian Material Besi dan Beton Ready Mix', 'quantity' => 1, 'satuan' => 'lot', 'price' => 38000000, 'total' => 38000000, 'tax' => true, 'ppn_amount' => 4180000, 'final_total' => 42180000, 'project' => 'KOMPLEK PERMATA', 'company' => 'PT BETON READY MIX', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-003', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-03-22', 'item' => 'DP Proyek Renovasi Gedung Perkantoran', 'quantity' => 1, 'satuan' => 'paket', 'price' => 150000000, 'total' => 150000000, 'tax' => true, 'ppn_amount' => 16500000, 'final_total' => 166500000, 'project' => 'GEDUNG PERKANTORAN', 'company' => 'PT PROPERTIINDO', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-006', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-03-28', 'item' => 'Biaya Operasional Kantor dan Listrik', 'quantity' => 1, 'satuan' => 'bulan', 'price' => 15000000, 'total' => 15000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 15000000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'ADMINISTRASI', 'nota' => 'OPR-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // CONTOH 2: Beban Gaji - Tidak Lunas (OUT + TIDAK LUNAS → Hutang bertambah)
+        $this->createDoubleEntryJournal(
+            '2025-11-21',
+            'Upah Paving dan Finishing',
+            20,
+            'orang',
+            1500000,
+            false,
+            'KOMPLEK ELITE',
+            'UPAH-001',
+            'out',
+            'tidak_lunas',
+            $bebanGajiAccount->id,
+            $hutangAccount->id
+        );
 
-            // APRIL 2025
-            ['transaction_date' => '2025-04-04', 'item' => 'Progress Payment 50% Proyek Mall Sentosa', 'quantity' => 1, 'satuan' => 'paket', 'price' => 110000000, 'total' => 110000000, 'tax' => true, 'ppn_amount' => 12100000, 'final_total' => 122100000, 'project' => 'MALL SENTOSA', 'company' => 'PT MALL SEJAHTERA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-007', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-04-08', 'item' => 'Gaji Karyawan Bulan April', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-004', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-04-15', 'item' => 'Pembelian Keramik dan Cat untuk Renovasi', 'quantity' => 1, 'satuan' => 'lot', 'price' => 28000000, 'total' => 28000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 28000000, 'project' => 'GEDUNG PERKANTORAN', 'company' => 'TOKO BANGUNAN SEJAHTERA', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-004', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-04-23', 'item' => 'Pelunasan Proyek Perbaikan Drainase Komplek Permata', 'quantity' => 1, 'satuan' => 'paket', 'price' => 58000000, 'total' => 58000000, 'tax' => true, 'ppn_amount' => 6380000, 'final_total' => 64380000, 'project' => 'KOMPLEK PERMATA', 'company' => 'PEMDA KOTA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-008', 'type' => 'in', 'payment_status' => 'tidak_lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-04-29', 'item' => 'Upah Tukang dan Helper Proyek', 'quantity' => 25, 'satuan' => 'orang', 'price' => 1800000, 'total' => 45000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 45000000, 'project' => 'GEDUNG PERKANTORAN', 'company' => 'TIM KONTRAKTOR', 'ket' => 'GAJI', 'nota' => 'UPAH-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // CONTOH 3: Pendapatan Jasa - Tidak Lunas (IN + TIDAK LUNAS → Piutang bertambah)
+        $this->createDoubleEntryJournal(
+            '2025-11-22',
+            'Pendapatan Jasa Konsultasi',
+            1,
+            'paket',
+            50000000,
+            true,
+            'GEDUNG PERKANTORAN',
+            'INV-001',
+            'in',
+            'tidak_lunas',
+            $pendapatanJasaAccount->id,
+            $piutangAccount->id
+        );
 
-            // MEI 2025
-            ['transaction_date' => '2025-05-06', 'item' => 'Proyek Instalasi Saluran Air Perumahan Green Valley', 'quantity' => 1, 'satuan' => 'paket', 'price' => 88000000, 'total' => 88000000, 'tax' => true, 'ppn_amount' => 9680000, 'final_total' => 97680000, 'project' => 'GREEN VALLEY', 'company' => 'PT GREEN PROPERTY', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-009', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-05-08', 'item' => 'Gaji Karyawan Bulan Mei', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-005', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-05-14', 'item' => 'Pembelian Pipa HDPE dan Fittings', 'quantity' => 150, 'satuan' => 'meter', 'price' => 185000, 'total' => 27750000, 'tax' => true, 'ppn_amount' => 3052500, 'final_total' => 30802500, 'project' => 'GREEN VALLEY', 'company' => 'CV PIPA MANDIRI', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-005', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-05-20', 'item' => 'Progress Payment 60% Proyek Gedung Perkantoran', 'quantity' => 1, 'satuan' => 'paket', 'price' => 135000000, 'total' => 135000000, 'tax' => true, 'ppn_amount' => 14850000, 'final_total' => 149850000, 'project' => 'GEDUNG PERKANTORAN', 'company' => 'PT PROPERTI INDO', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-010', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-05-27', 'item' => 'BBM dan Solar untuk Alat Berat', 'quantity' => 2000, 'satuan' => 'liter', 'price' => 9500, 'total' => 19000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 19000000, 'project' => 'OPERASIONAL', 'company' => 'SPBU PERTAMINA', 'ket' => 'TRANSPORT', 'nota' => 'BBM-2025-001', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // CONTOH 4: Beban Material - Lunas (OUT + LUNAS → Kas berkurang)
+        $this->createDoubleEntryJournal(
+            '2025-11-23',
+            'Pembelian Material Paving Block',
+            5000,
+            'pcs',
+            12500,
+            false,
+            'KOMPLEK ELITE',
+            'PO-001',
+            'out',
+            'lunas',
+            $bebanMaterialAccount->id,
+            $kasAccount->id
+        );
 
-            // JUNI 2025
-            ['transaction_date' => '2025-06-03', 'item' => 'DP Proyek Pembangunan Jalan Akses Pabrik', 'quantity' => 1, 'satuan' => 'paket', 'price' => 180000000, 'total' => 180000000, 'tax' => true, 'ppn_amount' => 19800000, 'final_total' => 199800000, 'project' => 'JALAN AKSES PABRIK', 'company' => 'PT INDUSTRI MAKMUR', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-011', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-06-08', 'item' => 'Gaji Karyawan Bulan Juni', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-006', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-06-15', 'item' => 'Pelunasan Proyek Mall Sentosa', 'quantity' => 1, 'satuan' => 'paket', 'price' => 95000000, 'total' => 95000000, 'tax' => true, 'ppn_amount' => 10450000, 'final_total' => 105450000, 'project' => 'MALL SENTOSA', 'company' => 'PT MALL SEJAHTERA', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-012', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-06-20', 'item' => 'Pembelian Aspal dan Material Jalan', 'quantity' => 1, 'satuan' => 'lot', 'price' => 85000000, 'total' => 85000000, 'tax' => true, 'ppn_amount' => 9350000, 'final_total' => 94350000, 'project' => 'JALAN AKSES PABRIK', 'company' => 'PT ASPAL NUSANTARA', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-006', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-06-28', 'item' => 'Biaya Asuransi Alat Berat dan Kendaraan', 'quantity' => 1, 'satuan' => 'tahun', 'price' => 35000000, 'total' => 35000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 35000000, 'project' => 'OPERASIONAL', 'company' => 'PT ASURANSI SINAR MAS', 'ket' => 'ADMINISTRASI', 'nota' => 'ASR-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // CONTOH 5: Beban Gaji - Lunas (OUT + LUNAS → Kas berkurang)
+        $this->createDoubleEntryJournal(
+            '2025-11-24',
+            'Gaji Karyawan November',
+            15,
+            'orang',
+            3500000,
+            false,
+            'OPERASIONAL',
+            'PAY-001',
+            'out',
+            'lunas',
+            $bebanGajiAccount->id,
+            $kasAccount->id
+        );
 
-            // JULI 2025
-            ['transaction_date' => '2025-07-05', 'item' => 'Pelunasan Proyek Instalasi Saluran Air Green Valley', 'quantity' => 1, 'satuan' => 'paket', 'price' => 67000000, 'total' => 67000000, 'tax' => true, 'ppn_amount' => 7370000, 'final_total' => 74370000, 'project' => 'GREEN VALLEY', 'company' => 'PT GREEN PROPERTY', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-013', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-07-08', 'item' => 'Gaji Karyawan Bulan Juli', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-007', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-07-16', 'item' => 'Progress Payment 40% Proyek Jalan Akses', 'quantity' => 1, 'satuan' => 'paket', 'price' => 125000000, 'total' => 125000000, 'tax' => true, 'ppn_amount' => 13750000, 'final_total' => 138750000, 'project' => 'JALAN AKSES PABRIK', 'company' => 'PT INDUSTRI MAKMUR', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-014', 'type' => 'in', 'payment_status' => 'tidak_lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-07-22', 'item' => 'Upah Tukang dan Operator Alat Berat', 'quantity' => 30, 'satuan' => 'orang', 'price' => 2000000, 'total' => 60000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 60000000, 'project' => 'JALAN AKSES PABRIK', 'company' => 'TIM KONTRAKTOR', 'ket' => 'GAJI', 'nota' => 'UPAH-2025-002', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-07-30', 'item' => 'Pembelian Suku Cadang Alat Berat', 'quantity' => 1, 'satuan' => 'lot', 'price' => 22000000, 'total' => 22000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 22000000, 'project' => 'OPERASIONAL', 'company' => 'DEALER ALAT BERAT', 'ket' => 'MATERIAL', 'nota' => 'SPR-2025-001', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // CONTOH 6: Pendapatan - Lunas lagi
+        $this->createDoubleEntryJournal(
+            '2025-11-25',
+            'Pelunasan Proyek Sebelumnya',
+            1,
+            'paket',
+            75000000,
+            true,
+            'MALL SENTOSA',
+            'INV-002',
+            'in',
+            'lunas',
+            $pendapatanJasaAccount->id,
+            $kasAccount->id
+        );
 
-            // AGUSTUS 2025
-            ['transaction_date' => '2025-08-04', 'item' => 'Proyek Renovasi Gedung Sekolah', 'quantity' => 1, 'satuan' => 'paket', 'price' => 95000000, 'total' => 95000000, 'tax' => true, 'ppn_amount' => 10450000, 'final_total' => 105450000, 'project' => 'GEDUNG SEKOLAH', 'company' => 'DINAS PENDIDIKAN', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-015', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-08-08', 'item' => 'Gaji Karyawan Bulan Agustus', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-008', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-08-15', 'item' => 'Pelunasan Proyek Gedung Perkantoran', 'quantity' => 1, 'satuan' => 'paket', 'price' => 115000000, 'total' => 115000000, 'tax' => true, 'ppn_amount' => 12650000, 'final_total' => 127650000, 'project' => 'GEDUNG PERKANTORAN', 'company' => 'PT PROPERTI INDO', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-016', 'type' => 'in', 'payment_status' => 'tidak_lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-08-20', 'item' => 'Pembelian Cat, Keramik dan Sanitasi', 'quantity' => 1, 'satuan' => 'lot', 'price' => 42000000, 'total' => 42000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 42000000, 'project' => 'GEDUNG SEKOLAH', 'company' => 'TOKO BANGUNAN SEJAHTERA', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-007', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-08-28', 'item' => 'Biaya Listrik dan Air Kantor', 'quantity' => 1, 'satuan' => 'bulan', 'price' => 8500000, 'total' => 8500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 8500000, 'project' => 'OPERASIONAL', 'company' => 'PLN & PDAM', 'ket' => 'ADMINISTRASI', 'nota' => 'UTIL-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        $this->command->info('Successfully created 6 example journals with double entry!');
+    }
 
-            // SEPTEMBER 2025
-            ['transaction_date' => '2025-09-05', 'item' => 'DP Proyek Pembangunan Jembatan Penghubung', 'quantity' => 1, 'satuan' => 'paket', 'price' => 220000000, 'total' => 220000000, 'tax' => true, 'ppn_amount' => 24200000, 'final_total' => 244200000, 'project' => 'JEMBATAN PENGHUBUNG', 'company' => 'DINAS PEKERJAAN UMUM', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-017', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-09-08', 'item' => 'Gaji Karyawan Bulan September', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-009', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-09-16', 'item' => 'Pelunasan Proyek Jalan Akses Pabrik', 'quantity' => 1, 'satuan' => 'paket', 'price' => 145000000, 'total' => 145000000, 'tax' => true, 'ppn_amount' => 15950000, 'final_total' => 160950000, 'project' => 'JALAN AKSES PABRIK', 'company' => 'PT INDUSTRI MAKMUR', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-018', 'type' => 'in', 'payment_status' => 'tidak_lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-09-22', 'item' => 'Pembelian Besi Konstruksi dan Wire Mesh', 'quantity' => 1, 'satuan' => 'lot', 'price' => 95000000, 'total' => 95000000, 'tax' => true, 'ppn_amount' => 10450000, 'final_total' => 105450000, 'project' => 'JEMBATAN PENGHUBUNG', 'company' => 'PT KRAKATAU STEEL', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-008', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-09-28', 'item' => 'Sewa Crane dan Concrete Pump', 'quantity' => 15, 'satuan' => 'hari', 'price' => 4500000, 'total' => 67500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 67500000, 'project' => 'JEMBATAN PENGHUBUNG', 'company' => 'CV ALAT BERAT', 'ket' => 'TRANSPORT', 'nota' => 'RENT-2025-002', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+    /**
+     * Helper method untuk create double entry journal
+     */
+    private function createDoubleEntryJournal(
+        $date,
+        $item,
+        $qty,
+        $satuan,
+        $price,
+        $tax,
+        $project,
+        $nota,
+        $type,
+        $paymentStatus,
+        $mainAccountId,
+        $pairedAccountId
+    ) {
+        $total = $qty * $price;
+        $ppnAmount = $tax ? ($total * 0.11) : 0;
+        $finalTotal = $total + $ppnAmount;
 
-            // OKTOBER 2025
-            ['transaction_date' => '2025-10-06', 'item' => 'Pelunasan Proyek Renovasi Gedung Sekolah', 'quantity' => 1, 'satuan' => 'paket', 'price' => 78000000, 'total' => 78000000, 'tax' => true, 'ppn_amount' => 8580000, 'final_total' => 86580000, 'project' => 'GEDUNG SEKOLAH', 'company' => 'DINAS PENDIDIKAN', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-019', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-10-08', 'item' => 'Gaji Karyawan Bulan Oktober', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-010', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-10-15', 'item' => 'Progress Payment 50% Proyek Jembatan', 'quantity' => 1, 'satuan' => 'paket', 'price' => 185000000, 'total' => 185000000, 'tax' => true, 'ppn_amount' => 20350000, 'final_total' => 205350000, 'project' => 'JEMBATAN PENGHUBUNG', 'company' => 'DINAS PEKERJAAN UMUM', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-020', 'type' => 'in', 'payment_status' => 'lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-10-22', 'item' => 'Pembelian Beton Ready Mix Grade K350', 'quantity' => 250, 'satuan' => 'm3', 'price' => 850000, 'total' => 212500000, 'tax' => true, 'ppn_amount' => 23375000, 'final_total' => 235875000, 'project' => 'JEMBATAN PENGHUBUNG', 'company' => 'PT BETON READY MIX', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-009', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-10-30', 'item' => 'THR Karyawan Tahun 2025', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'THR-2025-001', 'type' => 'out', 'payment_status' => 'lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // Journal 1: Main (User pilih)
+        $journal1 = Journal::create([
+            'transaction_date' => $date,
+            'item' => $item,
+            'quantity' => $qty,
+            'satuan' => $satuan,
+            'price' => $price,
+            'total' => $total,
+            'tax' => $tax,
+            'ppn_amount' => $ppnAmount,
+            'final_total' => $finalTotal,
+            'debit' => $type === 'out' ? $finalTotal : 0,
+            'kredit' => $type === 'in' ? $finalTotal : 0,
+            'is_paired' => false,
+            'project' => $project,
+            'nota' => $nota,
+            'type' => $type,
+            'payment_status' => $paymentStatus,
+            'account_id' => $mainAccountId,
+            'reference' => 'JRN/2025/11/' . str_pad(Journal::count() + 1, 4, '0', STR_PAD_LEFT),
+            'status' => 'posted',
+            'created_by' => 1,
+        ]);
 
-            // NOVEMBER 2025
-            ['transaction_date' => '2025-11-05', 'item' => 'Proyek Paving Jalan Komplek Perumahan Elite', 'quantity' => 1, 'satuan' => 'paket', 'price' => 125000000, 'total' => 125000000, 'tax' => true, 'ppn_amount' => 13750000, 'final_total' => 138750000, 'project' => 'KOMPLEK ELITE', 'company' => 'PT PROPERTI MEWAH', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-021', 'type' => 'in', 'payment_status' => 'tidak_lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-11-08', 'item' => 'Gaji Karyawan Bulan November', 'quantity' => 15, 'satuan' => 'orang', 'price' => 3500000, 'total' => 52500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 52500000, 'project' => 'OPERASIONAL', 'company' => 'MITRA FAJAR KENCANA', 'ket' => 'GAJI', 'nota' => 'PAY-2025-011', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-11-15', 'item' => 'Pembelian Paving Block dan Conblock', 'quantity' => 5000, 'satuan' => 'pcs', 'price' => 12500, 'total' => 62500000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 62500000, 'project' => 'KOMPLEK ELITE', 'company' => 'CV PAVING JAYA', 'ket' => 'MATERIAL', 'nota' => 'PO-2025-010', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
-            ['transaction_date' => '2025-11-20', 'item' => 'Upah Pemasangan Paving dan Finishing', 'quantity' => 20, 'satuan' => 'orang', 'price' => 1500000, 'total' => 30000000, 'tax' => false, 'ppn_amount' => 0, 'final_total' => 30000000, 'project' => 'KOMPLEK ELITE', 'company' => 'TIM KONTRAKTOR', 'ket' => 'GAJI', 'nota' => 'UPAH-2025-003', 'type' => 'out', 'payment_status' => 'tidak_lunas', 'account_id' => $expenseAccount->id, 'created_by' => 1],
+        // Journal 2: Paired (Otomatis)
+        $journal2 = Journal::create([
+            'transaction_date' => $date,
+            'item' => $item . ' (Pasangan)',
+            'quantity' => $qty,
+            'satuan' => $satuan,
+            'price' => $price,
+            'total' => $total,
+            'tax' => $tax,
+            'ppn_amount' => $ppnAmount,
+            'final_total' => $finalTotal,
+            'debit' => $type === 'in' ? $finalTotal : 0,
+            'kredit' => $type === 'out' ? $finalTotal : 0,
+            'is_paired' => true,
+            'paired_journal_id' => $journal1->id,
+            'project' => $project,
+            'nota' => $nota,
+            'type' => $type,
+            'payment_status' => $paymentStatus,
+            'account_id' => $pairedAccountId,
+            'reference' => $journal1->reference,
+            'status' => 'posted',
+            'created_by' => 1,
+        ]);
 
-            // Data tambahan dengan status tidak lunas untuk testing hutang/piutang
-            ['transaction_date' => '2025-11-18', 'item' => 'Tagihan Progress Proyek Jembatan Fase Akhir', 'quantity' => 1, 'satuan' => 'paket', 'price' => 165000000, 'total' => 165000000, 'tax' => true, 'ppn_amount' => 18150000, 'final_total' => 183150000, 'project' => 'JEMBATAN PENGHUBUNG', 'company' => 'DINAS PEKERJAAN UMUM', 'ket' => 'PENDAPATAN', 'nota' => 'INV-2025-022', 'type' => 'in', 'payment_status' => 'tidak_lunas', 'account_id' => $revenueAccount->id, 'created_by' => 1],
-        ];
-
-        foreach ($journals as $journal) {
-            Journal::create($journal);
-        }
-        
-        $this->command->info('Created ' . count($journals) . ' journal entries for 2025.');
+        // Update journal1 with paired_journal_id
+        $journal1->update(['paired_journal_id' => $journal2->id]);
     }
 }

@@ -116,20 +116,6 @@
 <div class="container-fluid mt-0">
     <h2 class="mb-4">Jurnal Umum</h2>
 
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <!-- TOMBOL AKSI -->
     <div class="mb-4 d-flex flex-wrap gap-2">
         <a href="{{ route('jurnal.create') }}" class="btn btn-primary">
@@ -286,9 +272,32 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-// Handle delete button
+// Show success/error message dengan SweetAlert2
 document.addEventListener('DOMContentLoaded', function() {
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#0d6efd',
+            confirmButtonText: 'OK',
+            timer: 3000
+        });
+    @endif
+
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'OK'
+        });
+    @endif
+
+    // Handle delete button dengan SweetAlert2
     const deleteButtons = document.querySelectorAll('.delete-btn');
     
     deleteButtons.forEach(button => {
@@ -296,9 +305,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const id = this.getAttribute('data-id');
             const item = this.getAttribute('data-item');
             
-            if (confirm(`Apakah Anda yakin ingin menghapus jurnal "${item}"?`)) {
-                document.getElementById('delete-form-' + id).submit();
-            }
+            Swal.fire({
+                title: 'Hapus Jurnal?',
+                text: `Yakin ingin menghapus jurnal "${item}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + id).submit();
+                }
+            });
         });
     });
 });

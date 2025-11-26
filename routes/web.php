@@ -88,7 +88,16 @@ Route::post('/logout', function (Request $request) {
 Route::resource('hutang', HutangController::class);
 Route::resource('piutang', PiutangController::class);
 Route::resource('asset', AssetController::class);
+
+// Akun routes
+Route::get('/akun/categories/by-type', [AkunController::class, 'getCategoriesByType'])->name('akun.categories.by-type');
+Route::get('/akun/kategori', [AkunController::class, 'kategori'])->name('akun.kategori');
+Route::post('/akun/kategori', [AkunController::class, 'storeKategori'])->name('akun.kategori.store');
+Route::get('/akun/kategori/{id}', [AkunController::class, 'showKategori'])->name('akun.kategori.show');
+Route::put('/akun/kategori/{id}', [AkunController::class, 'updateKategori'])->name('akun.kategori.update');
+Route::delete('/akun/kategori/{id}', [AkunController::class, 'destroyKategori'])->name('akun.kategori.destroy');
 Route::resource('akun', AkunController::class);
+
 Route::resource('jurnal', JurnalController::class);
 Route::get('/jurnal/export/pdf', [JurnalController::class, 'exportPdf'])->name('jurnal.export.pdf');
 Route::get('/jurnal/export/excel', [JurnalController::class, 'exportExcel'])->name('jurnal.export.excel');
