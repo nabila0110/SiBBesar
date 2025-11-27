@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="dashboard-header">
-    <h1 class="dashboard-title">Dashboard</h1>
+    <h1 class="dashboard-title">Dashboar</h1>
 </div>
 
 <!-- Stats Grid -->
