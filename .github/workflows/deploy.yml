@@ -2,7 +2,8 @@ name: Deploy Laravel to CyberPanel
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -20,20 +21,31 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           port: 22
           script: |
+            echo "Navigating to project folder..."
             cd /home/sibbesar.my.id/public_html
-            echo "Pulling latest code..."
-            git pull origin main
 
-            echo "Installing composer dependencies..."
+            echo "Checking repository status..."
+            if [ ! -d .git ]; then
+              echo "ERROR: Folder is not a Git repository!"
+              exit 1
+            fi
+
+            echo "Fetching latest changes..."
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "Installing Composer dependencies..."
             composer install --no-dev --optimize-autoloader
 
-            echo "Running migrations..."
+            echo "Running Laravel migrations..."
             php artisan migrate --force
 
             echo "Optimizing Laravel..."
             php artisan optimize:clear
             php artisan optimize
 
-            echo "Setting correct permissions..."
+            echo "Fixing permissions..."
             chmod -R 775 storage bootstrap/cache
             chown -R sibbe5508:sibbe5508 storage bootstrap/cache
+
+            echo "Deployment completed successfully!"
