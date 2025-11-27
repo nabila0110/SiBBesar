@@ -147,7 +147,7 @@
                                 </div>
                             </div>
                             <div class="dropdown-divider"></div>
-                            <a href="{{ route('profile') }}" class="dropdown-item">
+                            <a href="{{ route('profile') }}" class="dropdown-item profile-item">
                                 <i class="fas fa-user-circle"></i>
                                 <span>Profil Saya</span>
                             </a>

@@ -208,13 +208,14 @@ body {
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-    min-width: 320px;
+    min-width: 250px;
     margin-top: 12px;
+    margin-bottom: 10px;
     z-index: 1300;
     display: none;
     animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    padding-bottom: 8px;
+    padding: 10px 10px;
 }
 
 .user-dropdown-menu.active {
@@ -234,9 +235,10 @@ body {
 
 .dropdown-header {
     display: flex;
+    border-radius: 12px;
     align-items: center;
     gap: 16px;
-    padding: 20px 16px;
+    padding: 24px 20px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
@@ -248,50 +250,55 @@ body {
     object-fit: cover;
     border: 3px solid rgba(255, 255, 255, 0.3);
     flex-shrink: 0;
+    margin-left: 10px;
+    margin-top: 5px;
 }
 
 .dropdown-user-name {
     font-size: 16px;
     font-weight: 700;
     color: white;
-    margin: 0;
+    margin-left: 10px;
     line-height: 1.3;
 }
 
 .dropdown-user-email {
     font-size: 13px;
     color: rgba(255, 255, 255, 0.85);
-    margin-top: 6px;
+    margin-top: 3px;
+    margin-left: 10px;
     line-height: 1.4;
 }
 
 .dropdown-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
-    margin: 12px 0;
+    margin: 10px 0;
 }
 
 .dropdown-item {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 10px 12px;
+    padding: 14px 14px;
+    margin: 4px 4px;
     color: #374151;
     text-decoration: none;
     font-size: 15px;
     font-weight: 500;
     transition: all 0.2s ease;
+    border-radius: 8px;
 }
 
 .dropdown-item:hover {
-    background-color: #f8f9fa;
+    background-color: #f3f4f6;
     color: #667eea;
 }
 
 .dropdown-item i {
-    width: 20px;
+    width: 22px;
     text-align: center;
-    font-size: 16px;
+    font-size: 17px;
     transition: transform 0.2s ease;
     display: flex;
     align-items: center;

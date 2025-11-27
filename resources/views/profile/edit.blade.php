@@ -5,53 +5,56 @@
 @push('styles')
 <style>
     .profile-container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
+        padding: 30px 20px;
     }
 
     .profile-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 40px;
+        padding: 45px 40px;
         border-radius: 16px;
-        margin-bottom: 32px;
+        margin-bottom: 35px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
     .profile-avatar-section {
         display: flex;
         align-items: center;
-        gap: 24px;
-        margin-bottom: 24px;
+        gap: 28px;
+        margin-bottom: 0;
     }
 
     .profile-avatar-container {
         position: relative;
+        flex-shrink: 0;
     }
 
     .profile-avatar {
-        width: 120px;
-        height: 120px;
+        width: 130px;
+        height: 130px;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid white;
+        border: 5px solid white;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .avatar-upload-label {
         position: absolute;
-        bottom: 0;
-        right: 0;
+        bottom: 5px;
+        right: 5px;
         background: #667eea;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         border: 3px solid white;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .avatar-upload-label:hover {
@@ -59,47 +62,56 @@
         transform: scale(1.05);
     }
 
+    .avatar-upload-label i {
+        font-size: 16px;
+    }
+
     .avatar-upload-input {
         display: none;
     }
 
     .profile-info h1 {
-        font-size: 28px;
-        margin: 0 0 8px 0;
+        font-size: 32px;
+        margin: 0 0 10px 0;
         font-weight: 700;
+        letter-spacing: -0.5px;
     }
 
     .profile-info p {
         margin: 0;
-        opacity: 0.9;
-        font-size: 16px;
+        opacity: 0.95;
+        font-size: 17px;
+        font-weight: 400;
     }
 
     .profile-card {
         background: white;
         border-radius: 16px;
-        padding: 32px;
+        padding: 38px 40px;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        margin-bottom: 24px;
+        margin-bottom: 28px;
+        border: 1px solid #f3f4f6;
     }
 
     .profile-card h3 {
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 21px;
+        font-weight: 700;
         color: #111827;
-        margin: 0 0 24px 0;
+        margin: 0 0 28px 0;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        padding-bottom: 18px;
+        border-bottom: 2px solid #f3f4f6;
     }
 
     .profile-card h3 i {
         color: #667eea;
-        font-size: 22px;
+        font-size: 23px;
     }
 
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
     .form-group:last-child {
@@ -110,41 +122,47 @@
         display: block;
         font-weight: 600;
         color: #374151;
-        margin-bottom: 8px;
-        font-size: 14px;
+        margin-bottom: 10px;
+        font-size: 15px;
     }
 
     .form-group input {
         width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 14px;
+        padding: 14px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 15px;
         transition: all 0.3s ease;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #fafafa;
     }
 
     .form-group input:focus {
         outline: none;
         border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        background-color: #f8f9ff;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        background-color: #ffffff;
+    }
+
+    .form-group input::placeholder {
+        color: #9ca3af;
     }
 
     .form-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 24px;
     }
 
     .alert {
-        padding: 14px 16px;
-        border-radius: 8px;
-        margin-bottom: 24px;
-        font-size: 14px;
+        padding: 16px 20px;
+        border-radius: 10px;
+        margin-bottom: 28px;
+        font-size: 15px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        font-weight: 500;
     }
 
     .alert-success {
@@ -154,7 +172,7 @@
     }
 
     .alert-success i {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .alert-error {
@@ -165,77 +183,98 @@
 
     .form-actions {
         display: flex;
-        gap: 12px;
+        gap: 14px;
         justify-content: flex-end;
-        margin-top: 32px;
-        padding-top: 24px;
-        border-top: 1px solid #e5e7eb;
+        margin-top: 38px;
+        padding-top: 28px;
+        border-top: 2px solid #f3f4f6;
     }
 
     .btn {
-        padding: 12px 24px;
-        border-radius: 8px;
-        font-size: 14px;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-size: 15px;
         font-weight: 600;
         border: none;
         cursor: pointer;
         transition: all 0.3s ease;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .btn-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.35);
     }
 
     .btn-secondary {
-        background: #e5e7eb;
+        background: #f3f4f6;
         color: #374151;
+        border: 2px solid #e5e7eb;
     }
 
     .btn-secondary:hover {
-        background: #d1d5db;
+        background: #e5e7eb;
+        border-color: #d1d5db;
     }
 
     .password-info {
-        background: #fef3c7;
-        border: 1px solid #fcd34d;
+        background: #fffbeb;
+        border: 2px solid #fde68a;
         color: #92400e;
-        padding: 12px 14px;
-        border-radius: 8px;
-        font-size: 13px;
-        margin-bottom: 16px;
+        padding: 14px 16px;
+        border-radius: 10px;
+        font-size: 14px;
+        margin-bottom: 20px;
         display: flex;
         align-items: flex-start;
-        gap: 10px;
+        gap: 12px;
+        line-height: 1.6;
     }
 
     .password-info i {
         margin-top: 2px;
         flex-shrink: 0;
+        font-size: 16px;
     }
 
     @media (max-width: 640px) {
+        .profile-container {
+            padding: 20px 15px;
+        }
+
         .profile-header {
-            padding: 24px;
+            padding: 30px 25px;
         }
 
         .profile-avatar-section {
             flex-direction: column;
             text-align: center;
+            gap: 20px;
         }
 
         .profile-info h1 {
-            font-size: 22px;
+            font-size: 24px;
+        }
+
+        .profile-info p {
+            font-size: 15px;
         }
 
         .profile-card {
-            padding: 20px;
+            padding: 25px 20px;
+        }
+
+        .profile-card h3 {
+            font-size: 18px;
         }
 
         .form-row {
@@ -243,12 +282,12 @@
         }
 
         .form-actions {
-            flex-direction: column;
-            justify-content: stretch;
+            flex-direction: column-reverse;
         }
 
         .btn {
             width: 100%;
+            justify-content: center;
         }
     }
 </style>
