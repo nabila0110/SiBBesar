@@ -7,8 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SiBBesar')</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo_wb.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout.css?v=' . time()) }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css?v=' . time()) }}">
     @if(Request::routeIs('pph21.*'))
         <link rel="stylesheet" href="{{ asset('css/pph21.css') }}">
     @endif
