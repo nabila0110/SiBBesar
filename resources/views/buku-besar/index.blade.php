@@ -2,113 +2,131 @@
 
 @section('title', 'Buku Besar - SiBBesar')
 
-@section('content')
-
+@push('styles')
 <style>
-    .table-buku-besar {
-        font-size: 0.65rem;
-        width: 100%;
-        min-width: 1200px;
-        table-layout: fixed; /* Fix untuk Edge */
-        border-collapse: collapse;
+    .table-currency {
+        text-align: right;
     }
+
+    .container-fluid {
+        max-width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1rem;
+    }
+    
+    .table-buku-besar {
+        width: 100%;
+        font-size: 0.68rem;
+        table-layout: fixed;
+    }
+    
+    .table-buku-besar th,
+    .table-buku-besar td {
+        padding: 0.25rem 0.15rem;
+        font-size: 0.68rem;
+        vertical-align: middle;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
     .table-buku-besar th {
-        background-color: #4472C4;
-        color: black;
+        background-color: #f8f9fa;
         font-weight: bold;
         text-align: center;
-        vertical-align: middle;
-        padding: 0.4rem 0.3rem;
-        font-size: 0.65rem;
-        white-space: nowrap;
-        box-sizing: border-box; /* Fix untuk Edge */
     }
-    .table-buku-besar td {
-        padding: 0.4rem 0.3rem;
-        font-size: 0.65rem;
-        vertical-align: middle;
-        box-sizing: border-box; /* Fix untuk Edge */
+    
+    /* Lebar kolom spesifik */
+    .table-buku-besar th:nth-child(1),
+    .table-buku-besar td:nth-child(1) { width: 2.5%; }
+    
+    .table-buku-besar th:nth-child(2),
+    .table-buku-besar td:nth-child(2) { width: 5%; }
+    
+    .table-buku-besar th:nth-child(3),
+    .table-buku-besar td:nth-child(3) { width: 5.5%; }
+    
+    .table-buku-besar th:nth-child(4),
+    .table-buku-besar td:nth-child(4) { 
+        width: 14%; 
+        white-space: normal;
         word-wrap: break-word;
     }
-    /* Kolom dengan lebar spesifik - dengan persentase untuk Edge */
-    .table-buku-besar th:nth-child(1), 
-    .table-buku-besar td:nth-child(1) { width: 3%; min-width: 35px; text-align: center; } /* NO */
     
-    .table-buku-besar th:nth-child(2), 
-    .table-buku-besar td:nth-child(2) { width: 6%; min-width: 70px; white-space: nowrap; font-size: 0.6rem; } /* TGL */
+    .table-buku-besar th:nth-child(5),
+    .table-buku-besar td:nth-child(5) { width: 3%; }
     
-    .table-buku-besar th:nth-child(3), 
-    .table-buku-besar td:nth-child(3) { width: 7%; min-width: 85px; white-space: nowrap; font-size: 0.6rem; } /* NOTA */
+    .table-buku-besar th:nth-child(6),
+    .table-buku-besar td:nth-child(6) { width: 4%; }
     
-    .table-buku-besar th:nth-child(4), 
-    .table-buku-besar td:nth-child(4) { width: 20%; min-width: 180px; max-width: 280px; white-space: normal; word-break: break-word; } /* ITEM */
+    .table-buku-besar th:nth-child(7),
+    .table-buku-besar td:nth-child(7) { width: 5.5%; }
     
-    .table-buku-besar th:nth-child(5), 
-    .table-buku-besar td:nth-child(5) { width: 4%; min-width: 45px; text-align: center; } /* QTY */
+    .table-buku-besar th:nth-child(8),
+    .table-buku-besar td:nth-child(8) { width: 6%; }
     
-    .table-buku-besar th:nth-child(6), 
-    .table-buku-besar td:nth-child(6) { width: 4%; min-width: 50px; text-align: center; } /* SAT */
+    .table-buku-besar th:nth-child(9),
+    .table-buku-besar td:nth-child(9) { width: 5%; }
     
-    .table-buku-besar th:nth-child(7), 
-    .table-buku-besar td:nth-child(7) { width: 8%; min-width: 90px; text-align: right; font-size: 0.6rem; } /* @ */
+    .table-buku-besar th:nth-child(10),
+    .table-buku-besar td:nth-child(10) { width: 7%; }
     
-    .table-buku-besar th:nth-child(8), 
-    .table-buku-besar td:nth-child(8) { width: 9%; min-width: 100px; text-align: right; font-size: 0.6rem; } /* TOTAL */
+    .table-buku-besar th:nth-child(11),
+    .table-buku-besar td:nth-child(11) { width: 7%; }
     
-    .table-buku-besar th:nth-child(9), 
-    .table-buku-besar td:nth-child(9) { width: 8%; min-width: 90px; text-align: right; font-size: 0.6rem; } /* PPN */
+    .table-buku-besar th:nth-child(12),
+    .table-buku-besar td:nth-child(12) { width: 6%; }
     
-    .table-buku-besar th:nth-child(10), 
-    .table-buku-besar td:nth-child(10) { width: 8%; min-width: 90px; font-size: 0.6rem; } /* PROJECT */
+    .table-buku-besar th:nth-child(13),
+    .table-buku-besar td:nth-child(13) { width: 5.5%; }
     
-    .table-buku-besar th:nth-child(11), 
-    .table-buku-besar td:nth-child(11) { width: 7%; min-width: 80px; text-align: center; } /* KET */
+    .table-buku-besar th:nth-child(14),
+    .table-buku-besar td:nth-child(14) { width: 4%; }
     
-    .table-buku-besar th:nth-child(12), 
-    .table-buku-besar td:nth-child(12) { width: 4%; min-width: 50px; text-align: center; } /* I/O */
+    .table-buku-besar th:nth-child(15),
+    .table-buku-besar td:nth-child(15) { width: 7%; }
     
-    .table-buku-besar th:nth-child(13), 
-    .table-buku-besar td:nth-child(13) { width: 4%; min-width: 50px; text-align: center; } /* STATUS */
-    
-    .table-buku-besar th:nth-child(14), 
-    .table-buku-besar td:nth-child(14) { width: 12%; min-width: 140px; font-size: 0.6rem; } /* KLASIFIKASI */
+    .table-buku-besar th:nth-child(16),
+    .table-buku-besar td:nth-child(16) { width: 7%; }
     
     .account-header {
         background-color: #D9E1F2;
         font-weight: bold;
-        padding: 8px;
-        font-size: 0.75rem;
-    }
-    .table-currency {
-        text-align: right;
-    }
-    .subtotal-row {
-        background-color: black;
-        font-weight: bold;
-    }
-    .container-fluid {
-        max-width: 100%;
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        -ms-overflow-style: -ms-autohiding-scrollbar; /* Fix untuk Edge */
-        margin-bottom: 1rem;
-        width: 100%;
-    }
-    .card-body {
-        padding: 0.5rem !important;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        border-bottom: 2px solid #4472C4;
     }
     
-    /* Khusus untuk Microsoft Edge */
-    @supports (-ms-ime-align:auto) {
-        .table-buku-besar {
-            table-layout: auto;
-        }
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.25em 0.45em;
+    }
+    
+    .card {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 0 !important;
+    }
+    
+    .pagination {
+        margin: 0.5rem 0;
+    }
+    
+    .pagination .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
 </style>
+@endpush
 
 @section('content')
 <div class="container-fluid mt-0">
@@ -168,22 +186,24 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-buku-besar mb-0" id="tabel-{{ $accountId }}">
-                            <thead>
+                        <table class="table table-bordered table-hover table-buku-besar mb-0" id="tabel-{{ $accountId }}">
+                            <thead class="table-light">
                                 <tr>
                                     <th>NO</th>
-                                    <th>TGL</th>
+                                    <th>TANGGAL</th>
                                     <th>NOTA</th>
                                     <th>ITEM</th>
                                     <th>QTY</th>
-                                    <th>SAT</th>
+                                    <th>SATUAN</th>
                                     <th>@</th>
                                     <th>TOTAL</th>
-                                    <th>PPN</th>
+                                    <th>PPN 11%</th>
                                     <th>PROJECT</th>
+                                    <th>PENJUALAN</th>
                                     <th>KET</th>
-                                    <th>I/O</th>
-                                    <th>STATUS</th>
+                                    <th>NOTA</th>
+                                    <th>IN/OUT</th>
+                                    <th>LUNAS/TDK LUNAS</th>
                                     <th>KLASIFIKASI</th>
                                 </tr>
                             </thead>
@@ -192,22 +212,24 @@
                                 @foreach($accountJournals as $journal)
                                     <tr>
                                         <td class="text-center">{{ $no++ }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($journal->transaction_date)->format('d/m/y') }}</td>
+                                        <td class="text-center">{{ \Carbon\Carbon::parse($journal->transaction_date)->format('d/m/Y') }}</td>
                                         <td>{{ $journal->nota }}</td>
                                         <td>{{ $journal->item }}</td>
                                         <td class="text-center">{{ number_format($journal->quantity, 0) }}</td>
                                         <td class="text-center">{{ $journal->satuan ?: '-' }}</td>
-                                        <td class="table-currency">{{ number_format($journal->price, 0, ',', '.') }}</td>
-                                        <td class="table-currency">{{ number_format($journal->total, 0, ',', '.') }}</td>
+                                        <td class="table-currency">Rp {{ number_format($journal->price, 0, ',', '.') }}</td>
+                                        <td class="table-currency">Rp {{ number_format($journal->total, 0, ',', '.') }}</td>
                                         <td class="table-currency">
                                             @if($journal->tax)
-                                                {{ number_format($journal->ppn_amount, 0, ',', '.') }}
+                                                Rp {{ number_format($journal->ppn_amount, 0, ',', '.') }}
                                             @else
                                                 -
                                             @endif
                                         </td>
                                         <td>{{ $journal->project ?: '-' }}</td>
+                                        <td>{{ $journal->project ?: '-' }}</td>
                                         <td class="text-center">{{ $journal->ket ?: '-' }}</td>
+                                        <td>{{ $journal->nota }}</td>
                                         <td class="text-center">
                                             @if($journal->type === 'in')
                                                 <span class="badge bg-success">IN</span>
@@ -217,9 +239,9 @@
                                         </td>
                                         <td class="text-center">
                                             @if($journal->payment_status === 'lunas')
-                                                <span class="badge bg-success">L</span>
+                                                <span class="badge bg-success">LUNAS</span>
                                             @else
-                                                <span class="badge bg-warning text-dark">TL</span>
+                                                <span class="badge bg-warning text-dark">TIDAK LUNAS</span>
                                             @endif
                                         </td>
                                         <td><small>{{ $classification }}</small></td>
@@ -247,11 +269,42 @@
                                         </li>
                                     @endif
 
-                                    @for($i = 1; $i <= $lastPage; $i++)
+                                    @php
+                                        $start = max(1, $currentPage - 2);
+                                        $end = min($lastPage, $currentPage + 2);
+                                        
+                                        if ($end - $start < 4) {
+                                            if ($start == 1) {
+                                                $end = min($lastPage, $start + 4);
+                                            } else {
+                                                $start = max(1, $end - 4);
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($start > 1)
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page_{{ $accountId }}=1{{ request('dari_tanggal') ? '&dari_tanggal='.request('dari_tanggal') : '' }}{{ request('sampai_tanggal') ? '&sampai_tanggal='.request('sampai_tanggal') : '' }}">1</a>
+                                        </li>
+                                        @if($start > 2)
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        @endif
+                                    @endif
+
+                                    @for($i = $start; $i <= $end; $i++)
                                         <li class="page-item {{ $i == $currentPage ? 'active' : '' }}">
                                             <a class="page-link" href="?page_{{ $accountId }}={{ $i }}{{ request('dari_tanggal') ? '&dari_tanggal='.request('dari_tanggal') : '' }}{{ request('sampai_tanggal') ? '&sampai_tanggal='.request('sampai_tanggal') : '' }}">{{ $i }}</a>
                                         </li>
                                     @endfor
+
+                                    @if($end < $lastPage)
+                                        @if($end < $lastPage - 1)
+                                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        @endif
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page_{{ $accountId }}={{ $lastPage }}{{ request('dari_tanggal') ? '&dari_tanggal='.request('dari_tanggal') : '' }}{{ request('sampai_tanggal') ? '&sampai_tanggal='.request('sampai_tanggal') : '' }}">{{ $lastPage }}</a>
+                                        </li>
+                                    @endif
 
                                     @if($currentPage < $lastPage)
                                         <li class="page-item">
@@ -277,7 +330,6 @@
     </div>
 </div>
 
-@endsection
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
         orientation: "landscape",

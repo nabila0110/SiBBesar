@@ -174,7 +174,13 @@
                 
                 @foreach($categoryData['accounts'] as $accountData)
                     <tr>
-                        <td>{{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}</td>
+                        <td>
+                            @if(isset($accountData['account']->category))
+                                {{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}
+                            @else
+                                {{ $accountData['account']->code }}
+                            @endif
+                        </td>
                         <td class="ps-4">{{ $accountData['account']->name }}</td>
                         <td class="text-end">{{ number_format(abs($accountData['balance']), 0, ',', '.') }}</td>
                         <td></td>
@@ -200,7 +206,13 @@
                 
                 @foreach($categoryData['accounts'] as $accountData)
                     <tr>
-                        <td>{{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}</td>
+                        <td>
+                            @if(isset($accountData['account']->category))
+                                {{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}
+                            @else
+                                {{ $accountData['account']->code }}
+                            @endif
+                        </td>
                         <td class="ps-4">{{ $accountData['account']->name }}</td>
                         <td class="text-end">{{ number_format(abs($accountData['balance']), 0, ',', '.') }}</td>
                         <td></td>
@@ -226,7 +238,13 @@
                 
                 @foreach($categoryData['accounts'] as $accountData)
                     <tr>
-                        <td>{{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}</td>
+                        <td>
+                            @if(isset($accountData['account']->category))
+                                {{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}
+                            @else
+                                {{ $accountData['account']->code }}
+                            @endif
+                        </td>
                         <td class="ps-4">{{ $accountData['account']->name }}</td>
                         <td class="text-end">{{ number_format(abs($accountData['balance']), 0, ',', '.') }}</td>
                         <td></td>
