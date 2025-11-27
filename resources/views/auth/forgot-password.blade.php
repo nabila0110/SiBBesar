@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SiBBesar — Login</title>
+    <title>SiBBesar — Lupa Password</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo_wb.png') }}">
     <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -29,18 +28,24 @@
             width: 400px;
             text-align: center;
         }
-        .brand {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
         .title {
             color: #333;
             font-size: 28px;
             font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .description {
+            color: #555;
+            font-size: 14px;
             margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
         }
         .input {
             position: relative;
@@ -82,69 +87,74 @@
         .btn:hover {
             transform: translateY(-2px);
         }
-        .small {
-            font-size: 14px;
-            color: black;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        .user-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 20px;
-        }
-        .forgot-password-link {
+        .back-link {
             display: block;
-            text-align: right;
-            margin-top: -10px;
-            margin-bottom: 20px;
+            margin-top: 20px;
             font-size: 14px;
         }
-        .forgot-password-link a {
+        .back-link a {
             color: #333;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
         }
-        .forgot-password-link a:hover {
+        .back-link a:hover {
             color: #667eea;
             text-decoration: underline;
+        }
+        .success-message {
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #16a34a;
+            font-size: 14px;
+        }
+        .error-message {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .error-message ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #dc2626;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 <div class="card">
-    <h1 class="title">SiBBesar</h1>
-    <img src="{{ asset('images/logo_wb.png') }}" alt="User Avatar" class="user-avatar">
+    <h1 class="title">Lupa Password</h1>
+    <img src="{{ asset('images/logo_wb.png') }}" alt="Logo" class="user-avatar">
+    
+    <p class="description">
+        Lupa password Anda? Tidak masalah. Masukkan alamat email Anda dan kami akan mengirimkan link untuk reset password.
+    </p>
 
-    <form method="POST" action="{{ route('login') }}">
+    @if (session('status'))
+        <div class="success-message">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}">
         @csrf
 
         <div class="input">
             <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" stroke="#666" stroke-width="1.2"/>
-                <path d="M2 22c0-3.866 3.582-7 10-7s10 3.134 10 7" stroke="#666" stroke-width="1.2"/>
+                <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="#666" stroke-width="1.2"/>
             </svg>
-            <input type="name" name="name" placeholder="Name" value="{{ old('name') }}" required autocomplete="email" autofocus />
-        </div>
-
-        <div class="input">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 15a2 2 0 100-4 2 2 0 000 4z" stroke="#666" stroke-width="1.2"/>
-                <path d="M4 11v3a8 8 0 0016 0v-3" stroke="#666" stroke-width="1.2"/>
-            </svg>
-            <input type="password" name="password" placeholder="Kata Sandi" required autocomplete="current-password" />
-        </div>
-
-        <div class="forgot-password-link">
-            <a href="{{ route('password.request') }}">Lupa Password?</a>
+            <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required autofocus />
         </div>
 
         @if ($errors->any())
-            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; text-align: left;">
-                <ul style="margin: 0; padding-left: 20px; color: #dc2626; font-size: 14px;">
+            <div class="error-message">
+                <ul>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -152,10 +162,12 @@
             </div>
         @endif
 
-        <button class="btn" type="submit">LOGIN</button>
+        <button class="btn" type="submit">Kirim Link Reset Password</button>
     </form>
 
-    <p class="small">alfath ga percaya hmh</p>
+    <div class="back-link">
+        <a href="{{ route('login') }}">← Kembali ke Login</a>
+    </div>
 </div>
 </body>
 </html>
