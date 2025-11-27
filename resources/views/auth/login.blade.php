@@ -135,7 +135,7 @@
         <button class="btn" type="submit">LOGIN</button>
     </form>
 
-    <p class="small">PT. MITRA FAJAR KENCANA</p>
+    <p class="small">alfath ga percaya hmh</p>
 </div>
 </body>
 </html>
