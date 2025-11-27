@@ -295,7 +295,7 @@ QUESTIONS?
 
 → See QUICKSTART.md for quick reference
 → See REPORTS_README.md for full guide
-→ See DOCUMENTATION_INDEX.md for navigation
+→ See DOCUMENTATION_INDEX.md for navigatio
 
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
