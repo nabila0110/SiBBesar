@@ -163,20 +163,20 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 2.5%;">No</th>
-                <th style="width: 6%;">Tanggal</th>
-                <th style="width: 13%;">Item</th>
-                <th style="width: 3.5%;">Qty</th>
+                <th style="width: 3%;">No</th>
+                <th style="width: 7%;">Tanggal</th>
+                <th style="width: 15%;">Item</th>
+                <th style="width: 5%;">Qty</th>
                 <th style="width: 5%;">Satuan</th>
-                <th style="width: 8%;">Harga</th>
-                <th style="width: 8%;">Total</th>
-                <th style="width: 7%;">PPN 11%</th>
+                <th style="width: 9%;">Harga</th>
+                <th style="width: 9%;">Total</th>
+                <th style="width: 9%;">PPN 11%</th>
                 <th style="width: 10%;">Project</th>
                 <th style="width: 6%;">Ket</th>
-                <th style="width: 6%;">Nota</th>
+                <th style="width: 7%;">Nota</th>
                 <th style="width: 5%;">IN/OUT</th>
                 <th style="width: 6%;">Status</th>
-                <th style="width: 12%;">Account</th>
+                <th style="width: 14%;">Account</th>
             </tr>
         </thead>
         <tbody>
@@ -185,19 +185,18 @@
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td class="text-center">{{ date('d/m/Y', strtotime($journal->transaction_date)) }}</td>
                     <td>{{ $journal->item }}</td>
-                    <td class="text-center">{{ $journal->qty }}</td>
-                    <td class="text-center">{{ $journal->satuan }}</td>
+                    <td class="text-center">{{ number_format($journal->quantity, 2) }}</td>
+                    <td class="text-center">{{ $journal->satuan ?? '-' }}</td>
                     <td class="text-right">Rp {{ number_format($journal->price, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($journal->total, 0, ',', '.') }}</td>
                     <td class="text-right">
                         {{ $journal->ppn_amount > 0 ? 'Rp ' . number_format($journal->ppn_amount, 0, ',', '.') : '-' }}
                     </td>
-                    <td>{{ $journal->project }}</td>
-                    <td>{{ $journal->company }}</td>
-                    <td class="text-center">{{ $journal->notes }}</td>
-                    <td>{{ $journal->nota }}</td>
+                    <td>{{ $journal->project ?? '-' }}</td>
+                    <td>{{ $journal->ket ?? '-' }}</td>
+                    <td class="text-center">{{ $journal->nota ?? '-' }}</td>
                     <td class="text-center">{{ strtoupper($journal->type) }}</td>
-                    <td class="text-center">{{ strtoupper($journal->payment_status) }}</td>
+                    <td class="text-center">{{ strtoupper(str_replace('_', ' ', $journal->payment_status)) }}</td>
                     <td style="font-size: 6pt;">
                         {{ $journal->account ? $journal->account->code . ' - ' . $journal->account->name : '-' }}</td>
                 </tr>
@@ -210,13 +209,13 @@
                 </td>
                 <td class="text-right"><strong>Rp
                         {{ number_format($journals->sum('ppn_amount'), 0, ',', '.') }}</strong></td>
-                <td colspan="7"></td>
+                <td colspan="6"></td>
             </tr>
             <tr class="grand-total-row">
                 <td colspan="6" class="text-right"><strong>GRAND TOTAL (Termasuk PPN):</strong></td>
                 <td colspan="2" class="text-right"><strong>Rp
                         {{ number_format($journals->sum('final_total'), 0, ',', '.') }}</strong></td>
-                <td colspan="7"></td>
+                <td colspan="6"></td>
             </tr>
         </tfoot>
     </table>

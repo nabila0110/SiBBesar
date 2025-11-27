@@ -10,49 +10,58 @@ class AccountSeeder extends Seeder
 {
     public function run()
     {
-        // Get category IDs
-        $aktivaCategory = AccountCategory::where('code', '1')->first();
-        $kewajibanCategory = AccountCategory::where('code', '2')->first();
-        $ekuitasCategory = AccountCategory::where('code', '3')->first();
-        $pendapatanCategory = AccountCategory::where('code', '4')->first();
-        $bebanCategory = AccountCategory::where('code', '5')->first();
+        // Get category IDs dengan kode baru (1-1, 2-1, dst)
+        $asetLancarCategory = AccountCategory::where('code', '1-1')->where('type', 'asset')->first();
+        $kewajibanLancarCategory = AccountCategory::where('code', '2-1')->where('type', 'liability')->first();
+        $modalCategory = AccountCategory::where('code', '3-1')->where('type', 'equity')->first();
+        $pendapatanUsahaCategory = AccountCategory::where('code', '4-1')->where('type', 'revenue')->first();
+        $bebanOperasionalCategory = AccountCategory::where('code', '5-1')->where('type', 'expense')->first();
+
+        // Check if categories exist
+        if (!$asetLancarCategory || !$kewajibanLancarCategory || !$modalCategory || !$pendapatanUsahaCategory || !$bebanOperasionalCategory) {
+            $this->command->error('Categories not found! Please run AccountCategorySeeder first.');
+            return;
+        }
 
         $accounts = [
-            // ASET (Category: 1)
-            ['code' => '1100', 'name' => 'Kas', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_lancar', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
-            ['code' => '1200', 'name' => 'Bank', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_lancar', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
-            ['code' => '1300', 'name' => 'Piutang Usaha', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_lancar', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
-            ['code' => '2100', 'name' => 'Persediaan Barang', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_lancar', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
-            ['code' => '3100', 'name' => 'Peralatan', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_tetap', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
-            ['code' => '3200', 'name' => 'Kendaraan', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_tetap', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
-            ['code' => '3300', 'name' => 'Gedung', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'aset_tetap', 'expense_type' => null, 'account_category_id' => $aktivaCategory->id],
+            // ASET LANCAR
+            ['code' => '1100', 'name' => 'Kas', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Assets', 'expense_type' => null, 'account_category_id' => $asetLancarCategory->id, 'description' => 'Uang tunai perusahaan'],
+            ['code' => '1200', 'name' => 'Bank', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Assets', 'expense_type' => null, 'account_category_id' => $asetLancarCategory->id, 'description' => 'Rekening bank perusahaan'],
+            ['code' => '1300', 'name' => 'Piutang Usaha', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Assets', 'expense_type' => null, 'account_category_id' => $asetLancarCategory->id, 'description' => 'Tagihan kepada pelanggan'],
+            ['code' => '1400', 'name' => 'Persediaan Barang', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Assets', 'expense_type' => null, 'account_category_id' => $asetLancarCategory->id, 'description' => 'Barang dagangan'],
             
-            // LIABILITAS (Category: 2)
-            ['code' => '1100', 'name' => 'Hutang Usaha', 'type' => 'liability', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'liabilitas_jangka_pendek', 'expense_type' => null, 'account_category_id' => $kewajibanCategory->id],
-            ['code' => '1200', 'name' => 'Hutang Bank', 'type' => 'liability', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'liabilitas_jangka_pendek', 'expense_type' => null, 'account_category_id' => $kewajibanCategory->id],
-            ['code' => '2100', 'name' => 'Hutang Jangka Panjang', 'type' => 'liability', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'liabilitas_jangka_panjang', 'expense_type' => null, 'account_category_id' => $kewajibanCategory->id],
+            // KEWAJIBAN LANCAR
+            ['code' => '1100', 'name' => 'Hutang Usaha', 'type' => 'liability', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'Liabilities', 'expense_type' => null, 'account_category_id' => $kewajibanLancarCategory->id, 'description' => 'Hutang kepada supplier'],
+            ['code' => '1200', 'name' => 'Hutang Bank', 'type' => 'liability', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'Liabilities', 'expense_type' => null, 'account_category_id' => $kewajibanLancarCategory->id, 'description' => 'Pinjaman bank jangka pendek'],
             
-            // EKUITAS (Category: 3)
-            ['code' => '1100', 'name' => 'Modal', 'type' => 'equity', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'ekuitas', 'expense_type' => null, 'account_category_id' => $ekuitasCategory->id],
-            ['code' => '1200', 'name' => 'Laba Ditahan', 'type' => 'equity', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'ekuitas', 'expense_type' => null, 'account_category_id' => $ekuitasCategory->id],
+            // MODAL
+            ['code' => '1100', 'name' => 'Modal Pemilik', 'type' => 'equity', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'Equity', 'expense_type' => null, 'account_category_id' => $modalCategory->id, 'description' => 'Modal yang disetor pemilik'],
+            ['code' => '1200', 'name' => 'Laba Ditahan', 'type' => 'equity', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'Equity', 'expense_type' => null, 'account_category_id' => $modalCategory->id, 'description' => 'Akumulasi laba yang tidak dibagi'],
             
-            // PENDAPATAN (Category: 4)
-            ['code' => '1100', 'name' => 'Pendapatan Jasa', 'type' => 'revenue', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'pendapatan', 'expense_type' => null, 'account_category_id' => $pendapatanCategory->id],
-            ['code' => '1200', 'name' => 'Pendapatan Lain-lain', 'type' => 'revenue', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'pendapatan', 'expense_type' => null, 'account_category_id' => $pendapatanCategory->id],
+            // PENDAPATAN
+            ['code' => '1100', 'name' => 'Pendapatan Jasa', 'type' => 'revenue', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'Revenue', 'expense_type' => null, 'account_category_id' => $pendapatanUsahaCategory->id, 'description' => 'Pendapatan dari jasa'],
+            ['code' => '1200', 'name' => 'Pendapatan Lain-lain', 'type' => 'revenue', 'normal_balance' => 'credit', 'is_active' => true, 'group' => 'Revenue', 'expense_type' => null, 'account_category_id' => $pendapatanUsahaCategory->id, 'description' => 'Pendapatan non-operasional'],
             
-            // BEBAN (Category: 5)
-            ['code' => '1100', 'name' => 'Beban Gaji/Upah', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1200', 'name' => 'Beban Material', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1300', 'name' => 'Beban Transport', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1400', 'name' => 'Beban Administrasi', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1500', 'name' => 'Beban ESM', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1600', 'name' => 'Beban Listrik', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1700', 'name' => 'Beban Telepon', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
-            ['code' => '1800', 'name' => 'Beban Sewa', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'beban_operasional', 'expense_type' => 'operasional', 'account_category_id' => $bebanCategory->id],
+            // BEBAN
+            ['code' => '1100', 'name' => 'Beban Gaji/Upah', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Gaji karyawan dan upah pekerja'],
+            ['code' => '1200', 'name' => 'Beban Material', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Biaya bahan baku/material'],
+            ['code' => '1300', 'name' => 'Beban Transport', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Biaya transportasi'],
+            ['code' => '1400', 'name' => 'Beban Administrasi', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Biaya administrasi umum'],
+            ['code' => '1500', 'name' => 'Beban Listrik & Air', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Tagihan listrik dan air'],
+            ['code' => '1600', 'name' => 'Beban Telepon & Internet', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Biaya komunikasi'],
+            ['code' => '1700', 'name' => 'Beban Sewa', 'type' => 'expense', 'normal_balance' => 'debit', 'is_active' => true, 'group' => 'Expenses', 'expense_type' => null, 'account_category_id' => $bebanOperasionalCategory->id, 'description' => 'Biaya sewa gedung/tempat'],
         ];
 
-        foreach ($accounts as $account) {
-            Account::create($account);
+        foreach ($accounts as $accountData) {
+            Account::updateOrCreate(
+                [
+                    'account_category_id' => $accountData['account_category_id'],
+                    'code' => $accountData['code']
+                ],
+                $accountData
+            );
         }
+
+        $this->command->info('Created/Updated ' . count($accounts) . ' accounts.');
     }
 }

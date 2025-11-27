@@ -54,9 +54,10 @@
             $kewajibanCategories = collect($neracaData)->filter(fn($item) => $item['category']->type === 'liability');
             $ekuitasCategories = collect($neracaData)->filter(fn($item) => $item['category']->type === 'equity');
             
-            $totalAktiva = $aktivaCategories->sum('total');
-            $totalKewajiban = $kewajibanCategories->sum('total');
-            $totalEkuitas = $ekuitasCategories->sum('total');
+            // Gunakan abs() untuk memastikan semua nilai positif
+            $totalAktiva = abs($aktivaCategories->sum('total'));
+            $totalKewajiban = abs($kewajibanCategories->sum('total'));
+            $totalEkuitas = abs($ekuitasCategories->sum('total'));
         @endphp
 
         <!-- LEFT SIDE: AKTIVA -->
@@ -112,7 +113,7 @@
                             <!-- Total Aktiva -->
                             <tr class="table-primary fw-bold">
                                 <td colspan="3" class="text-end">TOTAL AKTIVA:</td>
-                                <td class="text-end">{{ number_format(abs($totalAktiva), 0, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format($totalAktiva, 0, ',', '.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -174,7 +175,7 @@
                             <!-- Total Kewajiban -->
                             <tr class="table-danger fw-bold">
                                 <td colspan="3" class="text-end">TOTAL KEWAJIBAN:</td>
-                                <td class="text-end">{{ number_format(abs($totalKewajiban), 0, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format($totalKewajiban, 0, ',', '.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -233,7 +234,7 @@
                             <!-- Total Ekuitas -->
                             <tr class="table-success fw-bold">
                                 <td colspan="3" class="text-end">TOTAL EKUITAS:</td>
-                                <td class="text-end">{{ number_format(abs($totalEkuitas), 0, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format($totalEkuitas, 0, ',', '.') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -248,7 +249,7 @@
                             TOTAL KEWAJIBAN & EKUITAS:
                         </div>
                         <div class="col-4 text-end" style="font-size: 1.1rem;">
-                            {{ number_format(abs($totalKewajiban + $totalEkuitas), 0, ',', '.') }}
+                            {{ number_format($totalKewajiban + $totalEkuitas, 0, ',', '.') }}
                         </div>
                     </div>
                 </div>

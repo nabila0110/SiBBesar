@@ -12,9 +12,14 @@ class HutangController extends Controller
      */
     public function index(Request $request)
     {
+        // Hanya ambil jurnal utama (bukan pasangan)
         $query = Journal::with(['account', 'creator'])
             ->where('type', 'out')
             ->where('payment_status', 'tidak_lunas')
+            ->where(function($q) {
+                $q->whereNull('paired_journal_id')
+                  ->orWhere('is_paired', false);
+            })
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 

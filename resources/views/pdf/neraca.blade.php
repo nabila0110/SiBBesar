@@ -150,9 +150,10 @@
         $kewajibanCategories = collect($neracaData)->filter(fn($item) => $item['category']->type === 'liability');
         $ekuitasCategories = collect($neracaData)->filter(fn($item) => $item['category']->type === 'equity');
         
-        $totalAktiva = $aktivaCategories->sum('total');
-        $totalKewajiban = $kewajibanCategories->sum('total');
-        $totalEkuitas = $ekuitasCategories->sum('total');
+        // Gunakan abs() untuk memastikan semua nilai positif
+        $totalAktiva = abs($aktivaCategories->sum('total'));
+        $totalKewajiban = abs($kewajibanCategories->sum('total'));
+        $totalEkuitas = abs($ekuitasCategories->sum('total'));
     @endphp
 
     <table>
@@ -175,14 +176,14 @@
                     <tr>
                         <td>{{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}</td>
                         <td class="ps-4">{{ $accountData['account']->name }}</td>
-                        <td class="text-end">{{ number_format($accountData['balance'], 0, ',', '.') }}</td>
+                        <td class="text-end">{{ number_format(abs($accountData['balance']), 0, ',', '.') }}</td>
                         <td></td>
                     </tr>
                 @endforeach
                 
                 <tr class="fw-bold">
                     <td colspan="3" class="text-end">TOTAL {{ strtoupper($categoryData['category']->name) }}:</td>
-                    <td class="text-end">{{ number_format($categoryData['total'], 0, ',', '.') }}</td>
+                    <td class="text-end">{{ number_format(abs($categoryData['total']), 0, ',', '.') }}</td>
                 </tr>
             @endforeach
 
@@ -201,14 +202,14 @@
                     <tr>
                         <td>{{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}</td>
                         <td class="ps-4">{{ $accountData['account']->name }}</td>
-                        <td class="text-end">{{ number_format($accountData['balance'], 0, ',', '.') }}</td>
+                        <td class="text-end">{{ number_format(abs($accountData['balance']), 0, ',', '.') }}</td>
                         <td></td>
                     </tr>
                 @endforeach
                 
                 <tr class="fw-bold">
                     <td colspan="3" class="text-end">TOTAL {{ strtoupper($categoryData['category']->name) }}:</td>
-                    <td class="text-end">{{ number_format($categoryData['total'], 0, ',', '.') }}</td>
+                    <td class="text-end">{{ number_format(abs($categoryData['total']), 0, ',', '.') }}</td>
                 </tr>
             @endforeach
 
@@ -227,14 +228,14 @@
                     <tr>
                         <td>{{ $accountData['account']->category->code }}-{{ $accountData['account']->code }}</td>
                         <td class="ps-4">{{ $accountData['account']->name }}</td>
-                        <td class="text-end">{{ number_format($accountData['balance'], 0, ',', '.') }}</td>
+                        <td class="text-end">{{ number_format(abs($accountData['balance']), 0, ',', '.') }}</td>
                         <td></td>
                     </tr>
                 @endforeach
                 
                 <tr class="fw-bold">
                     <td colspan="3" class="text-end">TOTAL {{ strtoupper($categoryData['category']->name) }}:</td>
-                    <td class="text-end">{{ number_format($categoryData['total'], 0, ',', '.') }}</td>
+                    <td class="text-end">{{ number_format(abs($categoryData['total']), 0, ',', '.') }}</td>
                 </tr>
             @endforeach
 

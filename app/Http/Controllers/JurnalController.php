@@ -8,6 +8,7 @@ use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
@@ -19,7 +20,12 @@ class JurnalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Journal::with(['account', 'creator'])
+        // Hanya tampilkan jurnal utama (bukan pasangan) untuk user-friendly view
+        $query = Journal::with(['account', 'creator', 'pairedJournal'])
+            ->where(function($q) {
+                $q->whereNull('paired_journal_id')
+                  ->orWhere('is_paired', false);
+            })
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 
@@ -76,6 +82,7 @@ class JurnalController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
             $quantity = (float) $request->input('quantity', 1);
             $price = (float) $request->input('price', 0);
@@ -90,7 +97,11 @@ class JurnalController extends Controller
             // Calculate final total
             $final_total = $total + $ppn_amount;
 
-            $journal = Journal::create([
+            $type = $request->input('type');
+            $paymentStatus = $request->input('payment_status');
+
+            // JURNAL 1: Akun yang dipilih user
+            $journal1 = Journal::create([
                 'transaction_date' => $request->input('transaction_date'),
                 'item' => $request->input('item'),
                 'quantity' => $quantity,
@@ -100,28 +111,127 @@ class JurnalController extends Controller
                 'tax' => $tax,
                 'ppn_amount' => $ppn_amount,
                 'final_total' => $final_total,
+                'debit' => $type === 'out' ? $final_total : 0,
+                'kredit' => $type === 'in' ? $final_total : 0,
+                'is_paired' => false, // Ini jurnal utama
                 'project' => $request->input('project'),
                 'ket' => $request->input('ket'),
                 'nota' => $request->input('nota'),
-                'type' => $request->input('type'),
-                'payment_status' => $request->input('payment_status'),
+                'type' => $type,
+                'payment_status' => $paymentStatus,
                 'account_id' => $request->input('account_id'),
                 'reference' => Journal::generateJournalNo(),
                 'status' => 'posted',
                 'created_by' => Auth::id(),
             ]);
 
+            // JURNAL 2: Akun pasangan (otomatis berdasarkan IN/OUT + Status)
+            $pairedAccountId = $this->getPairedAccount($type, $paymentStatus);
+            
+            $journal2 = Journal::create([
+                'transaction_date' => $request->input('transaction_date'),
+                'item' => $request->input('item') . ' (Pasangan)',
+                'quantity' => $quantity,
+                'satuan' => $request->input('satuan'),
+                'price' => $price,
+                'total' => $total,
+                'tax' => $tax,
+                'ppn_amount' => $ppn_amount,
+                'final_total' => $final_total,
+                'debit' => $type === 'in' ? $final_total : 0, // Kebalikan dari journal1
+                'kredit' => $type === 'out' ? $final_total : 0, // Kebalikan dari journal1
+                'is_paired' => true, // Ini jurnal pasangan
+                'paired_journal_id' => $journal1->id,
+                'project' => $request->input('project'),
+                'ket' => $request->input('ket'),
+                'nota' => $request->input('nota'),
+                'type' => $type,
+                'payment_status' => $paymentStatus,
+                'account_id' => $pairedAccountId,
+                'reference' => $journal1->reference, // Reference sama
+                'status' => 'posted',
+                'created_by' => Auth::id(),
+            ]);
+
+            // Update journal1 dengan paired_journal_id
+            $journal1->update(['paired_journal_id' => $journal2->id]);
+
+            DB::commit();
+
             if ($request->wantsJson()) {
-                return response()->json(['status' => 'success', 'message' => 'Jurnal berhasil disimpan', 'data' => $journal], 201);
+                return response()->json([
+                    'status' => 'success', 
+                    'message' => 'Jurnal berhasil disimpan (Double Entry)', 
+                    'data' => ['main' => $journal1, 'paired' => $journal2]
+                ], 201);
             }
 
-            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil disimpan');
+            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil ditambahkan!');
         } catch (\Exception $e) {
+            DB::rollBack();
             if ($request->wantsJson()) {
                 return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
             }
             return redirect()->back()->withErrors('Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
+    }
+
+    /**
+     * Helper: Tentukan akun pasangan berdasarkan IN/OUT dan Status Pembayaran
+     */
+    private function getPairedAccount($type, $paymentStatus)
+    {
+        if ($type === 'in') {
+            // IN + LUNAS → Kas (1-1100)
+            // IN + TIDAK LUNAS → Piutang (1-1300)
+            if ($paymentStatus === 'lunas') {
+                // Cari akun Kas - coba beberapa cara
+                $account = Account::with('category')
+                    ->where(function($q) {
+                        $q->where('name', 'like', '%kas%')
+                          ->orWhere('code', '1100');
+                    })
+                    ->first();
+            } else {
+                // Cari akun Piutang
+                $account = Account::with('category')
+                    ->where(function($q) {
+                        $q->where('name', 'like', '%piutang%')
+                          ->orWhere('code', '1300');
+                    })
+                    ->first();
+            }
+        } else {
+            // OUT + LUNAS → Kas (1-1100)
+            // OUT + TIDAK LUNAS → Hutang (2-1100)
+            if ($paymentStatus === 'lunas') {
+                // Cari akun Kas
+                $account = Account::with('category')
+                    ->where(function($q) {
+                        $q->where('name', 'like', '%kas%')
+                          ->orWhere('code', '1100');
+                    })
+                    ->first();
+            } else {
+                // Cari akun Hutang
+                $account = Account::with('category')
+                    ->where(function($q) {
+                        $q->where('name', 'like', '%hutang%')
+                          ->orWhere('code', '1100');
+                    })
+                    ->first();
+            }
+        }
+
+        // Fallback: Jika tidak ditemukan, gunakan akun pertama yang aktif
+        if (!$account) {
+            $account = Account::where('is_active', true)->first();
+            if (!$account) {
+                throw new \Exception('Tidak ada akun yang tersedia. Silakan tambahkan akun terlebih dahulu.');
+            }
+        }
+
+        return $account->id;
     }
 
     /**
@@ -171,6 +281,7 @@ class JurnalController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        DB::beginTransaction();
         try {
             $quantity = (float) $request->input('quantity', 1);
             $price = (float) $request->input('price', 0);
@@ -185,6 +296,10 @@ class JurnalController extends Controller
             // Calculate final total
             $final_total = $total + $ppn_amount;
 
+            $type = $request->input('type');
+            $paymentStatus = $request->input('payment_status');
+
+            // Update JURNAL 1 (Jurnal Utama)
             $journal->update([
                 'transaction_date' => $request->input('transaction_date'),
                 'item' => $request->input('item'),
@@ -195,20 +310,53 @@ class JurnalController extends Controller
                 'tax' => $tax,
                 'ppn_amount' => $ppn_amount,
                 'final_total' => $final_total,
+                'debit' => $type === 'out' ? $final_total : 0,
+                'kredit' => $type === 'in' ? $final_total : 0,
                 'project' => $request->input('project'),
                 'nota' => $request->input('nota'),
-                'type' => $request->input('type'),
-                'payment_status' => $request->input('payment_status'),
+                'type' => $type,
+                'payment_status' => $paymentStatus,
                 'account_id' => $request->input('account_id'),
                 'updated_by' => Auth::id(),
             ]);
 
-            if ($request->wantsJson()) {
-                return response()->json(['status' => 'success', 'message' => 'Jurnal berhasil diperbarui', 'data' => $journal]);
+            // Update JURNAL 2 (Jurnal Pasangan) jika ada
+            if ($journal->paired_journal_id) {
+                $pairedJournal = Journal::find($journal->paired_journal_id);
+                if ($pairedJournal) {
+                    $pairedAccountId = $this->getPairedAccount($type, $paymentStatus);
+                    
+                    $pairedJournal->update([
+                        'transaction_date' => $request->input('transaction_date'),
+                        'item' => $request->input('item') . ' (Pasangan)',
+                        'quantity' => $quantity,
+                        'satuan' => $request->input('satuan'),
+                        'price' => $price,
+                        'total' => $total,
+                        'tax' => $tax,
+                        'ppn_amount' => $ppn_amount,
+                        'final_total' => $final_total,
+                        'debit' => $type === 'in' ? $final_total : 0,
+                        'kredit' => $type === 'out' ? $final_total : 0,
+                        'project' => $request->input('project'),
+                        'nota' => $request->input('nota'),
+                        'type' => $type,
+                        'payment_status' => $paymentStatus,
+                        'account_id' => $pairedAccountId,
+                        'updated_by' => Auth::id(),
+                    ]);
+                }
             }
 
-            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil diperbarui');
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                return response()->json(['status' => 'success', 'message' => 'Jurnal berhasil diperbarui (Double Entry)', 'data' => $journal]);
+            }
+
+            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil diperbarui!');
         } catch (\Exception $e) {
+            DB::rollBack();
             if ($request->wantsJson()) {
                 return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
             }
@@ -221,12 +369,24 @@ class JurnalController extends Controller
      */
     public function destroy($id)
     {
+        DB::beginTransaction();
         try {
             $journal = Journal::findOrFail($id);
+            
+            // Hapus juga jurnal pasangannya
+            if ($journal->paired_journal_id) {
+                $pairedJournal = Journal::find($journal->paired_journal_id);
+                if ($pairedJournal) {
+                    $pairedJournal->delete();
+                }
+            }
+            
             $journal->delete();
 
-            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil dihapus');
+            DB::commit();
+            return redirect()->route('jurnal.index')->with('success', 'Jurnal berhasil dihapus!');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->withErrors('Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -236,7 +396,12 @@ class JurnalController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // Hanya ambil jurnal utama (bukan pasangan) - sama seperti di index
         $query = Journal::with(['account', 'creator'])
+            ->where(function($q) {
+                $q->whereNull('paired_journal_id')
+                  ->orWhere('is_paired', false);
+            })
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 
@@ -274,7 +439,12 @@ class JurnalController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        // Hanya ambil jurnal utama (bukan pasangan) - sama seperti di index
         $query = Journal::with(['account', 'creator'])
+            ->where(function($q) {
+                $q->whereNull('paired_journal_id')
+                  ->orWhere('is_paired', false);
+            })
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 

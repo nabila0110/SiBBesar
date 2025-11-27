@@ -47,29 +47,46 @@ class LabaRugiExport implements FromCollection, WithHeadings, WithStyles, WithTi
             
             foreach ($category->accounts as $account) {
                 $balance = $this->calculateAccountBalance($account->id);
-                $categoryTotal += $balance;
+                $categoryTotal += abs($balance); // Gunakan abs untuk akumulasi
                 
                 $data->push([
                     'kode' => $category->code . '-' . $account->code,
                     'nama' => $account->name,
-                    'jumlah' => $balance
+                    'jumlah' => abs($balance) // Tampilkan nilai absolut
                 ]);
             }
             
             $data->push([
                 'kode' => '',
                 'nama' => 'TOTAL ' . strtoupper($category->name),
-                'jumlah' => $categoryTotal
+                'jumlah' => $categoryTotal // Sudah positif
             ]);
             
             if ($category->type === 'revenue') {
-                $totalRevenue = $categoryTotal;
+                $totalRevenue += $categoryTotal;
             } else {
-                $totalExpense = $categoryTotal;
+                $totalExpense += $categoryTotal;
             }
             
             $data->push(['kode' => '', 'nama' => '', 'jumlah' => '']);
         }
+        
+        // Tambahkan total keseluruhan
+        $data->push(['kode' => '', 'nama' => '', 'jumlah' => '']); // Empty row
+        
+        $data->push([
+            'kode' => '',
+            'nama' => 'TOTAL PENDAPATAN',
+            'jumlah' => $totalRevenue
+        ]);
+        
+        $data->push([
+            'kode' => '',
+            'nama' => 'TOTAL BEBAN',
+            'jumlah' => $totalExpense
+        ]);
+        
+        $data->push(['kode' => '', 'nama' => '', 'jumlah' => '']); // Empty row
         
         $netIncome = $totalRevenue - $totalExpense;
         $data->push([
