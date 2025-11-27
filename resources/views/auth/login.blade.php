@@ -135,7 +135,7 @@
         <button class="btn" type="submit">LOGIN</button>
     </form>
 
-    <p class="small">PT </p>
+    <p class="small">PT MITRA FAJAR KENCANA</p>
 </div>
 </body>
 </html>
