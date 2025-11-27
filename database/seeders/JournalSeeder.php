@@ -3,209 +3,233 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 use App\Models\Journal;
 use App\Models\Account;
+use Illuminate\Support\Facades\DB;
 
 class JournalSeeder extends Seeder
 {
     public function run()
     {
-        // Get specific accounts for double entry
-        $bebanGajiAccount = Account::where('name', 'LIKE', '%Gaji%')->where('type', 'expense')->first();
-        $pendapatanJasaAccount = Account::where('name', 'LIKE', '%Jasa%')->where('type', 'revenue')->first();
-        $bebanMaterialAccount = Account::where('name', 'LIKE', '%Material%')->where('type', 'expense')->first();
+        // Keep things deterministic-ish when desired
+        //srand(12345);
+
+        // STEP 1: Buat jurnal saldo awal untuk Modal Pemilik
+        $modalPemilik = Account::where('name', 'like', '%modal%pemilik%')->first();
+        $kasAccount = Account::where('name', 'like', '%kas%')->first();
         
-        // Get required accounts for double entry pairing
-        $kasAccount = Account::whereHas('category', function($q) {
-            $q->where('type', 'asset');
-        })->where('code', '1100')->first();
+        if ($modalPemilik && $kasAccount) {
+            $modalAwal = 100000000; // 100 juta modal awal
+            $tanggalAwal = '2024-01-01';
+            
+            // Jurnal: Debit Kas, Kredit Modal Pemilik (setoran modal)
+            $mainJurnal = Journal::create([
+                'transaction_date' => $tanggalAwal,
+                'item' => 'Setoran Modal Awal Pemilik',
+                'quantity' => 1,
+                'satuan' => 'paket',
+                'price' => $modalAwal,
+                'total' => $modalAwal,
+                'tax' => false,
+                'ppn_amount' => 0,
+                'final_total' => $modalAwal,
+                'debit' => $modalAwal,  // Debit Kas
+                'kredit' => 0,
+                'project' => 'OPENING',
+                'ket' => 'Saldo awal modal pemilik',
+                'nota' => 'OPENING-BALANCE',
+                'type' => 'in',
+                'payment_status' => 'lunas',
+                'account_id' => $kasAccount->id,
+                'reference' => 'OPENING-001',
+                'status' => 'posted',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'is_paired' => false,
+            ]);
+            
+            $pairedJurnal = Journal::create([
+                'transaction_date' => $tanggalAwal,
+                'item' => 'Setoran Modal Awal Pemilik (Pasangan)',
+                'quantity' => 1,
+                'satuan' => 'paket',
+                'price' => $modalAwal,
+                'total' => $modalAwal,
+                'tax' => false,
+                'ppn_amount' => 0,
+                'final_total' => $modalAwal,
+                'debit' => 0,
+                'kredit' => $modalAwal,  // Kredit Modal Pemilik
+                'project' => 'OPENING',
+                'ket' => 'Saldo awal modal pemilik',
+                'nota' => 'OPENING-BALANCE',
+                'type' => 'in',
+                'payment_status' => 'lunas',
+                'account_id' => $modalPemilik->id,
+                'reference' => 'OPENING-001',
+                'status' => 'posted',
+                'created_by' => 1,
+                'updated_by' => 1,
+                'is_paired' => true,
+                'paired_journal_id' => $mainJurnal->id,
+            ]);
+            
+            $mainJurnal->paired_journal_id = $pairedJurnal->id;
+            $mainJurnal->save();
+            
+            $this->command->info('Created opening balance for Modal Pemilik: ' . number_format($modalAwal, 0, ',', '.'));
+        }
         
-        $piutangAccount = Account::whereHas('category', function($q) {
-            $q->where('type', 'asset');
-        })->where('code', '1300')->first();
-        
-        $hutangAccount = Account::whereHas('category', function($q) {
-            $q->where('type', 'liability');
-        })->where('code', '1100')->first();
-        
-        // If no accounts found, abort
-        if (!$bebanGajiAccount || !$pendapatanJasaAccount || !$kasAccount || !$piutangAccount || !$hutangAccount) {
-            $this->command->warn('Required accounts not found. Please run AccountSeeder first.');
+        // STEP 2: Buat jurnal operasional untuk akun lainnya
+        // Ambil semua akun kecuali Laba Ditahan dan Modal Pemilik
+        // (karena keduanya adalah akun equity yang tidak untuk transaksi operasional)
+        $accounts = Account::where('is_active', true)
+            ->where('name', 'NOT LIKE', '%laba%ditahan%')
+            ->where('name', 'NOT LIKE', '%retained%earning%')
+            ->where('name', 'NOT LIKE', '%modal%pemilik%')
+            ->where('name', 'NOT LIKE', '%owner%equity%')
+            ->get();
+        if ($accounts->count() < 2) {
+            $this->command->info('Not enough accounts to seed journals. Please seed accounts first.');
             return;
         }
 
-        $this->command->info('Creating journals with double entry system...');
+        $start = Carbon::create(2024, 1, 1);
+        $end = Carbon::create(2025, 12, 31);
 
-        // CONTOH 1: Pendapatan Jasa - Lunas (IN + LUNAS → Kas bertambah)
-        $this->createDoubleEntryJournal(
-            '2025-11-20',
-            'Pembayaran Proyek Paving Jalan Komplek',
-            1,
-            'paket',
-            30000000,
-            true,
-            'KOMPLEK ELITE',
-            'CV-001',
-            'in',
-            'lunas',
-            $pendapatanJasaAccount->id,
-            $kasAccount->id
-        );
+        // Build some lookup accounts for kas/piutang/hutang fallbacks
+        $kasAccount = Account::where('name', 'like', '%kas%')->first();
+        $piutangAccount = Account::where('name', 'like', '%piutang%')->first();
+        $hutangAccount = Account::where('name', 'like', '%utang%')->orWhere('name', 'like', '%hutang%')->first();
 
-        // CONTOH 2: Beban Gaji - Tidak Lunas (OUT + TIDAK LUNAS → Hutang bertambah)
-        $this->createDoubleEntryJournal(
-            '2025-11-21',
-            'Upah Paving dan Finishing',
-            20,
-            'orang',
-            1500000,
-            false,
-            'KOMPLEK ELITE',
-            'UPAH-001',
-            'out',
-            'tidak_lunas',
-            $bebanGajiAccount->id,
-            $hutangAccount->id
-        );
+        $months = [];
+        $cursor = $start->copy();
+        while ($cursor->lessThanOrEqualTo($end)) {
+            $months[] = $cursor->copy();
+            $cursor->addMonth();
+        }
 
-        // CONTOH 3: Pendapatan Jasa - Tidak Lunas (IN + TIDAK LUNAS → Piutang bertambah)
-        $this->createDoubleEntryJournal(
-            '2025-11-22',
-            'Pendapatan Jasa Konsultasi',
-            1,
-            'paket',
-            50000000,
-            true,
-            'GEDUNG PERKANTORAN',
-            'INV-001',
-            'in',
-            'tidak_lunas',
-            $pendapatanJasaAccount->id,
-            $piutangAccount->id
-        );
+        $this->command->info('Seeding journals for ' . count($months) . ' months and ' . $accounts->count() . ' accounts...');
 
-        // CONTOH 4: Beban Material - Lunas (OUT + LUNAS → Kas berkurang)
-        $this->createDoubleEntryJournal(
-            '2025-11-23',
-            'Pembelian Material Paving Block',
-            5000,
-            'pcs',
-            12500,
-            false,
-            'KOMPLEK ELITE',
-            'PO-001',
-            'out',
-            'lunas',
-            $bebanMaterialAccount->id,
-            $kasAccount->id
-        );
+        // Daftar nama orang untuk nota
+        $namaNota = [
+            'Budi Santoso', 'Siti Aminah', 'Agus Wijaya', 'Dewi Lestari', 'Eko Prasetyo',
+            'Fitri Handayani', 'Gunawan', 'Heni Kartika', 'Indra Kusuma', 'Joko Susilo',
+            'Rina Marlina', 'Bambang Suryadi', 'Lina Safitri', 'Hendra Gunawan', 'Maya Sari',
+            'Dedi Setiawan', 'Wati Susilawati', 'Ahmad Fauzi', 'Sri Wahyuni', 'Andi Nugroho'
+        ];
 
-        // CONTOH 5: Beban Gaji - Lunas (OUT + LUNAS → Kas berkurang)
-        $this->createDoubleEntryJournal(
-            '2025-11-24',
-            'Gaji Karyawan November',
-            15,
-            'orang',
-            3500000,
-            false,
-            'OPERASIONAL',
-            'PAY-001',
-            'out',
-            'lunas',
-            $bebanGajiAccount->id,
-            $kasAccount->id
-        );
+        DB::transaction(function () use ($accounts, $months, $kasAccount, $piutangAccount, $hutangAccount, $namaNota) {
+            foreach ($months as $month) {
+                foreach ($accounts as $account) {
+                    // 30% chance to create a transaction for this account in this month
+                    if (random_int(1, 100) > 30) {
+                        continue;
+                    }
 
-        // CONTOH 6: Pendapatan - Lunas lagi
-        $this->createDoubleEntryJournal(
-            '2025-11-25',
-            'Pelunasan Proyek Sebelumnya',
-            1,
-            'paket',
-            75000000,
-            true,
-            'MALL SENTOSA',
-            'INV-002',
-            'in',
-            'lunas',
-            $pendapatanJasaAccount->id,
-            $kasAccount->id
-        );
+                    $type = random_int(0, 1) ? 'in' : 'out';
+                    // More likely to be lunas for cash transactions
+                    $payment_status = (random_int(1, 100) <= 75) ? 'lunas' : 'tidak_lunas';
 
-        $this->command->info('Successfully created 6 example journals with double entry!');
-    }
+                    // Nominal LEBIH BESAR untuk perusahaan sungguhan
+                    $base = 5000000;  // 5 juta
+                    $variance = ($account->id % 5 + 1) * 10000000; // 10-50 juta variasi
+                    $amount = random_int($base, $base + $variance);
+                    // Slight monthly smoothing
+                    $amount = (int) round($amount * (0.8 + mt_rand() / mt_getrandmax() * 0.6));
 
-    /**
-     * Helper method untuk create double entry journal
-     */
-    private function createDoubleEntryJournal(
-        $date,
-        $item,
-        $qty,
-        $satuan,
-        $price,
-        $tax,
-        $project,
-        $nota,
-        $type,
-        $paymentStatus,
-        $mainAccountId,
-        $pairedAccountId
-    ) {
-        $total = $qty * $price;
-        $ppnAmount = $tax ? ($total * 0.11) : 0;
-        $finalTotal = $total + $ppnAmount;
+                    // Determine paired account
+                    $paired = null;
+                    if ($type === 'in') {
+                        $paired = ($payment_status === 'lunas') ? $kasAccount : $piutangAccount;
+                    } else {
+                        $paired = ($payment_status === 'lunas') ? $kasAccount : $hutangAccount;
+                    }
 
-        // Journal 1: Main (User pilih)
-        $journal1 = Journal::create([
-            'transaction_date' => $date,
-            'item' => $item,
-            'quantity' => $qty,
-            'satuan' => $satuan,
-            'price' => $price,
-            'total' => $total,
-            'tax' => $tax,
-            'ppn_amount' => $ppnAmount,
-            'final_total' => $finalTotal,
-            'debit' => $type === 'out' ? $finalTotal : 0,
-            'kredit' => $type === 'in' ? $finalTotal : 0,
-            'is_paired' => false,
-            'project' => $project,
-            'nota' => $nota,
-            'type' => $type,
-            'payment_status' => $paymentStatus,
-            'account_id' => $mainAccountId,
-            'reference' => 'JRN/2025/11/' . str_pad(Journal::count() + 1, 4, '0', STR_PAD_LEFT),
-            'status' => 'posted',
-            'created_by' => 1,
-        ]);
+                    // Fallback: pick a different account if no kas/piutang/hutang found
+                    if (! $paired || $paired->id === $account->id) {
+                        $paired = $accounts->where('id', '!=', $account->id)->random();
+                    }
 
-        // Journal 2: Paired (Otomatis)
-        $journal2 = Journal::create([
-            'transaction_date' => $date,
-            'item' => $item . ' (Pasangan)',
-            'quantity' => $qty,
-            'satuan' => $satuan,
-            'price' => $price,
-            'total' => $total,
-            'tax' => $tax,
-            'ppn_amount' => $ppnAmount,
-            'final_total' => $finalTotal,
-            'debit' => $type === 'in' ? $finalTotal : 0,
-            'kredit' => $type === 'out' ? $finalTotal : 0,
-            'is_paired' => true,
-            'paired_journal_id' => $journal1->id,
-            'project' => $project,
-            'nota' => $nota,
-            'type' => $type,
-            'payment_status' => $paymentStatus,
-            'account_id' => $pairedAccountId,
-            'reference' => $journal1->reference,
-            'status' => 'posted',
-            'created_by' => 1,
-        ]);
+                    // Build a readable item
+                    $item = ($type === 'in' ? 'Penjualan / Penerimaan' : 'Pembelian / Pengeluaran') . ' - ' . $month->format('F Y');
+                    
+                    // Nota berisi nama orang yang melakukan transaksi
+                    $notaNama = $namaNota[array_rand($namaNota)];
 
-        // Update journal1 with paired_journal_id
-        $journal1->update(['paired_journal_id' => $journal2->id]);
+                    // PERBAIKAN: Logika debit/kredit yang BENAR
+                    // Untuk IN (uang masuk):
+                    //   - Main (revenue account) = KREDIT
+                    //   - Paired (kas/piutang) = DEBIT
+                    // Untuk OUT (uang keluar):
+                    //   - Main (expense account) = DEBIT
+                    //   - Paired (kas/hutang) = KREDIT
+                    
+                    $mainData = [
+                        'transaction_date' => $month->format('Y-m-d'),
+                        'item' => $item,
+                        'quantity' => 1,
+                        'satuan' => 'paket',
+                        'price' => $amount,
+                        'total' => $amount,
+                        'tax' => false,
+                        'ppn_amount' => 0,
+                        'final_total' => $amount,
+                        'debit' => $type === 'out' ? $amount : 0,  // OUT: debit expense
+                        'kredit' => $type === 'in' ? $amount : 0,  // IN: kredit revenue
+                        'project' => 'PROJECT-' . $month->format('Ym'),
+                        'ket' => 'Transaksi otomatis',
+                        'nota' => $namaNota[array_rand($namaNota)],
+                        'type' => $type,
+                        'payment_status' => $payment_status,
+                        'account_id' => $account->id,
+                        'reference' => Journal::generateJournalNo(),
+                        'status' => 'posted',
+                        'created_by' => 1,
+                        'updated_by' => 1,
+                        'is_paired' => false,
+                    ];
+
+                    $main = Journal::create($mainData);
+
+                    // PERBAIKAN: Paired journal harus KEBALIKAN dari main
+                    $pairedData = [
+                        'transaction_date' => $mainData['transaction_date'],
+                        'item' => $item . ' (Pasangan)',
+                        'quantity' => $mainData['quantity'],
+                        'satuan' => $mainData['satuan'],
+                        'price' => $mainData['price'],
+                        'total' => $mainData['total'],
+                        'tax' => $mainData['tax'],
+                        'ppn_amount' => $mainData['ppn_amount'],
+                        'final_total' => $mainData['final_total'],
+                        'debit' => $type === 'in' ? $amount : 0,   // IN: debit kas/piutang
+                        'kredit' => $type === 'out' ? $amount : 0, // OUT: kredit kas/hutang
+                        'project' => $mainData['project'],
+                        'ket' => $mainData['ket'],
+                        'nota' => $mainData['nota'],
+                        'type' => $mainData['type'],
+                        'payment_status' => $mainData['payment_status'],
+                        'account_id' => $paired->id,
+                        'reference' => $mainData['reference'], // Sama dengan main
+                        'status' => 'posted',
+                        'created_by' => 1,
+                        'updated_by' => 1,
+                        'is_paired' => true,
+                        'paired_journal_id' => $main->id,
+                    ];
+
+                    $pairedJournal = Journal::create($pairedData);
+
+                    // Link main to paired
+                    $main->paired_journal_id = $pairedJournal->id;
+                    $main->save();
+                }
+            }
+        });
+
+        $this->command->info('Journal seeding complete.');
     }
 }

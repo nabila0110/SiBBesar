@@ -12,30 +12,34 @@ class DashboardController extends Controller
     public function index()
     {
         try {
-            // Count total journals
-            $journalCount = Journal::count();
+            // Count total journals (hanya jurnal utama: is_paired = false)
+            $journalCount = Journal::where('is_paired', false)->count();
             
             // Count total accounts
             $accountCount = Account::where('is_active', true)->count();
             
-            // Calculate HUTANG: OUT + TIDAK_LUNAS
+            // Calculate HUTANG: Transaksi OUT + TIDAK_LUNAS (belum dibayar)
             $totalHutang = Journal::where('type', 'out')
                 ->where('payment_status', 'tidak_lunas')
+                ->where('is_paired', false)
                 ->sum('final_total');
             
-            // Calculate PIUTANG: IN + TIDAK_LUNAS
+            // Calculate PIUTANG: Transaksi IN + TIDAK_LUNAS (belum diterima)
             $totalPiutang = Journal::where('type', 'in')
                 ->where('payment_status', 'tidak_lunas')
+                ->where('is_paired', false)
                 ->sum('final_total');
             
-            // Count hutang transactions
+            // Count hutang transactions (hanya jurnal utama)
             $countHutang = Journal::where('type', 'out')
                 ->where('payment_status', 'tidak_lunas')
+                ->where('is_paired', false)
                 ->count();
             
-            // Count piutang transactions
+            // Count piutang transactions (hanya jurnal utama)
             $countPiutang = Journal::where('type', 'in')
                 ->where('payment_status', 'tidak_lunas')
+                ->where('is_paired', false)
                 ->count();
                 
         } catch (\Exception $e) {
@@ -78,18 +82,20 @@ class DashboardController extends Controller
     {
         $year = $request->input('year', date('Y'));
         
-        // Get monthly data for IN (Piutang/Pemasukan)
+        // Get monthly data for IN (Piutang/Pemasukan) - hanya jurnal utama
         $monthlyIn = Journal::where('type', 'in')
             ->whereYear('transaction_date', $year)
+            ->where('is_paired', false)
             ->selectRaw('MONTH(transaction_date) as month, SUM(final_total) as total')
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('total', 'month')
             ->toArray();
         
-        // Get monthly data for OUT (Hutang/Pengeluaran)
+        // Get monthly data for OUT (Hutang/Pengeluaran) - hanya jurnal utama
         $monthlyOut = Journal::where('type', 'out')
             ->whereYear('transaction_date', $year)
+            ->where('is_paired', false)
             ->selectRaw('MONTH(transaction_date) as month, SUM(final_total) as total')
             ->groupBy('month')
             ->orderBy('month')

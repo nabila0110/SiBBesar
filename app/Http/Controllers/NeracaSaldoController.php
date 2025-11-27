@@ -82,10 +82,11 @@ class NeracaSaldoController extends Controller
      */
     public function index(Request $request)
     {
-        $startDate = $request->input('dari_tanggal', Carbon::now()->startOfYear()->format('Y-m-d'));
+        // Default: dari tanggal opening balance (2024-01-01) sampai hari ini
+        $startDate = $request->input('dari_tanggal', '2024-01-01');
         $endDate = $request->input('sampai_tanggal', Carbon::now()->format('Y-m-d'));
         
-        // Calculate net income (Revenue - Expense) for the period
+        // Calculate net income (Revenue - Expense) for the period ONLY
         $totalRevenue = $this->calculateTotalByType('revenue', $startDate, $endDate);
         $totalExpense = $this->calculateTotalByType('expense', $startDate, $endDate);
         $netIncome = $totalRevenue - $totalExpense;
@@ -110,10 +111,9 @@ class NeracaSaldoController extends Controller
             foreach ($category->accounts as $account) {
                 $balance = $this->calculateAccountBalance($account->id, $startDate, $endDate);
                 
-                // For "Laba Ditahan" account, add net income
-                if ($account->type === 'equity' && (stripos($account->name, 'laba') !== false || stripos($account->name, 'rugi') !== false)) {
-                    $balance += $netIncome;
-                }
+                // JANGAN tambahkan net income ke Laba Ditahan!
+                // Laba Ditahan hanya menampilkan saldo dari jurnal
+                // Net Income akan ditampilkan sebagai line item terpisah
                 
                 // Always add accounts for neraca even if balance is 0
                 $categoryData['accounts'][] = [
@@ -121,6 +121,19 @@ class NeracaSaldoController extends Controller
                     'balance' => $balance
                 ];
                 $categoryData['total'] += $balance;
+            }
+            
+            // Jika ini kategori Modal (equity), tambahkan Laba Bersih sebagai line item
+            if ($category->type === 'equity') {
+                $categoryData['accounts'][] = [
+                    'account' => (object)[
+                        'code' => '3-1-9999',
+                        'name' => 'Laba/Rugi Tahun Berjalan',
+                        'type' => 'equity'
+                    ],
+                    'balance' => $netIncome
+                ];
+                $categoryData['total'] += $netIncome;
             }
             
             // Always include asset, liability, and equity categories
@@ -170,15 +183,27 @@ class NeracaSaldoController extends Controller
             foreach ($category->accounts as $account) {
                 $balance = $this->calculateAccountBalance($account->id, $startDate, $endDate);
                 
-                if ($account->type === 'equity' && (stripos($account->name, 'laba') !== false || stripos($account->name, 'rugi') !== false)) {
-                    $balance += $netIncome;
-                }
+                // JANGAN tambahkan net income ke Laba Ditahan
+                // Net income akan menjadi line item terpisah
                 
                 $categoryData['accounts'][] = [
                     'account' => $account,
                     'balance' => $balance
                 ];
                 $categoryData['total'] += $balance;
+            }
+            
+            // Tambahkan Laba Bersih sebagai line item di Ekuitas
+            if ($category->type === 'equity') {
+                $categoryData['accounts'][] = [
+                    'account' => (object)[
+                        'code' => '3-1-9999',
+                        'name' => 'Laba/Rugi Tahun Berjalan',
+                        'type' => 'equity'
+                    ],
+                    'balance' => $netIncome
+                ];
+                $categoryData['total'] += $netIncome;
             }
             
             $neracaData[] = $categoryData;
@@ -269,64 +294,53 @@ class NeracaSaldoController extends Controller
     {
         $accounts = Account::where('type', $type)->where('is_active', true)->pluck('id');
         
-        $totalIn = Journal::whereIn('account_id', $accounts)
+        // PERBAIKAN FINAL: Hitung SEMUA jurnal (main + paired) untuk laporan
+        // Karena setiap transaksi punya 2 jurnal (debit & kredit)
+        // Jadi kita harus hitung keduanya untuk mendapat saldo yang benar
+        $totalDebit = Journal::whereIn('account_id', $accounts)
             ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->where('type', 'in')
-            ->sum('total');
+            ->sum('debit');
             
-        $totalOut = Journal::whereIn('account_id', $accounts)
+        $totalKredit = Journal::whereIn('account_id', $accounts)
             ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->where('type', 'out')
-            ->sum('total');
+            ->sum('kredit');
         
+        // Revenue (normal balance: kredit) = kredit - debit
         if ($type === 'revenue') {
-            return $totalIn - $totalOut;
-        } elseif ($type === 'expense') {
-            return $totalOut - $totalIn;
+            return $totalKredit - $totalDebit;
+        } 
+        // Expense (normal balance: debit) = debit - kredit
+        elseif ($type === 'expense') {
+            return $totalDebit - $totalKredit;
         }
         
         return 0;
     }
     
     /**
-     * Calculate account balance for a period
+     * Calculate account balance for a period - GUNAKAN DEBIT/KREDIT
      */
     private function calculateAccountBalance($accountId, $startDate, $endDate)
     {
         $account = Account::find($accountId);
         
-        // Get totals from journals based on type
-        $totalIn = Journal::where('account_id', $accountId)
+        // PERBAIKAN FINAL: Hitung SEMUA jurnal untuk akun ini
+        $totalDebit = Journal::where('account_id', $accountId)
             ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->where('type', 'in')
-            ->sum('total');
+            ->sum('debit');
             
-        $totalOut = Journal::where('account_id', $accountId)
+        $totalKredit = Journal::where('account_id', $accountId)
             ->whereBetween('transaction_date', [$startDate, $endDate])
-            ->where('type', 'out')
-            ->sum('total');
+            ->sum('kredit');
         
-        // Logic based on account type and transaction type:
-        // TYPE 'IN' = Uang masuk/penerimaan
-        // TYPE 'OUT' = Uang keluar/pengeluaran
+        // LOGIKA AKUNTANSI YANG BENAR (FINAL):
+        // Asset & Expense (normal debit): debit - kredit
+        // Liability, Equity, Revenue (normal kredit): kredit - debit
         
-        // For REVENUE accounts (credit): type 'in' increases balance (positive)
-        // For EXPENSE accounts (debit): type 'out' increases balance (positive for showing expense amount)
-        // For ASSET accounts (debit): type 'in' increases, type 'out' decreases
-        // For LIABILITY accounts (credit): type 'in' increases (terima hutang), type 'out' decreases (bayar hutang)
-        
-        if ($account->type === 'revenue') {
-            // Revenue: uang masuk (type 'in') adalah pendapatan
-            return $totalIn - $totalOut;
-        } elseif ($account->type === 'expense') {
-            // Expense: uang keluar (type 'out') adalah beban
-            return $totalOut - $totalIn;
-        } elseif ($account->normal_balance === 'debit') {
-            // Asset: uang masuk menambah, uang keluar mengurangi
-            return $totalIn - $totalOut;
+        if (in_array($account->type, ['asset', 'expense'])) {
+            return $totalDebit - $totalKredit;
         } else {
-            // Liability, Equity: uang masuk menambah, uang keluar mengurangi
-            return $totalIn - $totalOut;
+            return $totalKredit - $totalDebit;
         }
     }
 

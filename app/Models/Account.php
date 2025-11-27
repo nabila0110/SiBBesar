@@ -38,7 +38,7 @@ class Account extends Model
     }
 
     /**
-     * Get balance for this account.
+     * Get balance for this account - HANYA HITUNG JURNAL UTAMA
      */
     public function getBalance($start = null, $end = null)
     {
@@ -48,7 +48,9 @@ class Account extends Model
             return $debit - $credit;
         }
 
+        // PERBAIKAN: Hanya hitung jurnal utama (is_paired = false)
         $query = $this->journals()
+            ->where('is_paired', false)
             ->selectRaw('COALESCE(SUM(debit),0) as total_debit, COALESCE(SUM(kredit),0) as total_credit');
 
         if ($start) $query->where('transaction_date', '>=', $start);
@@ -57,6 +59,14 @@ class Account extends Model
         $totals = $query->first();
         $debit = $totals->total_debit ?? 0;
         $credit = $totals->total_credit ?? 0;
-        return $debit - $credit;
+        
+        // Hitung berdasarkan normal balance
+        // Asset & Expense (normal balance debit): debit - kredit
+        // Liability, Equity, Revenue (normal balance kredit): kredit - debit
+        if (in_array($this->type, ['asset', 'expense'])) {
+            return $debit - $credit;
+        } else {
+            return $credit - $debit;
+        }
     }
 }

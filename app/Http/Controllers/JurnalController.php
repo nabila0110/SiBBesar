@@ -20,12 +20,9 @@ class JurnalController extends Controller
      */
     public function index(Request $request)
     {
-        // Hanya tampilkan jurnal utama (bukan pasangan) untuk user-friendly view
+        // Hanya tampilkan jurnal utama (is_paired = false)
         $query = Journal::with(['account', 'creator', 'pairedJournal'])
-            ->where(function($q) {
-                $q->whereNull('paired_journal_id')
-                  ->orWhere('is_paired', false);
-            })
+            ->where('is_paired', false)
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 
@@ -396,12 +393,9 @@ class JurnalController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        // Hanya ambil jurnal utama (bukan pasangan) - sama seperti di index
+        // Hanya ambil jurnal utama (is_paired = false)
         $query = Journal::with(['account', 'creator'])
-            ->where(function($q) {
-                $q->whereNull('paired_journal_id')
-                  ->orWhere('is_paired', false);
-            })
+            ->where('is_paired', false)
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 
@@ -439,12 +433,9 @@ class JurnalController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        // Hanya ambil jurnal utama (bukan pasangan) - sama seperti di index
+        // Hanya ambil jurnal utama (is_paired = false)
         $query = Journal::with(['account', 'creator'])
-            ->where(function($q) {
-                $q->whereNull('paired_journal_id')
-                  ->orWhere('is_paired', false);
-            })
+            ->where('is_paired', false)
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
 
