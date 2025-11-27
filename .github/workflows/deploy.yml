@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           port: 22
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/public_html
+            cd /home/sibbesar.my.id/public_html
             echo "Pulling latest code..."
             git pull origin main
 
@@ -36,4 +36,4 @@ jobs:
 
             echo "Setting correct permissions..."
             chmod -R 775 storage bootstrap/cache
-            chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} storage bootstrap/cache
+            chown -R sibbe5508:sibbe5508 storage bootstrap/cache
