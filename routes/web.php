@@ -99,6 +99,18 @@ Route::put('/akun/kategori/{id}', [AkunController::class, 'updateKategori'])->na
 Route::delete('/akun/kategori/{id}', [AkunController::class, 'destroyKategori'])->name('akun.kategori.destroy');
 Route::resource('akun', AkunController::class);
 
+// Company Routes
+Route::prefix('company')->name('company.')->group(function() {
+    Route::get('/', [CompanyController::class, 'index'])->name('index');
+    Route::post('/', [CompanyController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [CompanyController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [CompanyController::class, 'update'])->name('update');
+    Route::delete('/{id}', [CompanyController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/ledger', [CompanyController::class, 'ledger'])->name('ledger');
+    Route::get('/{id}/ledger/pdf', [CompanyController::class, 'exportLedgerPdf'])->name('ledger.pdf');
+    Route::get('/{id}/ledger/excel', [CompanyController::class, 'exportLedgerExcel'])->name('ledger.excel');
+});
+
 Route::resource('jurnal', JurnalController::class);
 Route::get('/jurnal/export/pdf', [JurnalController::class, 'exportPdf'])->name('jurnal.export.pdf');
 Route::get('/jurnal/export/excel', [JurnalController::class, 'exportExcel'])->name('jurnal.export.excel');

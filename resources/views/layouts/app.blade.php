@@ -52,6 +52,11 @@
                 <!-- Akuntansi Group -->
                 <div class="nav-group">
                     <div class="nav-group-title">Akuntansi</div>
+                    <a href="{{ route('company.index') }}"
+                        class="nav-item {{ Request::routeIs('company.*') ? 'active' : '' }}">
+                        <i class="fas fa-building"></i>
+                        <span>Data Perusahaan</span>
+                    </a>
                     <a href="{{ route('asset.index') }}"
                         class="nav-item {{ Request::routeIs('asset.*') ? 'active' : '' }}">
                         <i class="fas fa-box"></i>
@@ -61,7 +66,7 @@
                         class="nav-item {{ Request::routeIs('akun.*') ? 'active' : '' }}">
                         <i class="fas fa-list-alt"></i>
                         <span>Daftar Akun</span>
-                    </a>                  
+                    </a>
                 </div>
 
                 <!-- Laporan Group -->

@@ -22,6 +22,9 @@ class DatabaseSeeder extends Seeder
             AccountSeeder::class,
         ]);
         
+        // Seed companies
+        $this->call(CompanySeeder::class);
+        
         // Seed suppliers and barang
         $this->call([
             SupplierSeeder::class,

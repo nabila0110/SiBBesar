@@ -31,6 +31,7 @@ class Journal extends Model
         'type',
         'payment_status',
         'account_id',
+        'company_id',
         'reference',
         'status',
         'created_by',
@@ -56,6 +57,14 @@ class Journal extends Model
     public function account()
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * Relationship to Company
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

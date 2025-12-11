@@ -140,6 +140,22 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
+                            <label for="company_id" class="form-label"><i class="fas fa-building"></i> Perusahaan</label>
+                            <select class="form-select @error('company_id') is-invalid @enderror" 
+                                    id="company_id" name="company_id">
+                                <option value="">-- Pilih Perusahaan (Opsional) --</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}" 
+                                            {{ old('company_id', $journal->company_id) == $company->id ? 'selected' : '' }}>
+                                        {{ $company->code }} - {{ $company->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('company_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
                             <label for="project" class="form-label">Project</label>
                             <input type="text" class="form-control @error('project') is-invalid @enderror" 
                                    id="project" name="project" placeholder="Nama project" value="{{ old('project', $journal->project) }}">

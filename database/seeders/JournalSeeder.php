@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\Journal;
 use App\Models\Account;
+use App\Models\Company;
 use Illuminate\Support\Facades\DB;
 
 class JournalSeeder extends Seeder
@@ -15,6 +16,16 @@ class JournalSeeder extends Seeder
     {
         // Keep things deterministic-ish when desired
         //srand(12345);
+
+        // Get all active companies
+        $companies = Company::where('is_active', true)->get();
+        if ($companies->isEmpty()) {
+            $this->command->error('No active companies found. Please seed companies first.');
+            return;
+        }
+        
+        // Get main company (MFK) for opening balance
+        $mainCompany = $companies->where('code', 'MFK')->first() ?? $companies->first();
 
         // STEP 1: Buat jurnal saldo awal untuk Modal Pemilik
         $modalPemilik = Account::where('name', 'like', '%modal%pemilik%')->first();
@@ -48,6 +59,7 @@ class JournalSeeder extends Seeder
                 'created_by' => 1,
                 'updated_by' => 1,
                 'is_paired' => false,
+                'company_id' => $mainCompany->id,
             ]);
             
             $pairedJurnal = Journal::create([
@@ -74,6 +86,7 @@ class JournalSeeder extends Seeder
                 'updated_by' => 1,
                 'is_paired' => true,
                 'paired_journal_id' => $mainJurnal->id,
+                'company_id' => $mainCompany->id,
             ]);
             
             $mainJurnal->paired_journal_id = $pairedJurnal->id;
@@ -113,21 +126,70 @@ class JournalSeeder extends Seeder
 
         $this->command->info('Seeding journals for ' . count($months) . ' months and ' . $accounts->count() . ' accounts...');
 
+        // Daftar item transaksi konstruksi yang realistis
+        $itemsKonstruksi = [
+            // Material Konstruksi
+            'Pembelian kawat likat',
+            'Pembelian Granit',
+            'Pembelian cat',
+            'Pembelian Material Listrik',
+            'Pembelian pasir',
+            'Pembelian Material',
+            'Pembelian meterial Pipa Kota Asri Jaya',
+            'Rembes pak dedi Material',
+            
+            // DP dan Pekerjaan
+            'DP Pekerjaan listrik',
+            'Tambahan DP Listrik',
+            
+            // Transport dan BBM
+            'Uang minyak anggota heri Pipa Kota Minggu ini',
+            'Pembelian bensin Veloz Pipa Kota',
+            'BBM Solar PT DEALOVA YUDHA PRATAMA',
+            
+            // Pembayaran dan Administrasi
+            'Pembayaran Pengiriman berkas oki baung ke kantor',
+            'Rembes Bang iki FC Berkas Pipa Kota',
+            'Rembes bang iki makan minum dinas pipa kota',
+            'Rembes Bang iki jilid adendum Pipa Kota',
+            
+            // Bon dan Supplier
+            'Bon JT Multi Cipta Sanjaya (Seng dan Atap)',
+            'Bon JT Multi Cipta Sanjaya (Semen 50 Sak)',
+            
+            // Pinjaman
+            'Pinjaman tukang pagar (Pak Donal)',
+            'Pinjaman Bg Beni Plafon',
+            'Pinjamn Mas Gendut Paving',
+            'Pinjaman Mas Heri Pipa Kota',
+            
+            // Pengambilan dan Utilitas
+            'Pengambilan Mas Ton',
+            'Listrik Bang Yofi',
+        ];
+        
+        // Nama proyek
+        $namaProyek = ['Rohul', 'Damailanggeng', 'Pipa Kota', 'Mall', 'Gedung'];
+        
         // Daftar nama orang untuk nota
         $namaNota = [
             'Budi Santoso', 'Siti Aminah', 'Agus Wijaya', 'Dewi Lestari', 'Eko Prasetyo',
             'Fitri Handayani', 'Gunawan', 'Heni Kartika', 'Indra Kusuma', 'Joko Susilo',
             'Rina Marlina', 'Bambang Suryadi', 'Lina Safitri', 'Hendra Gunawan', 'Maya Sari',
-            'Dedi Setiawan', 'Wati Susilawati', 'Ahmad Fauzi', 'Sri Wahyuni', 'Andi Nugroho'
+            'Dedi Setiawan', 'Wati Susilawati', 'Ahmad Fauzi', 'Sri Wahyuni', 'Andi Nugroho',
+            'Pak Donal', 'Bang Yofi', 'Mas Gendut', 'Mas Ton', 'Mas Heri', 'Bang Iki', 'Bg Beni'
         ];
 
-        DB::transaction(function () use ($accounts, $months, $kasAccount, $piutangAccount, $hutangAccount, $namaNota) {
+        DB::transaction(function () use ($accounts, $months, $kasAccount, $piutangAccount, $hutangAccount, $namaNota, $companies, $itemsKonstruksi, $namaProyek) {
             foreach ($months as $month) {
                 foreach ($accounts as $account) {
                     // 30% chance to create a transaction for this account in this month
                     if (random_int(1, 100) > 30) {
                         continue;
                     }
+                    
+                    // Randomly assign a company to this transaction
+                    $company = $companies->random();
 
                     $type = random_int(0, 1) ? 'in' : 'out';
                     // More likely to be lunas for cash transactions
@@ -153,8 +215,10 @@ class JournalSeeder extends Seeder
                         $paired = $accounts->where('id', '!=', $account->id)->random();
                     }
 
-                    // Build a readable item
-                    $item = ($type === 'in' ? 'Penjualan / Penerimaan' : 'Pembelian / Pengeluaran') . ' - ' . $month->format('F Y');
+                    // Build a realistic construction item with project name
+                    $baseItem = $itemsKonstruksi[array_rand($itemsKonstruksi)];
+                    $project = $namaProyek[array_rand($namaProyek)];
+                    $item = $baseItem . ' ' . $project;
                     
                     // Nota berisi nama orang yang melakukan transaksi
                     $notaNama = $namaNota[array_rand($namaNota)];
@@ -179,7 +243,7 @@ class JournalSeeder extends Seeder
                         'final_total' => $amount,
                         'debit' => $type === 'out' ? $amount : 0,  // OUT: debit expense
                         'kredit' => $type === 'in' ? $amount : 0,  // IN: kredit revenue
-                        'project' => 'PROJECT-' . $month->format('Ym'),
+                        'project' => 'PROJECT-' . $project,
                         'ket' => 'Transaksi otomatis',
                         'nota' => $namaNota[array_rand($namaNota)],
                         'type' => $type,
@@ -190,6 +254,7 @@ class JournalSeeder extends Seeder
                         'created_by' => 1,
                         'updated_by' => 1,
                         'is_paired' => false,
+                        'company_id' => $company->id,
                     ];
 
                     $main = Journal::create($mainData);
@@ -219,6 +284,7 @@ class JournalSeeder extends Seeder
                         'updated_by' => 1,
                         'is_paired' => true,
                         'paired_journal_id' => $main->id,
+                        'company_id' => $company->id,
                     ];
 
                     $pairedJournal = Journal::create($pairedData);

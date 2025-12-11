@@ -49,7 +49,8 @@ class JurnalController extends Controller
     public function create()
     {
         $accounts = Account::with('category')->where('is_active', true)->orderBy('account_category_id')->orderBy('code')->get();
-        return view('jurnal.create', compact('accounts'));
+        $companies = \App\Models\Company::where('is_active', true)->orderBy('name')->get();
+        return view('jurnal.create', compact('accounts', 'companies'));
     }
 
     /**
@@ -70,6 +71,7 @@ class JurnalController extends Controller
             'type' => 'required|in:in,out',
             'payment_status' => 'required|in:lunas,tidak_lunas',
             'account_id' => 'required|exists:accounts,id',
+            'company_id' => 'nullable|exists:companies,id',
         ]);
 
         if ($validator->fails()) {
@@ -117,6 +119,7 @@ class JurnalController extends Controller
                 'type' => $type,
                 'payment_status' => $paymentStatus,
                 'account_id' => $request->input('account_id'),
+                'company_id' => $request->input('company_id'),
                 'reference' => Journal::generateJournalNo(),
                 'status' => 'posted',
                 'created_by' => Auth::id(),
@@ -145,6 +148,7 @@ class JurnalController extends Controller
                 'type' => $type,
                 'payment_status' => $paymentStatus,
                 'account_id' => $pairedAccountId,
+                'company_id' => $request->input('company_id'),
                 'reference' => $journal1->reference, // Reference sama
                 'status' => 'posted',
                 'created_by' => Auth::id(),
@@ -247,7 +251,8 @@ class JurnalController extends Controller
     {
         $journal = Journal::with('account')->findOrFail($id);
         $accounts = Account::with('category')->where('is_active', true)->orderBy('account_category_id')->orderBy('code')->get();
-        return view('jurnal.edit', compact('journal', 'accounts'));
+        $companies = \App\Models\Company::where('is_active', true)->orderBy('name')->get();
+        return view('jurnal.edit', compact('journal', 'accounts', 'companies'));
     }
 
     /**
@@ -267,6 +272,7 @@ class JurnalController extends Controller
             'project' => 'nullable|string|max:255',
             'nota' => 'required|string|max:255',
             'type' => 'required|in:in,out',
+            'company_id' => 'nullable|exists:companies,id',
             'payment_status' => 'required|in:lunas,tidak_lunas',
             'account_id' => 'required|exists:accounts,id',
         ]);
@@ -314,6 +320,7 @@ class JurnalController extends Controller
                 'type' => $type,
                 'payment_status' => $paymentStatus,
                 'account_id' => $request->input('account_id'),
+                'company_id' => $request->input('company_id'),
                 'updated_by' => Auth::id(),
             ]);
 
@@ -340,6 +347,7 @@ class JurnalController extends Controller
                         'type' => $type,
                         'payment_status' => $paymentStatus,
                         'account_id' => $pairedAccountId,
+                        'company_id' => $request->input('company_id'),
                         'updated_by' => Auth::id(),
                     ]);
                 }
